@@ -21,15 +21,16 @@ The main types of websites you may want to create include:
 3. Project website
 
 
-## Website template
+## R Markdown website basics
 
-Go to [the GitHub repo for this tutorial](https://github.com/zabore/rmarkdown_websites_tutorial/tree/master/Website_Template) to find a website template containing:
+The minimum requirements for an R Markdown website are:
 
-- _site.yml
-- about.Rmd
-- index.Rmd
+- `index.Rmd`: contains the content for the website homepage
+- `_site.yml`: contains metadata for the website
 
-These files can be used as a guide in creating pages for your website, but you can always start from scratch as well.
+You can find an overview of R Markdown website basics [here](http://rmarkdown.rstudio.com/rmarkdown_websites.html).
+
+Examples to follow.
 
 
 ## Personal websites
@@ -49,7 +50,7 @@ There are two main steps for creating a personal website that will be hosted on 
 
 1. Create a local directory named YOUR_GH_NAME.github.io
 2. Add an R Project to this directoroy
-3. Copy the website template files into your new directory
+3. Create a `_site.yml` and `index.Rmd` file in your new directory
 
 
 ### Why do I need an R Project?
@@ -59,11 +60,11 @@ The R Project is important because RStudio will recognize your project as a webs
 
 ### Create content
 
-Edit the _site.yml file to change the meta-data, layout, and  [theme](http://jekyllthemes.org/) of your website. 
+Edit the `_site.yml` file to change the metadata, layout, and  [theme](http://jekyllthemes.org/) of your website. 
 
 <img src="img/yml.png" style="width:75%">
 
-Edit and create .Rmd files that contain your website content, which will produce the html pages of your website when you knit them.
+Edit and create `.Rmd` files that contain your website content, which will produce the html pages of your website when you knit them.
 
 <img src="img/index.png" style="width:75%">
 
@@ -92,7 +93,7 @@ Now your directory contains all of the files needed for your website:
 
 <img src="img/upload.png" style="width:75%">
 
-- Using Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)
+- Alternatively, us Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)
 
 <img src="img/rstudiogit.png" style="width:75%">
 
@@ -114,30 +115,34 @@ pkgdown::build_site()
 
 - This will add a folder called docs to the directory for your package. 
 
-- Upload/push these changes to the GitHub repo for your package
+- Upload/push these changes to the GitHub repository for your package
 
 - In the Settings of the GitHub repo for your package, under GitHub pages, select "master branch/docs folder" as the source:
 
 <img src="img/ghsource.png" style="width:75%">
 
+- The page will be added as to the page: YOUR_GH_NAME.github.io/repo_name
+
 
 ## Project website
 
-(create and add screenshot)
+You can create a website for a non-package repository as well. For example, I could add a page to my website linking for the repository in which this tutorial is stored.
+
+<img src="img/project.png" style="width:75%">
 
 ### Local setup
 
-1. Copy the website template files (provided) into your existing project repository
+From within the local directory of the project of interest:
 
-
-### Create content
-
-As before for personal websites
+1. Create a `_site.yml` and `index.Rmd` file in your new directory
+2. Edit these files to create content and manage layout, as before for personal websites
 
 
 ### GitHub setup
 
-You will host the project webpage in an existing GitHub project repository.
+- Upload/push these new files to the GitHub repository for your project
 
+- Enable GitHub pages for the repository:
 
+<img src="img/ghpages.png" style="width:75%">
 

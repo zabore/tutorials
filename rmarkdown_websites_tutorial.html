@@ -222,15 +222,15 @@ $(document).ready(function () {
 <li>Project website</li>
 </ol>
 </div>
-<div id="website-template" class="section level2">
-<h2>Website template</h2>
-<p>Go to <a href="https://github.com/zabore/rmarkdown_websites_tutorial/tree/master/Website_Template">the GitHub repo for this tutorial</a> to find a website template containing:</p>
+<div id="r-markdown-website-basics" class="section level2">
+<h2>R Markdown website basics</h2>
+<p>The minimum requirements for an R Markdown website are:</p>
 <ul>
-<li>_site.yml</li>
-<li>about.Rmd</li>
-<li>index.Rmd</li>
+<li><code>index.Rmd</code>: contains the content for the website homepage</li>
+<li><code>_site.yml</code>: contains metadata for the website</li>
 </ul>
-<p>These files can be used as a guide in creating pages for your website, but you can always start from scratch as well.</p>
+<p>You can find an overview of R Markdown website basics <a href="http://rmarkdown.rstudio.com/rmarkdown_websites.html">here</a>.</p>
+<p>Examples to follow.</p>
 </div>
 <div id="personal-websites" class="section level2">
 <h2>Personal websites</h2>
@@ -246,7 +246,7 @@ $(document).ready(function () {
 <ol style="list-style-type: decimal">
 <li>Create a local directory named YOUR_GH_NAME.github.io</li>
 <li>Add an R Project to this directoroy</li>
-<li>Copy the website template files into your new directory</li>
+<li>Create a <code>_site.yml</code> and <code>index.Rmd</code> file in your new directory</li>
 </ol>
 </div>
 <div id="why-do-i-need-an-r-project" class="section level3">
@@ -255,9 +255,9 @@ $(document).ready(function () {
 </div>
 <div id="create-content" class="section level3">
 <h3>Create content</h3>
-<p>Edit the _site.yml file to change the meta-data, layout, and <a href="http://jekyllthemes.org/">theme</a> of your website.</p>
+<p>Edit the <code>_site.yml</code> file to change the metadata, layout, and <a href="http://jekyllthemes.org/">theme</a> of your website.</p>
 <p><img src="img/yml.png" style="width:75%"></p>
-<p>Edit and create .Rmd files that contain your website content, which will produce the html pages of your website when you knit them.</p>
+<p>Edit and create <code>.Rmd</code> files that contain your website content, which will produce the html pages of your website when you knit them.</p>
 <p><img src="img/index.png" style="width:75%"></p>
 <p>On the Build tab in RStudio, select “Build Website”:</p>
 <p><img src="img/build.png" style="width:75%"></p>
@@ -282,7 +282,7 @@ $(document).ready(function () {
 </ul>
 <p><img src="img/upload.png" style="width:75%"></p>
 <ul>
-<li>Using Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)</li>
+<li>Alternatively, us Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)</li>
 </ul>
 <p><img src="img/rstudiogit.png" style="width:75%"></p>
 <p>But this is not a Git/GitHub tutorial. If you want to learn more, here’s a great resource to get you started: <a href="http://happygitwithr.com/" class="uri">http://happygitwithr.com/</a></p>
@@ -297,27 +297,33 @@ $(document).ready(function () {
 pkgdown::build_site()</code></pre>
 <ul>
 <li><p>This will add a folder called docs to the directory for your package.</p></li>
-<li><p>Upload/push these changes to the GitHub repo for your package</p></li>
+<li><p>Upload/push these changes to the GitHub repository for your package</p></li>
 <li><p>In the Settings of the GitHub repo for your package, under GitHub pages, select “master branch/docs folder” as the source:</p></li>
 </ul>
 <p><img src="img/ghsource.png" style="width:75%"></p>
+<ul>
+<li>The page will be added as to the page: YOUR_GH_NAME.github.io/repo_name</li>
+</ul>
 </div>
 <div id="project-website" class="section level2">
 <h2>Project website</h2>
-<p>(create and add screenshot)</p>
+<p>You can create a website for a non-package repository as well. For example, I could add a page to my website linking for the repository in which this tutorial is stored.</p>
+<p><img src="img/project.png" style="width:75%"></p>
 <div id="local-setup-1" class="section level3">
 <h3>Local setup</h3>
+<p>From within the local directory of the project of interest:</p>
 <ol style="list-style-type: decimal">
-<li>Copy the website template files (provided) into your existing project repository</li>
+<li>Create a <code>_site.yml</code> and <code>index.Rmd</code> file in your new directory</li>
+<li>Edit these files to create content and manage layout, as before for personal websites</li>
 </ol>
-</div>
-<div id="create-content-1" class="section level3">
-<h3>Create content</h3>
-<p>As before for personal websites</p>
 </div>
 <div id="github-setup-1" class="section level3">
 <h3>GitHub setup</h3>
-<p>You will host the project webpage in an existing GitHub project repository.</p>
+<ul>
+<li><p>Upload/push these new files to the GitHub repository for your project</p></li>
+<li><p>Enable GitHub pages for the repository:</p></li>
+</ul>
+<p><img src="img/ghpages.png" style="width:75%"></p>
 </div>
 </div>
 
