@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Emily C. Zabor" />
+
+
+<title>Creating websites with R Markdown</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+
+.section h2 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h3 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h4 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h5 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h6 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Tutorials</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="http://www.emilyzabor.com">by Emily C. Zabor</a>
+</li>
+<li>
+  <a href="http://github.com/zabore/ezfun">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Creating websites with R Markdown</h1>
+<h4 class="author"><em>Emily C. Zabor</em></h4>
+
+</div>
+
+
+<p>This tutorial provides an introduction to creating websites using R Markdown and GitHub pages. There are many ways to do this, and this tutorial shows you just one simple approach.</p>
+<p>This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.</p>
+<div id="github" class="section level2">
+<h2>GitHub</h2>
+<p>If you don’t have a GitHub account already, sign up for one at <a href="https://github.com/join?source=header-home" class="uri">https://github.com/join?source=header-home</a>.</p>
+</div>
+<div id="types-of-websites" class="section level2">
+<h2>Types of websites</h2>
+<p>The main types of websites you may want to create include:</p>
+<ol style="list-style-type: decimal">
+<li>Personal website</li>
+<li>Package website</li>
+<li>Project website</li>
+</ol>
+</div>
+<div id="website-template" class="section level2">
+<h2>Website template</h2>
+<p>Go to <a href="https://github.com/zabore/rmarkdown_websites_tutorial/tree/master/Website_Template">the GitHub repo for this tutorial</a> to find a website template containing:</p>
+<ul>
+<li>_site.yml</li>
+<li>about.Rmd</li>
+<li>index.Rmd</li>
+</ul>
+<p>These files can be used as a guide in creating pages for your website, but you can always start from scratch as well.</p>
+</div>
+<div id="personal-websites" class="section level2">
+<h2>Personal websites</h2>
+<p>An example from the homepage of <a href="www.emilyzabor.com">my personal website</a>:</p>
+<p><img src="img/personal.png" style="width:75%"></p>
+<p>There are two main steps for creating a personal website that will be hosted on GitHub:</p>
+<ol style="list-style-type: decimal">
+<li>Local setup</li>
+<li>GitHub setup</li>
+</ol>
+<div id="local-setup" class="section level3">
+<h3>Local setup</h3>
+<ol style="list-style-type: decimal">
+<li>Create a local directory named YOUR_GH_NAME.github.io</li>
+<li>Add an R Project to this directoroy</li>
+<li>Copy the website template files into your new directory</li>
+</ol>
+</div>
+<div id="why-do-i-need-an-r-project" class="section level3">
+<h3>Why do I need an R Project?</h3>
+<p>The R Project is important because RStudio will recognize your project as a website, and provide appropriate build tools.</p>
+</div>
+<div id="create-content" class="section level3">
+<h3>Create content</h3>
+<p>Edit the _site.yml file to change the meta-data, layout, and <a href="http://jekyllthemes.org/">theme</a> of your website.</p>
+<p><img src="img/yml.png" style="width:75%"></p>
+<p>Edit and create .Rmd files that contain your website content, which will produce the html pages of your website when you knit them.</p>
+<p><img src="img/index.png" style="width:75%"></p>
+<p>On the Build tab in RStudio, select “Build Website”:</p>
+<p><img src="img/build.png" style="width:75%"></p>
+<p>Now your directory contains all of the files needed for your website:</p>
+<p><img src="img/directory.png" style="width:75%"></p>
+</div>
+<div id="github-setup" class="section level3">
+<h3>GitHub setup</h3>
+<ol style="list-style-type: decimal">
+<li>Create a GitHub repository named YOUR_GH_NAME.github.io</li>
+<li>Initialize it with a README</li>
+</ol>
+</div>
+<div id="deploy-website" class="section level3">
+<h3>Deploy website</h3>
+<ul>
+<li>Select “Upload files” from the main page of your GitHub repo:</li>
+</ul>
+<p><img src="img/uploadbutton.png" style="width:75%"></p>
+<ul>
+<li>And simply drag or select the files from the local repository:</li>
+</ul>
+<p><img src="img/upload.png" style="width:75%"></p>
+<ul>
+<li>Using Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)</li>
+</ul>
+<p><img src="img/rstudiogit.png" style="width:75%"></p>
+<p>But this is not a Git/GitHub tutorial. If you want to learn more, here’s a great resource to get you started: <a href="http://happygitwithr.com/" class="uri">http://happygitwithr.com/</a></p>
+</div>
+</div>
+<div id="package-website" class="section level2">
+<h2>Package website</h2>
+<p><img src="img/package.png" style="width:75%"></p>
+<p>Use Hadley Wickham’s great package <code>pkgdown</code> to easily build a website from your package. Details of <code>pkgdown</code> can be found on <a href="http://hadley.github.io/pkgdown/">the pkgdown website</a>, which was created using <code>pkgdown</code>.</p>
+<p>From within your package directory run:</p>
+<pre class="r"><code>devtools::install_github(&quot;hadley/pkgdown&quot;)
+pkgdown::build_site()</code></pre>
+<ul>
+<li><p>This will add a folder called docs to the directory for your package.</p></li>
+<li><p>Upload/push these changes to the GitHub repo for your package</p></li>
+<li><p>In the Settings of the GitHub repo for your package, under GitHub pages, select “master branch/docs folder” as the source:</p></li>
+</ul>
+<p><img src="img/ghsource.png" style="width:75%"></p>
+</div>
+<div id="project-website" class="section level2">
+<h2>Project website</h2>
+<p>(create and add screenshot)</p>
+<div id="local-setup-1" class="section level3">
+<h3>Local setup</h3>
+<ol style="list-style-type: decimal">
+<li>Copy the website template files (provided) into your existing project repository</li>
+</ol>
+</div>
+<div id="create-content-1" class="section level3">
+<h3>Create content</h3>
+<p>As before for personal websites</p>
+</div>
+<div id="github-setup-1" class="section level3">
+<h3>GitHub setup</h3>
+<p>You will host the project webpage in an existing GitHub project repository.</p>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

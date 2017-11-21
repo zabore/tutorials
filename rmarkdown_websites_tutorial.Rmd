@@ -1,0 +1,143 @@
+---
+title: "Creating websites with R Markdown"
+author: "Emily C. Zabor"
+output: html_document
+---
+
+This tutorial provides an introduction to creating websites using R Markdown and GitHub pages. There are many ways to do this, and this tutorial shows you just one simple approach.
+
+This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.
+
+## GitHub
+
+If you don't have a GitHub account already, sign up for one at [https://github.com/join?source=header-home](https://github.com/join?source=header-home).
+
+## Types of websites
+
+The main types of websites you may want to create include:
+
+1. Personal website
+2. Package website
+3. Project website
+
+
+## Website template
+
+Go to [the GitHub repo for this tutorial](https://github.com/zabore/rmarkdown_websites_tutorial/tree/master/Website_Template) to find a website template containing:
+
+- _site.yml
+- about.Rmd
+- index.Rmd
+
+These files can be used as a guide in creating pages for your website, but you can always start from scratch as well.
+
+
+## Personal websites
+
+An example from the homepage of  [my personal website](www.emilyzabor.com):
+
+<img src="img/personal.png" style="width:75%">
+
+
+There are two main steps for creating a personal website that will be hosted on GitHub:
+
+1. Local setup
+2. GitHub setup
+
+
+### Local setup
+
+1. Create a local directory named YOUR_GH_NAME.github.io
+2. Add an R Project to this directoroy
+3. Copy the website template files into your new directory
+
+
+### Why do I need an R Project?
+
+The R Project is important because RStudio will recognize your project as a website, and provide appropriate build tools.
+
+
+### Create content
+
+Edit the _site.yml file to change the meta-data, layout, and  [theme](http://jekyllthemes.org/) of your website. 
+
+<img src="img/yml.png" style="width:75%">
+
+Edit and create .Rmd files that contain your website content, which will produce the html pages of your website when you knit them.
+
+<img src="img/index.png" style="width:75%">
+
+On the Build tab in RStudio, select "Build Website":
+
+<img src="img/build.png" style="width:75%">
+
+Now your directory contains all of the files needed for your website:
+
+<img src="img/directory.png" style="width:75%">
+
+
+### GitHub setup
+
+1. Create a GitHub repository named YOUR_GH_NAME.github.io
+2. Initialize it with a README
+
+
+### Deploy website
+
+- Select "Upload files" from the main page of your GitHub repo:
+
+<img src="img/uploadbutton.png" style="width:75%">
+
+- And simply drag or select the files from the local repository:
+
+<img src="img/upload.png" style="width:75%">
+
+- Using Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)
+
+<img src="img/rstudiogit.png" style="width:75%">
+
+But this is not a Git/GitHub tutorial. If you want to learn more, here's a great resource to get you started: [http://happygitwithr.com/](http://happygitwithr.com/)
+
+
+## Package website
+
+<img src="img/package.png" style="width:75%">
+
+Use Hadley Wickham's great package `pkgdown` to easily build a website from your package. Details of `pkgdown` can be found on [the pkgdown website](http://hadley.github.io/pkgdown/), which was created using `pkgdown`.
+
+From within your package directory run: 
+
+```{r eval = FALSE}
+devtools::install_github("hadley/pkgdown")
+pkgdown::build_site()
+```
+
+- This will add a folder called docs to the directory for your package. 
+
+- Upload/push these changes to the GitHub repo for your package
+
+- In the Settings of the GitHub repo for your package, under GitHub pages, select "master branch/docs folder" as the source:
+
+<img src="img/ghsource.png" style="width:75%">
+
+
+## Project website
+
+(create and add screenshot)
+
+### Local setup
+
+1. Copy the website template files (provided) into your existing project repository
+
+
+### Create content
+
+As before for personal websites
+
+
+### GitHub setup
+
+You will host the project webpage in an existing GitHub project repository.
+
+
+

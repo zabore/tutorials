@@ -1,0 +1,13 @@
+name: "Emily C. Zabor"
+output_dir: "."
+navbar:
+  title: "Tutorials"
+  left:
+    - text: "by Emily C. Zabor"
+      href: http://www.emilyzabor.com
+    - icon: fa-github fa-lg
+      href: http://github.com/zabore/ezfun
+output:
+  html_document:
+    theme: paper
+    css: 'styles.css'
