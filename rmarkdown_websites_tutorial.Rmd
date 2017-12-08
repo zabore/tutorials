@@ -1,24 +1,30 @@
 ---
 title: "Creating websites with R Markdown"
 author: "Emily C. Zabor"
-output: html_document
+output: 
+    html_document:
+        toc: TRUE
+        toc_float: TRUE
 ---
 
-This tutorial provides an introduction to creating websites using R Markdown and GitHub pages. There are many ways to do this, and this tutorial shows you just one simple approach.
+This tutorial provides an introduction to creating websites using R Markdown and GitHub pages. 
 
 This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.
 
+
 ## GitHub
 
-If you don't have a GitHub account already, sign up for one at [https://github.com/join?source=header-home](https://github.com/join?source=header-home).
+If you don't have a GitHub account already, sign up for one at [https://github.com/join?source=header-home](https://github.com/join?source=header-home) with username YOUR_GH_NAME.
+
 
 ## Types of websites
 
 The main types of websites you may want to create include:
 
-1. Personal website
-2. Package website
-3. Project website
+1. Personal websites
+2. Package websites
+3. Project websites
+4. Blogs
 
 
 ## R Markdown website basics
@@ -28,16 +34,38 @@ The minimum requirements for an R Markdown website are:
 - `index.Rmd`: contains the content for the website homepage
 - `_site.yml`: contains metadata for the website
 
-You can find an overview of R Markdown website basics [here](http://rmarkdown.rstudio.com/rmarkdown_websites.html).
+A basic example of a `_site.yml` file for a website with two pages:
 
-Examples to follow.
+```{r eval = FALSE}
+name: "my-website"
+navbar:
+  title: "My Website"
+  left:
+    - text: "Home"
+      href: index.html
+    - text: "About"
+      href: about.html
+```
+
+And a basic `index.html` to create the Home page:
+
+```{r eval = FALSE}
+---
+title: "My Website"
+---
+    
+Hello, Website! Welcome to the world.
+```
+
+
+You can find an overview of R Markdown website basics [here](http://rmarkdown.rstudio.com/rmarkdown_websites.html).
 
 
 ## Personal websites
 
 An example from the homepage of  [my personal website](www.emilyzabor.com):
 
-<img src="img/personal.png" style="width:75%">
+<img src="img/personal.png" style="border: #A9A9A9 1px solid; width:75%">
 
 
 There are two main steps for creating a personal website that will be hosted on GitHub:
@@ -48,63 +76,130 @@ There are two main steps for creating a personal website that will be hosted on 
 
 ### Local setup
 
-1. Create a local directory named YOUR_GH_NAME.github.io
+1. Create a local directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username
 2. Add an R Project to this directoroy
 3. Create a `_site.yml` and `index.Rmd` file in your new directory
 
 
 ### Why do I need an R Project?
 
-The R Project is important because RStudio will recognize your project as a website, and provide appropriate build tools.
+The R Project is useful because RStudio will recognize your project as a website, and provide appropriate build tools.
 
 
 ### Create content
 
-Edit the `_site.yml` file to change the metadata, layout, and  [theme](http://jekyllthemes.org/) of your website. 
+Edit the `_site.yml` file to change the metadata, layout, and  [theme](http://jekyllthemes.org/) of your website. For example, the `_site.yml` for my personal website looks like:
 
-<img src="img/yml.png" style="width:75%">
+```{r eval = FALSE}
+name: "Emily C. Zabor"
+output_dir: "."
+navbar:
+  title: "Emily C. Zabor"
+  left:
+    - text: "Research and publications"
+      href: research.html
+    - text: "Software"
+      href: software.html
+    - text: "Teaching"
+      href: teaching.html
+    - text: "Talks"
+      href: talks.html
+    - text: "Contact"
+      href: contact.html
+  right:
+    - icon: fa-github fa-lg
+      href: http://github.com/zabore
+    - icon: fa-twitter fa-lg
+      href: https://twitter.com/zabormetrics
+    - icon: fa-linkedin fa-lg
+      href: https://www.linkedin.com/in/emily-zabor-59b902b7/
+output:
+  html_document:
+    theme: paper
+    css: 'styles.css'
+```
 
-Edit and create `.Rmd` files that contain your website content, which will produce the html pages of your website when you knit them.
+Edit and create `.Rmd` files that contain your website content, which will produce the html pages of your website when you knit them. For example, the `index.Rmd` file for my personal website homepage looks like:
 
-<img src="img/index.png" style="width:75%">
+```{r eval = FALSE}
+---
+---
 
-On the Build tab in RStudio, select "Build Website":
+<link rel="stylesheet" href="styles.css" type="text/css">
 
-<img src="img/build.png" style="width:75%">
+<img src="images/emily_2.jpg" style="width:25%; border:10px solid; margin-right: 20px" align="left">
 
-Now your directory contains all of the files needed for your website:
+I graduated from the [University of Minnesota](http://www.sph.umn.edu/academics/divisions/biostatistics/) with a MS in biostatistics in 2010, where I was advised by [Dr. Brad Carlin](http://www.biostat.umn.edu/~brad/) in my work to develop a method to incorporate patient-specific covariates into an adaptive phase I cancer trial using a Bayesian framework. After graduating, I moved to New York to work as a Research Biostatistician at [Memorial Sloan Kettering Cancer Center](https://www.mskcc.org/departments/epidemiology-biostatistics) in the department of Epidemiology & Biostatistics where I am currently employed. In 2012 I began working toward my DrPH in biostatistics as a part-time student at [Columbia University](https://www.mailman.columbia.edu/become-student/departments/biostatistics), where I am investigating statistical methods for the study of etiologic heterogeneity in epidemiologic studies under the advisement of [Dr. Shuang Wang](https://www.mailman.columbia.edu/people/our-faculty/sw2206) at Columbia University and [Dr. Colin Begg](https://www.mskcc.org/profile/colin-begg) at Memorial Sloan Kettering Cancer Center. My expected graduation date is June 2018.
 
-<img src="img/directory.png" style="width:75%">
+My full CV is available [here](files/Zabor_CV_2017_Q2.pdf).
+```
+
+Once you have your content written and the layout setup, on the Build tab in RStudio, select "Build Website":
+
+<img src="img/build.png" style="border: #A9A9A9 1px solid; width:75%">
+
+Now your local directory contains all of the files needed for your website:
+
+<img src="img/directory.png" style="border: #A9A9A9 1px solid; width:75%">
 
 
 ### GitHub setup
 
-1. Create a GitHub repository named YOUR_GH_NAME.github.io
+1. Create a GitHub repository named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username.
 2. Initialize it with a README
 
 
 ### Deploy website
 
+Basic approach:
+
 - Select "Upload files" from the main page of your GitHub repo:
 
-<img src="img/uploadbutton.png" style="width:75%">
+<img src="img/uploadbutton.png" style="border: #A9A9A9 1px solid; width:75%">
+
 
 - And simply drag or select the files from the local repository:
 
-<img src="img/upload.png" style="width:75%">
 
-- Alternatively, us Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)
+<img src="img/upload.png" style="border: #A9A9A9 1px solid; width:75%">
 
-<img src="img/rstudiogit.png" style="width:75%">
+Advanced approach:
 
-But this is not a Git/GitHub tutorial. If you want to learn more, here's a great resource to get you started: [http://happygitwithr.com/](http://happygitwithr.com/)
+- use Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)
+
+<img src="img/rstudiogit.png" style="border: #A9A9A9 1px solid; width:75%">
+
+- But this is not a Git/GitHub tutorial. If you want to learn more about Git/GitHub, which I encourage you to do, here's a great resource to get you started: [http://happygitwithr.com/](http://happygitwithr.com/)
 
 
-## Package website
+### Domains
 
-<img src="img/package.png" style="width:75%">
+The default is for your site to be hosted at http://YOUR_GH_NAME.github.io, but you can add a custom domain name as well. There are two steps:
+
+1. In your GitHub repository YOUR_GH_NAME.github.io, go to Settings, GitHub pages, type your domain name in the box under Custom domain and hit Save
+
+<img src="img/domain.png" style="border: #A9A9A9 1px solid; width:75%">
+
+2. Add a CNAME file to your GitHub repsitory YOUR_GH_NAME.github.io that contains your domain name
+
+It will appear like this in your repository:
+
+<img src="img/cname1.png" style="border: #A9A9A9 1px solid; width:75%">
+
+And inside the file you will simply have your domain name:
+
+<img src="img/cname2.png" style="border: #A9A9A9 1px solid; width:75%">
+
+
+## Package websites
+
+An example from the [website](http://www.emilyzabor.com/ezfun/) for my package `ezfun`:
+
+<img src="img/package.png" style="border: #A9A9A9 1px solid; width:75%">
 
 Use Hadley Wickham's great package `pkgdown` to easily build a website from your package. Details of `pkgdown` can be found on [the pkgdown website](http://hadley.github.io/pkgdown/), which was created using `pkgdown`.
+
+This assumes you already have an R package with a local directory and a GitHub repository.
 
 From within your package directory run: 
 
@@ -113,22 +208,25 @@ devtools::install_github("hadley/pkgdown")
 pkgdown::build_site()
 ```
 
-- This will add a folder called docs to the directory for your package. 
+- This will add a folder called docs to the local directory for your package. 
 
 - Upload/push these changes to the GitHub repository for your package
 
-- In the Settings of the GitHub repo for your package, under GitHub pages, select "master branch/docs folder" as the source:
+- In the Settings of the GitHub repository for your package, under GitHub pages, select "master branch/docs folder" as the source:
 
-<img src="img/ghsource.png" style="width:75%">
+<img src="img/ghsource.png" style="border: #A9A9A9 1px solid; width:75%">
 
 - The page will be added as to the page: YOUR_GH_NAME.github.io/repo_name
 
+And you're done. It's that easy! 
 
-## Project website
 
-You can create a website for a non-package repository as well. For example, I could add a page to my website linking for the repository in which this tutorial is stored.
+## Project websites
 
-<img src="img/project.png" style="width:75%">
+You can create a website for a non-package repository as well. For example, I could add [a page](http://www.emilyzabor.com/tutorials/) to my website linking to the repository in which this tutorial is stored.
+
+<img src="img/project.png" style="border: #A9A9A9 1px solid; width:75%">
+
 
 ### Local setup
 
@@ -142,7 +240,83 @@ From within the local directory of the project of interest:
 
 - Upload/push these new files to the GitHub repository for your project
 
-- Enable GitHub pages for the repository:
+- Enable GitHub pages for the repository by going to Settings and scrolling down to the GitHub Pages section, where you'll select the "master branch" folder:
 
-<img src="img/ghpages.png" style="width:75%">
+<img src="img/ghpages.png" style="border: #A9A9A9 1px solid; width:75%">
+
+
+## Blogs
+
+R Markdown websites are simple to create and deploy, but can become cumbersome if you make frequent updates or additions to the website, as in the case of a blog. Luckily, the R package `blogdown` exists just for this purpose. `blogdown` is an R package that allows you to create static websites, which means that the deployed version of the website only consists of JavaScript, HTML, CSS, and images. Luckily the `blogdown` package makes it so that you don't have to know any of those things to create a beautiful website for your blog, powered by Hugo.
+
+For a complete resource on using the `blogdown` website, checkout this [short blogdown book](https://bookdown.org/yihui/blogdown/).
+
+I don't have a personal blog, so let's look at the website I built to feature the events and blog of the [R-Ladies NYC](http://www.rladiesnyc.org/) organization as an example.
+
+<img src="img/rladiesnychome.png" style="border: #A9A9A9 1px solid; width:75%">
+
+
+### Local setup
+
+The first two steps are similar to those from creating a basic R Markdown website:
+
+1. Create a local directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username
+2. Add an R Project to this directoroy
+
+Next we get started with `blogdown`.
+
+3. Install `blogdown` and Hugo
+
+```{r eval = FALSE}
+install.packages("blogdown")
+blogdown::install_hugo()
+```
+
+4. Choose a [theme](https://themes.gohugo.io/) and find the link to the theme's GitHub repository
+
+5. Within your project session, generate a new site. The option `theme_example = TRUE` will obtain the files for an example site that you can then customize for your needs. Below "user/repo" refers to the Github username and GitHub repository for your selected theme.
+
+```{r eval = FALSE}
+blogdown::new_site(theme = "user/repo", theme_example = TRUE)
+```
+
+This will generate all of the file structure for your new website.
+
+<img src="img/blogdirectory.png" style="border: #A9A9A9 1px solid; width:75%">
+
+After this is complete, you should quit and then reopen the project. Upon reopening, RStudio will recognize the project as
+
+
+### Customizing the appearance
+
+Make changes to the `config.toml` file to change the layout and appearance of your website. The available features of the `config.toml` file will differ depending on your theme, and most theme examples come with a well annotated `config.toml` that you can use as a template.
+
+Once you have customized your website features, click on the RStudio addin "Serve Site" to preview the site locally.
+
+<img src="img/servesite.png" style="border: #A9A9A9 1px solid; width:75%">
+
+
+### Writing a new blog post
+
+There are several ways to create a new post for your site, but the easiest is using the RStudio addin "New Post":
+
+<img src="img/newpost.png" style="border: #A9A9A9 1px solid; width:75%">
+
+This opens a pop-up where we can enter the meta-data for our new post:
+
+<img src="img/newpostbox.png" style="border: #A9A9A9 1px solid; width:75%">
+
+In addition to setting the Title, Author and Date of the post, you can additionally create categories, which will organize your posts in folders, and can add tags to posts, which can make them searchable within your site's content. Dates can be in the future to allow future release of a post.
+
+Notice at the bottom that you can select whether to use a regular markdown (`.md`) or R markdown (`.Rmd`) file. `.Rmd` files will have to be rendered before generating html pages so it is best practice to limit their use to cases where R code is included. 
+
+A file name and slug will automatically be generated based on the other metadata. The slug is a URL friendly title of your post.
+
+<img src="img/newpostboxfilled.png" style="border: #A9A9A9 1px solid; width:75%">
+
+
+
+
+
+
 
