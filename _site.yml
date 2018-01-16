@@ -6,7 +6,7 @@ navbar:
     - text: "by Emily C. Zabor"
       href: http://www.emilyzabor.com
     - icon: fa-github fa-lg
-      href: http://github.com/zabore/ezfun
+      href: http://github.com/zabore/tutorials
 output:
   html_document:
     theme: paper

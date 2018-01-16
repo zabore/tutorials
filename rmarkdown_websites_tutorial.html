@@ -12,7 +12,7 @@
 <meta name="author" content="Emily C. Zabor" />
 
 
-<title>Creating websites with R Markdown</title>
+<title>Creating websites in R</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -282,7 +282,7 @@ div.tocify {
   <a href="http://www.emilyzabor.com">by Emily C. Zabor</a>
 </li>
 <li>
-  <a href="http://github.com/zabore/ezfun">
+  <a href="http://github.com/zabore/tutorials">
     <span class="fa fa-github fa-lg"></span>
      
   </a>
@@ -299,13 +299,13 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Creating websites with R Markdown</h1>
+<h1 class="title toc-ignore">Creating websites in R</h1>
 <h4 class="author"><em>Emily C. Zabor</em></h4>
 
 </div>
 
 
-<p>This tutorial provides an introduction to creating websites using R Markdown and GitHub pages.</p>
+<p>This tutorial provides an introduction to creating websites using R, R Markdown and GitHub pages.</p>
 <p>This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.</p>
 <div id="github" class="section level2">
 <h2>GitHub</h2>
@@ -337,7 +337,7 @@ navbar:
       href: index.html
     - text: &quot;About&quot;
       href: about.html</code></pre>
-<p>And a basic <code>index.html</code> to create the Home page:</p>
+<p>And a basic <code>index.Rmd</code> to create the Home page:</p>
 <pre class="r"><code>---
 title: &quot;My Website&quot;
 ---
@@ -351,9 +351,17 @@ Hello, Website! Welcome to the world.</code></pre>
 <p><img src="img/personal.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <p>There are two main steps for creating a personal website that will be hosted on GitHub:</p>
 <ol style="list-style-type: decimal">
-<li>Local setup</li>
 <li>GitHub setup</li>
+<li>Local setup</li>
 </ol>
+<div id="github-setup" class="section level3">
+<h3>GitHub setup</h3>
+<ol style="list-style-type: decimal">
+<li>Create a GitHub repository named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username.</li>
+<li>Initialize it with a README</li>
+<li>(Advanced) Clone this remote repository to a local directory, replacing step 1 below</li>
+</ol>
+</div>
 <div id="local-setup" class="section level3">
 <h3>Local setup</h3>
 <ol style="list-style-type: decimal">
@@ -365,6 +373,7 @@ Hello, Website! Welcome to the world.</code></pre>
 <div id="why-do-i-need-an-r-project" class="section level3">
 <h3>Why do I need an R Project?</h3>
 <p>The R Project is useful because RStudio will recognize your project as a website, and provide appropriate build tools.</p>
+<p>Note: After creating the R Project and initial files, you may need to close the project and reopen it before R will recognize it as a website and show the appropriate build tools.</p>
 </div>
 <div id="create-content" class="section level3">
 <h3>Create content</h3>
@@ -410,13 +419,6 @@ My full CV is available [here](files/Zabor_CV_2017_Q2.pdf).</code></pre>
 <p><img src="img/build.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <p>Now your local directory contains all of the files needed for your website:</p>
 <p><img src="img/directory.png" style="border: #A9A9A9 1px solid; width:75%"></p>
-</div>
-<div id="github-setup" class="section level3">
-<h3>GitHub setup</h3>
-<ol style="list-style-type: decimal">
-<li>Create a GitHub repository named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username.</li>
-<li>Initialize it with a README</li>
-</ol>
 </div>
 <div id="deploy-website" class="section level3">
 <h3>Deploy website</h3>
@@ -470,7 +472,12 @@ pkgdown::build_site()</code></pre>
 </ul>
 <p><img src="img/ghsource.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <ul>
-<li>The page will be added as to the page: YOUR_GH_NAME.github.io/repo_name</li>
+<li><p>The page will be added as to the page: YOUR_GH_NAME.github.io/repo_name</p>
+<ul>
+<li>The Home page of the site will be pulled from the README file on your package repository</li>
+<li>The Reference page of the site lists the included functions with their description</li>
+<li>Each function can be clicked through to see the help page</li>
+</ul></li>
 </ul>
 <p>And you’re done. It’s that easy!</p>
 </div>
@@ -501,27 +508,28 @@ pkgdown::build_site()</code></pre>
 <p>For a complete resource on using the <code>blogdown</code> website, checkout this <a href="https://bookdown.org/yihui/blogdown/">short blogdown book</a>.</p>
 <p>I don’t have a personal blog, so let’s look at the website I built to feature the events and blog of the <a href="http://www.rladiesnyc.org/">R-Ladies NYC</a> organization as an example.</p>
 <p><img src="img/rladiesnychome.png" style="border: #A9A9A9 1px solid; width:75%"></p>
-<div id="local-setup-2" class="section level3">
-<h3>Local setup</h3>
+<div id="setup" class="section level3">
+<h3>Setup</h3>
 <p>The first two steps are similar to those from creating a basic R Markdown website:</p>
 <ol style="list-style-type: decimal">
-<li>Create a local directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username</li>
-<li>Add an R Project to this directoroy</li>
+<li>Create a Github directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username, initialized with a README file</li>
+<li>Clone the Github directory to a local directory with the same name</li>
+<li>Add an R Project to the local directoroy</li>
 </ol>
 <p>Next we get started with <code>blogdown</code>.</p>
-<ol start="3" style="list-style-type: decimal">
+<ol start="4" style="list-style-type: decimal">
 <li>Install <code>blogdown</code> and Hugo</li>
 </ol>
 <pre class="r"><code>install.packages(&quot;blogdown&quot;)
 blogdown::install_hugo()</code></pre>
-<ol start="4" style="list-style-type: decimal">
+<ol start="5" style="list-style-type: decimal">
 <li><p>Choose a <a href="https://themes.gohugo.io/">theme</a> and find the link to the theme’s GitHub repository</p></li>
 <li><p>Within your project session, generate a new site. The option <code>theme_example = TRUE</code> will obtain the files for an example site that you can then customize for your needs. Below “user/repo” refers to the Github username and GitHub repository for your selected theme.</p></li>
 </ol>
 <pre class="r"><code>blogdown::new_site(theme = &quot;user/repo&quot;, theme_example = TRUE)</code></pre>
 <p>This will generate all of the file structure for your new website.</p>
 <p><img src="img/blogdirectory.png" style="border: #A9A9A9 1px solid; width:75%"></p>
-<p>After this is complete, you should quit and then reopen the project. Upon reopening, RStudio will recognize the project as</p>
+<p>After this is complete, you should quit and then reopen the project. Upon reopening, RStudio will recognize the project as a website.</p>
 </div>
 <div id="customizing-the-appearance" class="section level3">
 <h3>Customizing the appearance</h3>
@@ -540,6 +548,35 @@ blogdown::install_hugo()</code></pre>
 <p>A file name and slug will automatically be generated based on the other metadata. The slug is a URL friendly title of your post.</p>
 <p><img src="img/newpostboxfilled.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 </div>
+<div id="hosting" class="section level3">
+<h3>Hosting</h3>
+<p>A <code>blogdown</code> site is a bit more cumbersome both to build and to host on GitHub, as compared to a regular R Markdown website, and as compared to what I described above.</p>
+<p><em>Problem 1</em>: Because it is a static site, upon building, the files needed to generate the site online are automatically created in a separate subdirectory within your local directory. However this will cause problems with GitHub hosting since the files to host need to be in the YOUR_GH_NAME.github.io folder.</p>
+<p>My solution:</p>
+<ol style="list-style-type: decimal">
+<li>Maintain separate folders for the source files (I named this folder “source”) and for the static files (the folder YOUR_GH_NAME.github.io). The “source” folder is where your R project and <code>config.toml</code> files will live.</li>
+</ol>
+<p><img src="img/blogfolders.png" style="border: #A9A9A9 1px solid; width:75%"></p>
+<ol start="2" style="list-style-type: decimal">
+<li>In your <code>config.toml</code> use the option <code>publishDir =</code> to customize <code>blogdown</code> to publish to the YOUR_GH_NAME.github.io folder, rather than to the default local location</li>
+</ol>
+<p><img src="img/publishdir.png" style="border: #A9A9A9 1px solid; width:75%"></p>
+<p><em>Problem 2</em>: GitHub defaults to using Jekyll with website content, and this needs to be disabled since <code>blogdown</code> sites are built with Hugo (don’t worry if you don’t understand this, just heed my words!)</p>
+<p>To get around this, you need to include an empty file named <code>.nojekyll</code> in your GitHub repo YOUR_GH_NAME.github.io, prior to publishing.</p>
+<p><img src="img/nojekyll.png" style="border: #A9A9A9 1px solid; width:75%"></p>
+</div>
+</div>
+<div id="additional-resources" class="section level2">
+<h2>Additional resources</h2>
+<p>A compiled list of the additional resources/links presented throughout this tutorial:</p>
+<ul>
+<li><a href="http://rmarkdown.rstudio.com/rmarkdown_websites.html" class="uri">http://rmarkdown.rstudio.com/rmarkdown_websites.html</a>: an overview of R Markdown website basics</li>
+<li><a href="http://jekyllthemes.org/" class="uri">http://jekyllthemes.org/</a>: Jekyll themes for use with your R Markdown website</li>
+<li><a href="http://happygitwithr.com/" class="uri">http://happygitwithr.com/</a>: an introduction to Git/GitHub</li>
+<li><a href="http://hadley.github.io/pkgdown/" class="uri">http://hadley.github.io/pkgdown/</a>: Hadley Wickham’s <code>pkgdown</code> website</li>
+<li><a href="https://bookdown.org/yihui/blogdown/" class="uri">https://bookdown.org/yihui/blogdown/</a>: Yihui Xie’s blogdown book</li>
+<li><a href="https://themes.gohugo.io/" class="uri">https://themes.gohugo.io/</a>: Hugo themes for use with your <code>blogdown</code> website</li>
+</ul>
 </div>
 
 

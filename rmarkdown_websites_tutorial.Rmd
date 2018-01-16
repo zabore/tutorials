@@ -1,5 +1,5 @@
 ---
-title: "Creating websites with R Markdown"
+title: "Creating websites in R"
 author: "Emily C. Zabor"
 output: 
     html_document:
@@ -7,7 +7,7 @@ output:
         toc_float: TRUE
 ---
 
-This tutorial provides an introduction to creating websites using R Markdown and GitHub pages. 
+This tutorial provides an introduction to creating websites using R, R Markdown and GitHub pages. 
 
 This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.
 
@@ -47,7 +47,7 @@ navbar:
       href: about.html
 ```
 
-And a basic `index.html` to create the Home page:
+And a basic `index.Rmd` to create the Home page:
 
 ```{r eval = FALSE}
 ---
@@ -70,8 +70,15 @@ An example from the homepage of  [my personal website](www.emilyzabor.com):
 
 There are two main steps for creating a personal website that will be hosted on GitHub:
 
-1. Local setup
-2. GitHub setup
+1. GitHub setup
+2. Local setup
+
+
+### GitHub setup
+
+1. Create a GitHub repository named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username.
+2. Initialize it with a README
+3. (Advanced) Clone this remote repository to a local directory, replacing step 1 below
 
 
 ### Local setup
@@ -83,7 +90,9 @@ There are two main steps for creating a personal website that will be hosted on 
 
 ### Why do I need an R Project?
 
-The R Project is useful because RStudio will recognize your project as a website, and provide appropriate build tools.
+The R Project is useful because RStudio will recognize your project as a website, and provide appropriate build tools. 
+
+Note: After creating the R Project and initial files, you may need to close the project and reopen it before R will recognize it as a website and show the appropriate build tools.
 
 
 ### Create content
@@ -141,12 +150,6 @@ Once you have your content written and the layout setup, on the Build tab in RSt
 Now your local directory contains all of the files needed for your website:
 
 <img src="img/directory.png" style="border: #A9A9A9 1px solid; width:75%">
-
-
-### GitHub setup
-
-1. Create a GitHub repository named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username.
-2. Initialize it with a README
 
 
 ### Deploy website
@@ -218,6 +221,10 @@ pkgdown::build_site()
 
 - The page will be added as to the page: YOUR_GH_NAME.github.io/repo_name
 
+    - The Home page of the site will be pulled from the README file on your package repository
+    - The Reference page of the site lists the included functions with their description
+    - Each function can be clicked through to see the help page
+
 And you're done. It's that easy! 
 
 
@@ -256,25 +263,26 @@ I don't have a personal blog, so let's look at the website I built to feature th
 <img src="img/rladiesnychome.png" style="border: #A9A9A9 1px solid; width:75%">
 
 
-### Local setup
+### Setup
 
 The first two steps are similar to those from creating a basic R Markdown website:
 
-1. Create a local directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username
-2. Add an R Project to this directoroy
+1. Create a Github directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username, initialized with a README file
+2. Clone the Github directory to a local directory with the same name
+3. Add an R Project to the local directoroy
 
 Next we get started with `blogdown`.
 
-3. Install `blogdown` and Hugo
+4. Install `blogdown` and Hugo
 
 ```{r eval = FALSE}
 install.packages("blogdown")
 blogdown::install_hugo()
 ```
 
-4. Choose a [theme](https://themes.gohugo.io/) and find the link to the theme's GitHub repository
+5. Choose a [theme](https://themes.gohugo.io/) and find the link to the theme's GitHub repository
 
-5. Within your project session, generate a new site. The option `theme_example = TRUE` will obtain the files for an example site that you can then customize for your needs. Below "user/repo" refers to the Github username and GitHub repository for your selected theme.
+6. Within your project session, generate a new site. The option `theme_example = TRUE` will obtain the files for an example site that you can then customize for your needs. Below "user/repo" refers to the Github username and GitHub repository for your selected theme.
 
 ```{r eval = FALSE}
 blogdown::new_site(theme = "user/repo", theme_example = TRUE)
@@ -284,7 +292,7 @@ This will generate all of the file structure for your new website.
 
 <img src="img/blogdirectory.png" style="border: #A9A9A9 1px solid; width:75%">
 
-After this is complete, you should quit and then reopen the project. Upon reopening, RStudio will recognize the project as
+After this is complete, you should quit and then reopen the project. Upon reopening, RStudio will recognize the project as a website.
 
 
 ### Customizing the appearance
@@ -313,6 +321,42 @@ Notice at the bottom that you can select whether to use a regular markdown (`.md
 A file name and slug will automatically be generated based on the other metadata. The slug is a URL friendly title of your post.
 
 <img src="img/newpostboxfilled.png" style="border: #A9A9A9 1px solid; width:75%">
+
+
+### Hosting
+
+A `blogdown` site is a bit more cumbersome both to build and to host on GitHub, as compared to a regular R Markdown website, and as compared to what I described above. 
+
+*Problem 1*: Because it is a static site, upon building, the files needed to generate the site online are automatically created in a separate subdirectory within your local directory. However this will cause problems with GitHub hosting since the files to host need to be in the YOUR_GH_NAME.github.io folder.
+
+My solution:
+
+1. Maintain separate folders for the source files (I named this folder "source") and for the static files (the folder YOUR_GH_NAME.github.io). The "source" folder is where your R project and `config.toml` files will live.
+
+<img src="img/blogfolders.png" style="border: #A9A9A9 1px solid; width:75%">
+
+2. In your `config.toml` use the option `publishDir = ` to customize `blogdown` to publish to the YOUR_GH_NAME.github.io folder, rather than to the default local location
+
+<img src="img/publishdir.png" style="border: #A9A9A9 1px solid; width:75%">
+
+*Problem 2*: GitHub defaults to using Jekyll with website content, and this needs to be disabled since `blogdown` sites are built with Hugo (don't worry if you don't understand this, just heed my words!)
+
+To get around this, you need to include an empty file named `.nojekyll` in your GitHub repo YOUR_GH_NAME.github.io, prior to publishing.
+
+<img src="img/nojekyll.png" style="border: #A9A9A9 1px solid; width:75%">
+
+
+## Additional resources
+
+A compiled list of the additional resources/links presented throughout this tutorial:
+
+- [http://rmarkdown.rstudio.com/rmarkdown_websites.html](http://rmarkdown.rstudio.com/rmarkdown_websites.html): an overview of R Markdown website basics
+- [http://jekyllthemes.org/](http://jekyllthemes.org/): Jekyll themes for use with your R Markdown website
+- [http://happygitwithr.com/](http://happygitwithr.com/): an introduction to Git/GitHub
+- [http://hadley.github.io/pkgdown/](http://hadley.github.io/pkgdown/): Hadley Wickham's `pkgdown` website
+- [https://bookdown.org/yihui/blogdown/](https://bookdown.org/yihui/blogdown/): Yihui Xie's blogdown book
+- [https://themes.gohugo.io/](https://themes.gohugo.io/): Hugo themes for use with your `blogdown` website
+ 
 
 
 
