@@ -63,7 +63,7 @@ You can find an overview of R Markdown website basics [here](http://rmarkdown.rs
 
 ## Personal websites
 
-An example from the homepage of  [my personal website](www.emilyzabor.com):
+An example from the homepage of  [my personal website](http://www.emilyzabor.com/):
 
 <img src="img/personal.png" style="border: #A9A9A9 1px solid; width:75%">
 
@@ -78,12 +78,11 @@ There are two main steps for creating a personal website that will be hosted on 
 
 1. Create a GitHub repository named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username.
 2. Initialize it with a README
-3. (Advanced) Clone this remote repository to a local directory, replacing step 1 below
 
 
 ### Local setup
 
-1. Create a local directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username
+1. Clone this remote repository to a local directory with the same name, YOUR_GH_NAME.github.io
 2. Add an R Project to this directoroy
 3. Create a `_site.yml` and `index.Rmd` file in your new directory
 
@@ -166,7 +165,7 @@ Basic approach:
 
 <img src="img/upload.png" style="border: #A9A9A9 1px solid; width:75%">
 
-Advanced approach:
+Advanced approach (recommended):
 
 - use Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)
 
@@ -200,7 +199,7 @@ An example from the [website](http://www.emilyzabor.com/ezfun/) for my package `
 
 <img src="img/package.png" style="border: #A9A9A9 1px solid; width:75%">
 
-Use Hadley Wickham's great package `pkgdown` to easily build a website from your package. Details of `pkgdown` can be found on [the pkgdown website](http://hadley.github.io/pkgdown/), which was created using `pkgdown`.
+Use Hadley Wickham's great package `pkgdown` to easily build a website from your package. Details of `pkgdown` can be found on [the pkgdown website](http://pkgdown.r-lib.org/), which was created using `pkgdown`.
 
 This assumes you already have an R package with a local directory and a GitHub repository.
 
@@ -265,7 +264,7 @@ I don't have a personal blog, so let's look at the website I built to feature th
 
 ### Setup
 
-The first two steps are similar to those from creating a basic R Markdown website:
+The first three steps are similar to those from creating a basic R Markdown website:
 
 1. Create a Github directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username, initialized with a README file
 2. Clone the Github directory to a local directory with the same name
@@ -339,7 +338,7 @@ My solution:
 
 <img src="img/publishdir.png" style="border: #A9A9A9 1px solid; width:75%">
 
-*Problem 2*: GitHub defaults to using Jekyll with website content, and this needs to be disabled since `blogdown` sites are built with Hugo (don't worry if you don't understand this, just heed my words!)
+*Problem 2*: GitHub defaults to using Jekyll with website content, and this needs to be disabled since `blogdown` sites are built with Hugo
 
 To get around this, you need to include an empty file named `.nojekyll` in your GitHub repo YOUR_GH_NAME.github.io, prior to publishing.
 
@@ -353,7 +352,7 @@ A compiled list of the additional resources/links presented throughout this tuto
 - [http://rmarkdown.rstudio.com/rmarkdown_websites.html](http://rmarkdown.rstudio.com/rmarkdown_websites.html): an overview of R Markdown website basics
 - [http://jekyllthemes.org/](http://jekyllthemes.org/): Jekyll themes for use with your R Markdown website
 - [http://happygitwithr.com/](http://happygitwithr.com/): an introduction to Git/GitHub
-- [http://hadley.github.io/pkgdown/](http://hadley.github.io/pkgdown/): Hadley Wickham's `pkgdown` website
+- [http://pkgdown.r-lib.org/](http://pkgdown.r-lib.org/): Hadley Wickham's `pkgdown` website
 - [https://bookdown.org/yihui/blogdown/](https://bookdown.org/yihui/blogdown/): Yihui Xie's blogdown book
 - [https://themes.gohugo.io/](https://themes.gohugo.io/): Hugo themes for use with your `blogdown` website
  

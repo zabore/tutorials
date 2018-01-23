@@ -347,7 +347,7 @@ Hello, Website! Welcome to the world.</code></pre>
 </div>
 <div id="personal-websites" class="section level2">
 <h2>Personal websites</h2>
-<p>An example from the homepage of <a href="www.emilyzabor.com">my personal website</a>:</p>
+<p>An example from the homepage of <a href="http://www.emilyzabor.com/">my personal website</a>:</p>
 <p><img src="img/personal.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <p>There are two main steps for creating a personal website that will be hosted on GitHub:</p>
 <ol style="list-style-type: decimal">
@@ -359,13 +359,12 @@ Hello, Website! Welcome to the world.</code></pre>
 <ol style="list-style-type: decimal">
 <li>Create a GitHub repository named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username.</li>
 <li>Initialize it with a README</li>
-<li>(Advanced) Clone this remote repository to a local directory, replacing step 1 below</li>
 </ol>
 </div>
 <div id="local-setup" class="section level3">
 <h3>Local setup</h3>
 <ol style="list-style-type: decimal">
-<li>Create a local directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username</li>
+<li>Clone this remote repository to a local directory with the same name, YOUR_GH_NAME.github.io</li>
 <li>Add an R Project to this directoroy</li>
 <li>Create a <code>_site.yml</code> and <code>index.Rmd</code> file in your new directory</li>
 </ol>
@@ -431,7 +430,7 @@ My full CV is available [here](files/Zabor_CV_2017_Q2.pdf).</code></pre>
 <li>And simply drag or select the files from the local repository:</li>
 </ul>
 <p><img src="img/upload.png" style="border: #A9A9A9 1px solid; width:75%"></p>
-<p>Advanced approach:</p>
+<p>Advanced approach (recommended):</p>
 <ul>
 <li>use Git from the shell, from a Git client, or from within RStudio (another great reason to use an R Project!)</li>
 </ul>
@@ -460,7 +459,7 @@ My full CV is available [here](files/Zabor_CV_2017_Q2.pdf).</code></pre>
 <h2>Package websites</h2>
 <p>An example from the <a href="http://www.emilyzabor.com/ezfun/">website</a> for my package <code>ezfun</code>:</p>
 <p><img src="img/package.png" style="border: #A9A9A9 1px solid; width:75%"></p>
-<p>Use Hadley Wickham’s great package <code>pkgdown</code> to easily build a website from your package. Details of <code>pkgdown</code> can be found on <a href="http://hadley.github.io/pkgdown/">the pkgdown website</a>, which was created using <code>pkgdown</code>.</p>
+<p>Use Hadley Wickham’s great package <code>pkgdown</code> to easily build a website from your package. Details of <code>pkgdown</code> can be found on <a href="http://pkgdown.r-lib.org/">the pkgdown website</a>, which was created using <code>pkgdown</code>.</p>
 <p>This assumes you already have an R package with a local directory and a GitHub repository.</p>
 <p>From within your package directory run:</p>
 <pre class="r"><code>devtools::install_github(&quot;hadley/pkgdown&quot;)
@@ -510,7 +509,7 @@ pkgdown::build_site()</code></pre>
 <p><img src="img/rladiesnychome.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <div id="setup" class="section level3">
 <h3>Setup</h3>
-<p>The first two steps are similar to those from creating a basic R Markdown website:</p>
+<p>The first three steps are similar to those from creating a basic R Markdown website:</p>
 <ol style="list-style-type: decimal">
 <li>Create a Github directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username, initialized with a README file</li>
 <li>Clone the Github directory to a local directory with the same name</li>
@@ -561,7 +560,7 @@ blogdown::install_hugo()</code></pre>
 <li>In your <code>config.toml</code> use the option <code>publishDir =</code> to customize <code>blogdown</code> to publish to the YOUR_GH_NAME.github.io folder, rather than to the default local location</li>
 </ol>
 <p><img src="img/publishdir.png" style="border: #A9A9A9 1px solid; width:75%"></p>
-<p><em>Problem 2</em>: GitHub defaults to using Jekyll with website content, and this needs to be disabled since <code>blogdown</code> sites are built with Hugo (don’t worry if you don’t understand this, just heed my words!)</p>
+<p><em>Problem 2</em>: GitHub defaults to using Jekyll with website content, and this needs to be disabled since <code>blogdown</code> sites are built with Hugo</p>
 <p>To get around this, you need to include an empty file named <code>.nojekyll</code> in your GitHub repo YOUR_GH_NAME.github.io, prior to publishing.</p>
 <p><img src="img/nojekyll.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 </div>
@@ -573,7 +572,7 @@ blogdown::install_hugo()</code></pre>
 <li><a href="http://rmarkdown.rstudio.com/rmarkdown_websites.html" class="uri">http://rmarkdown.rstudio.com/rmarkdown_websites.html</a>: an overview of R Markdown website basics</li>
 <li><a href="http://jekyllthemes.org/" class="uri">http://jekyllthemes.org/</a>: Jekyll themes for use with your R Markdown website</li>
 <li><a href="http://happygitwithr.com/" class="uri">http://happygitwithr.com/</a>: an introduction to Git/GitHub</li>
-<li><a href="http://hadley.github.io/pkgdown/" class="uri">http://hadley.github.io/pkgdown/</a>: Hadley Wickham’s <code>pkgdown</code> website</li>
+<li><a href="http://pkgdown.r-lib.org/" class="uri">http://pkgdown.r-lib.org/</a>: Hadley Wickham’s <code>pkgdown</code> website</li>
 <li><a href="https://bookdown.org/yihui/blogdown/" class="uri">https://bookdown.org/yihui/blogdown/</a>: Yihui Xie’s blogdown book</li>
 <li><a href="https://themes.gohugo.io/" class="uri">https://themes.gohugo.io/</a>: Hugo themes for use with your <code>blogdown</code> website</li>
 </ul>
