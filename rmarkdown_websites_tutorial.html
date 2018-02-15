@@ -307,10 +307,7 @@ div.tocify {
 
 <p>This tutorial provides an introduction to creating websites using R, R Markdown and GitHub pages.</p>
 <p>This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.</p>
-<div id="github" class="section level2">
-<h2>GitHub</h2>
-<p>If you don’t have a GitHub account already, sign up for one at <a href="https://github.com/join?source=header-home" class="uri">https://github.com/join?source=header-home</a> with username YOUR_GH_NAME.</p>
-</div>
+<p>The current version was updated and presented at the R Ladies NYC Meetup on February 15, 2018.</p>
 <div id="types-of-websites" class="section level2">
 <h2>Types of websites</h2>
 <p>The main types of websites you may want to create include:</p>
@@ -345,6 +342,12 @@ title: &quot;My Website&quot;
 Hello, Website! Welcome to the world.</code></pre>
 <p>You can find an overview of R Markdown website basics <a href="http://rmarkdown.rstudio.com/rmarkdown_websites.html">here</a>.</p>
 </div>
+<div id="github" class="section level2">
+<h2>GitHub</h2>
+<p>This tutorial will focus on hosting websites through GitHub pages. Hosting websites on GitHub pages is free.</p>
+<p>If you don’t have a GitHub account already, sign up for one at <a href="https://github.com/join?source=header-home" class="uri">https://github.com/join?source=header-home</a> with username YOUR_GH_NAME. I’ll be referring to this username, YOUR_GH_NAME, as “your GitHub username” throughout this tutorial.</p>
+<p>There are other free sites for website hosting, and another popular choice is <a href="https://www.netlify.com/">Netlify</a>.</p>
+</div>
 <div id="personal-websites" class="section level2">
 <h2>Personal websites</h2>
 <p>An example from the homepage of <a href="http://www.emilyzabor.com/">my personal website</a>:</p>
@@ -357,15 +360,18 @@ Hello, Website! Welcome to the world.</code></pre>
 <div id="github-setup" class="section level3">
 <h3>GitHub setup</h3>
 <ol style="list-style-type: decimal">
-<li>Create a GitHub repository named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username.</li>
-<li>Initialize it with a README</li>
+<li>Create a GitHub repository (“repo”) named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username.</li>
+<li>Initialize it with a README
+<ul>
+<li>For the GitHub inexperienced: this can ease the process of cloning the repo by initializing the remote repo with a master branch</li>
+</ul></li>
 </ol>
 </div>
 <div id="local-setup" class="section level3">
 <h3>Local setup</h3>
 <ol style="list-style-type: decimal">
 <li>Clone this remote repository to a local directory with the same name, YOUR_GH_NAME.github.io</li>
-<li>Add an R Project to this directoroy</li>
+<li>Add an R Project to this directory</li>
 <li>Create a <code>_site.yml</code> and <code>index.Rmd</code> file in your new directory</li>
 </ol>
 </div>
@@ -376,23 +382,24 @@ Hello, Website! Welcome to the world.</code></pre>
 </div>
 <div id="create-content" class="section level3">
 <h3>Create content</h3>
-<p>Edit the <code>_site.yml</code> file to change the metadata, layout, and <a href="http://jekyllthemes.org/">theme</a> of your website. For example, the <code>_site.yml</code> for my personal website looks like:</p>
+<p>Edit the <code>_site.yml</code> file to change the metadata, layout, and theme of your website. Preview Jekyll themes <a href="http://jekyllthemes.org/">here</a> and play around with different options. Themes are easy to change even after you have added content.</p>
+<p>For example, the <code>_site.yml</code> for my personal website looks like this:</p>
 <pre class="r"><code>name: &quot;Emily C. Zabor&quot;
 output_dir: &quot;.&quot;
 navbar:
   title: &quot;Emily C. Zabor&quot;
   left:
-    - text: &quot;Research and publications&quot;
+    - text: &quot;Writing&quot;
       href: research.html
-    - text: &quot;Software&quot;
+    - text: &quot;Speaking&quot;
+      href: talks.html
+    - text: &quot;Programming&quot;
       href: software.html
     - text: &quot;Teaching&quot;
       href: teaching.html
-    - text: &quot;Talks&quot;
-      href: talks.html
-    - text: &quot;Contact&quot;
-      href: contact.html
   right:
+    - icon: fa-envelope fa-lg
+      href: contact.html
     - icon: fa-github fa-lg
       href: http://github.com/zabore
     - icon: fa-twitter fa-lg
@@ -403,7 +410,8 @@ output:
   html_document:
     theme: paper
     css: &#39;styles.css&#39;</code></pre>
-<p>Edit and create <code>.Rmd</code> files that contain your website content, which will produce the html pages of your website when you knit them. For example, the <code>index.Rmd</code> file for my personal website homepage looks like:</p>
+<p>Edit and create <code>.Rmd</code> files that contain your website content, which will produce the html pages of your website when you knit them.</p>
+<p>For example, the <code>index.Rmd</code> file for my personal website homepage looks like this:</p>
 <pre class="r"><code>---
 ---
 
@@ -411,9 +419,13 @@ output:
 
 &lt;img src=&quot;images/emily_2.jpg&quot; style=&quot;width:25%; border:10px solid; margin-right: 20px&quot; align=&quot;left&quot;&gt;
 
-I graduated from the [University of Minnesota](http://www.sph.umn.edu/academics/divisions/biostatistics/) with a MS in biostatistics in 2010, where I was advised by [Dr. Brad Carlin](http://www.biostat.umn.edu/~brad/) in my work to develop a method to incorporate patient-specific covariates into an adaptive phase I cancer trial using a Bayesian framework. After graduating, I moved to New York to work as a Research Biostatistician at [Memorial Sloan Kettering Cancer Center](https://www.mskcc.org/departments/epidemiology-biostatistics) in the department of Epidemiology &amp; Biostatistics where I am currently employed. In 2012 I began working toward my DrPH in biostatistics as a part-time student at [Columbia University](https://www.mailman.columbia.edu/become-student/departments/biostatistics), where I am investigating statistical methods for the study of etiologic heterogeneity in epidemiologic studies under the advisement of [Dr. Shuang Wang](https://www.mailman.columbia.edu/people/our-faculty/sw2206) at Columbia University and [Dr. Colin Begg](https://www.mskcc.org/profile/colin-begg) at Memorial Sloan Kettering Cancer Center. My expected graduation date is June 2018.
+I like to analyze data to answer research questions and test hypotheses. Currently I investigate questions related to breast cancer through my work as a Research Biostatistician at [Memorial Sloan Kettering Cancer Center](https://www.mskcc.org/departments/epidemiology-biostatistics) in the department of Epidemiology &amp; Biostatistics. 
 
-My full CV is available [here](files/Zabor_CV_2017_Q2.pdf).</code></pre>
+I graduated from the [University of Minnesota](http://www.sph.umn.edu/academics/divisions/biostatistics/) with a MS in biostatistics in 2010. In 2012 I began working toward my DrPH in biostatistics as a part-time student at [Columbia University](https://www.mailman.columbia.edu/become-student/departments/biostatistics), where I am investigating statistical methods for the study of etiologic heterogeneity in epidemiologic studies under the advisement of [Dr. Shuang Wang](https://www.mailman.columbia.edu/people/our-faculty/sw2206) at Columbia University and [Dr. Colin Begg](https://www.mskcc.org/profile/colin-begg) at Memorial Sloan Kettering Cancer Center. I expect to graduate by the end of 2018.
+
+I am a well-known R enthusiast, including serving on the board and being an active member of [R Ladies NYC](http://www.rladiesnyc.org/). 
+
+My full CV is available [here](files/Zabor_CV_2017_Q4.pdf).</code></pre>
 <p>Once you have your content written and the layout setup, on the Build tab in RStudio, select “Build Website”:</p>
 <p><img src="img/build.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <p>Now your local directory contains all of the files needed for your website:</p>
@@ -439,15 +451,15 @@ My full CV is available [here](files/Zabor_CV_2017_Q2.pdf).</code></pre>
 <li>But this is not a Git/GitHub tutorial. If you want to learn more about Git/GitHub, which I encourage you to do, here’s a great resource to get you started: <a href="http://happygitwithr.com/" class="uri">http://happygitwithr.com/</a></li>
 </ul>
 </div>
-<div id="domains" class="section level3">
-<h3>Domains</h3>
+<div id="custom-domains" class="section level3">
+<h3>Custom domains</h3>
 <p>The default is for your site to be hosted at <a href="http://YOUR_GH_NAME.github.io" class="uri">http://YOUR_GH_NAME.github.io</a>, but you can add a custom domain name as well. There are two steps:</p>
 <ol style="list-style-type: decimal">
-<li>In your GitHub repository YOUR_GH_NAME.github.io, go to Settings, GitHub pages, type your domain name in the box under Custom domain and hit Save</li>
+<li>In your GitHub repository YOUR_GH_NAME.github.io, go to Settings &gt; GitHub pages. Type your domain name in the box under Custom domain and hit Save.</li>
 </ol>
 <p><img src="img/domain.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <ol start="2" style="list-style-type: decimal">
-<li>Add a CNAME file to your GitHub repsitory YOUR_GH_NAME.github.io that contains your domain name</li>
+<li>Add a CNAME file to your GitHub repsitory YOUR_GH_NAME.github.io.</li>
 </ol>
 <p>It will appear like this in your repository:</p>
 <p><img src="img/cname1.png" style="border: #A9A9A9 1px solid; width:75%"></p>
@@ -459,30 +471,31 @@ My full CV is available [here](files/Zabor_CV_2017_Q2.pdf).</code></pre>
 <h2>Package websites</h2>
 <p>An example from the <a href="http://www.emilyzabor.com/ezfun/">website</a> for my package <code>ezfun</code>:</p>
 <p><img src="img/package.png" style="border: #A9A9A9 1px solid; width:75%"></p>
-<p>Use Hadley Wickham’s great package <code>pkgdown</code> to easily build a website from your package. Details of <code>pkgdown</code> can be found on <a href="http://pkgdown.r-lib.org/">the pkgdown website</a>, which was created using <code>pkgdown</code>.</p>
+<p>Use Hadley Wickham’s great package <code>pkgdown</code> to easily build a website from your package that is hosted on GitHub. Details of <code>pkgdown</code> can be found on <a href="http://pkgdown.r-lib.org/">the pkgdown website</a>, which was also created using <code>pkgdown</code>.</p>
 <p>This assumes you already have an R package with a local directory and a GitHub repository.</p>
 <p>From within your package directory run:</p>
 <pre class="r"><code>devtools::install_github(&quot;hadley/pkgdown&quot;)
 pkgdown::build_site()</code></pre>
 <ul>
-<li><p>This will add a folder called docs to the local directory for your package.</p></li>
+<li><p>This will add a folder called <code>docs</code> to the local directory for your package</p></li>
 <li><p>Upload/push these changes to the GitHub repository for your package</p></li>
-<li><p>In the Settings of the GitHub repository for your package, under GitHub pages, select “master branch/docs folder” as the source:</p></li>
+<li><p>In the GitHub repository for your package go to Settings &gt; GitHub pages. Select “master branch/docs folder” as the source and hit Save</p></li>
 </ul>
 <p><img src="img/ghsource.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <ul>
-<li><p>The page will be added as to the page: YOUR_GH_NAME.github.io/repo_name</p>
+<li><p>The page will be added as to your personal website as YOUR_GH_NAME.github.io/repo_name</p>
 <ul>
 <li>The Home page of the site will be pulled from the README file on your package repository</li>
 <li>The Reference page of the site lists the included functions with their description</li>
-<li>Each function can be clicked through to see the help page</li>
+<li>Each function can be clicked through to see the help page, if any</li>
+<li>Would also build pages for any available vignettes</li>
 </ul></li>
 </ul>
-<p>And you’re done. It’s that easy!</p>
+<p>And you’re done, it’s that easy.</p>
 </div>
 <div id="project-websites" class="section level2">
 <h2>Project websites</h2>
-<p>You can create a website for a non-package repository as well. For example, I could add <a href="http://www.emilyzabor.com/tutorials/">a page</a> to my website linking to the repository in which this tutorial is stored.</p>
+<p>You can create a website for a non-package repository as well. For example, I have <a href="http://www.emilyzabor.com/tutorials/">a page</a> on my website linking to the repository in which this tutorial is stored.</p>
 <p><img src="img/project.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <div id="local-setup-1" class="section level3">
 <h3>Local setup</h3>
@@ -496,7 +509,7 @@ pkgdown::build_site()</code></pre>
 <h3>GitHub setup</h3>
 <ul>
 <li><p>Upload/push these new files to the GitHub repository for your project</p></li>
-<li><p>Enable GitHub pages for the repository by going to Settings and scrolling down to the GitHub Pages section, where you’ll select the “master branch” folder:</p></li>
+<li><p>Enable GitHub pages for the repository by going to Settings &gt; GitHub Pages, where you’ll select the “master branch” folder and hit Save</p></li>
 </ul>
 <p><img src="img/ghpages.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 </div>
@@ -511,8 +524,8 @@ pkgdown::build_site()</code></pre>
 <h3>Setup</h3>
 <p>The first three steps are similar to those from creating a basic R Markdown website:</p>
 <ol style="list-style-type: decimal">
-<li>Create a Github directory named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username, initialized with a README file</li>
-<li>Clone the Github directory to a local directory with the same name</li>
+<li>Create a GitHub repository named YOUR_GH_NAME.github.io, where YOUR_GH_NAME is your GitHub username, initialized with a README file</li>
+<li>Clone the GitHub repo to a local directory with the same name</li>
 <li>Add an R Project to the local directoroy</li>
 </ol>
 <p>Next we get started with <code>blogdown</code>.</p>
@@ -522,17 +535,17 @@ pkgdown::build_site()</code></pre>
 <pre class="r"><code>install.packages(&quot;blogdown&quot;)
 blogdown::install_hugo()</code></pre>
 <ol start="5" style="list-style-type: decimal">
-<li><p>Choose a <a href="https://themes.gohugo.io/">theme</a> and find the link to the theme’s GitHub repository</p></li>
-<li><p>Within your project session, generate a new site. The option <code>theme_example = TRUE</code> will obtain the files for an example site that you can then customize for your needs. Below “user/repo” refers to the Github username and GitHub repository for your selected theme.</p></li>
+<li><p>Choose a <a href="https://themes.gohugo.io/">theme</a> and find the link to the theme’s GitHub repository. In this case themes aren’t quite as easy to change as with basic R Markdown websites, so choose carefully.</p></li>
+<li><p>Within your project session, generate a new site. The option <code>theme_example = TRUE</code> will obtain the files for an example site that you can then customize for your needs. Below “user/repo” refers to the GitHub username and GitHub repository for your selected theme.</p></li>
 </ol>
 <pre class="r"><code>blogdown::new_site(theme = &quot;user/repo&quot;, theme_example = TRUE)</code></pre>
-<p>This will generate all of the file structure for your new website.</p>
+<p>This will generate all of the file structure for your new blog.</p>
 <p><img src="img/blogdirectory.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <p>After this is complete, you should quit and then reopen the project. Upon reopening, RStudio will recognize the project as a website.</p>
 </div>
 <div id="customizing-the-appearance" class="section level3">
 <h3>Customizing the appearance</h3>
-<p>Make changes to the <code>config.toml</code> file to change the layout and appearance of your website. The available features of the <code>config.toml</code> file will differ depending on your theme, and most theme examples come with a well annotated <code>config.toml</code> that you can use as a template.</p>
+<p>Make changes to the <code>config.toml</code> file (equivalent to the <code>_site.yml</code> from basic R Markdown websites) to change the layout and appearance of your website. The available features of the <code>config.toml</code> file will differ depending on your theme, and most theme examples come with a well annotated <code>config.toml</code> that you can use as a template.</p>
 <p>Once you have customized your website features, click on the RStudio addin “Serve Site” to preview the site locally.</p>
 <p><img src="img/servesite.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 </div>
@@ -540,20 +553,20 @@ blogdown::install_hugo()</code></pre>
 <h3>Writing a new blog post</h3>
 <p>There are several ways to create a new post for your site, but the easiest is using the RStudio addin “New Post”:</p>
 <p><img src="img/newpost.png" style="border: #A9A9A9 1px solid; width:75%"></p>
-<p>This opens a pop-up where we can enter the meta-data for our new post:</p>
+<p>This opens a pop-up where you can enter the meta-data for a new post:</p>
 <p><img src="img/newpostbox.png" style="border: #A9A9A9 1px solid; width:75%"></p>
-<p>In addition to setting the Title, Author and Date of the post, you can additionally create categories, which will organize your posts in folders, and can add tags to posts, which can make them searchable within your site’s content. Dates can be in the future to allow future release of a post.</p>
+<p>In addition to setting the Title, Author and Date of the post, you can additionally create categories, which will organize your posts in folders, and can add tags to posts, which can make them searchable within your site’s content. Be aware that the functioning of these features will vary by theme. Dates can be in the future to allow future release of a post.</p>
 <p>Notice at the bottom that you can select whether to use a regular markdown (<code>.md</code>) or R markdown (<code>.Rmd</code>) file. <code>.Rmd</code> files will have to be rendered before generating html pages so it is best practice to limit their use to cases where R code is included.</p>
 <p>A file name and slug will automatically be generated based on the other metadata. The slug is a URL friendly title of your post.</p>
 <p><img src="img/newpostboxfilled.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 </div>
 <div id="hosting" class="section level3">
 <h3>Hosting</h3>
-<p>A <code>blogdown</code> site is a bit more cumbersome both to build and to host on GitHub, as compared to a regular R Markdown website, and as compared to what I described above.</p>
-<p><em>Problem 1</em>: Because it is a static site, upon building, the files needed to generate the site online are automatically created in a separate subdirectory within your local directory. However this will cause problems with GitHub hosting since the files to host need to be in the YOUR_GH_NAME.github.io folder.</p>
+<p>A <code>blogdown</code> site is a bit more cumbersome both to build and to host on GitHub as compared to a regular R Markdown website, and as compared to what I described above.</p>
+<p><em>Problem 1</em>: Because it is a static site, upon building, the files needed to generate the site online are automatically created in a separate subdirectory called <code>public</code> within your local directory. However this will cause problems with GitHub hosting since the files to host need to be in the local YOUR_GH_NAME.github.io directory</p>
 <p>My solution:</p>
 <ol style="list-style-type: decimal">
-<li>Maintain separate folders for the source files (I named this folder “source”) and for the static files (the folder YOUR_GH_NAME.github.io). The “source” folder is where your R project and <code>config.toml</code> files will live.</li>
+<li>Maintain separate directories for the source files (I named this directory “source”) and for the static files (the directory YOUR_GH_NAME.github.io) that will be generated on build. The “source” folder is where your R project and <code>config.toml</code> files will live.</li>
 </ol>
 <p><img src="img/blogfolders.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <ol start="2" style="list-style-type: decimal">
@@ -576,6 +589,9 @@ blogdown::install_hugo()</code></pre>
 <li><a href="https://bookdown.org/yihui/blogdown/" class="uri">https://bookdown.org/yihui/blogdown/</a>: Yihui Xie’s blogdown book</li>
 <li><a href="https://themes.gohugo.io/" class="uri">https://themes.gohugo.io/</a>: Hugo themes for use with your <code>blogdown</code> website</li>
 </ul>
+</div>
+<div id="demo" class="section level2">
+<h2>Demo</h2>
 </div>
 
 
