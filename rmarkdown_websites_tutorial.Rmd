@@ -221,7 +221,7 @@ This assumes you already have an R package with a local directory and a GitHub r
 From within your package directory run: 
 
 ```{r eval = FALSE}
-devtools::install_github("hadley/pkgdown")
+devtools::install_github("r-lib/pkgdown")
 pkgdown::build_site()
 ```
 
