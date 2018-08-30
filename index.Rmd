@@ -3,3 +3,4 @@ title: "Tutorials"
 ---
 
 - [Creating websites in R](rmarkdown_websites_tutorial.html)
+- [Survival analysis in R](survival_analysis_in_r_tutorial.html)

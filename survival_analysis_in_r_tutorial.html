@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+
+<title>Survival Analysis in R</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/font-awesome-5.0.13/css/fa-svg-with-js.css" rel="stylesheet" />
+<script src="site_libs/font-awesome-5.0.13/js/fontawesome-all.min.js"></script>
+<script src="site_libs/font-awesome-5.0.13/js/fa-v4-shims.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+<link rel="stylesheet" href="styles.css" type="text/css" />
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 64px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+
+.section h2 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h3 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h4 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h5 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+.section h6 {
+  padding-top: 69px;
+  margin-top: -69px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Tutorials</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="http://www.emilyzabor.com">by Emily C. Zabor</a>
+</li>
+<li>
+  <a href="http://github.com/zabore/tutorials">
+    <span class="fa fa-github fa-lg"></span>
+     
+  </a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Survival Analysis in R</h1>
+
+</div>
+
+
+<p>This tutorial provides an introduction to survival analysis, and to conducting a survival analysis in R.</p>
+<p>This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center R-Presenters series on August 30, 2018.</p>
+<div id="introduction" class="section level1 center">
+<h1>Introduction</h1>
+<div id="what-is-survival-data" class="section level2">
+<h2>What is survival data?</h2>
+<p>Time-to-event data that consists of a distinct start time and end time.</p>
+<p>Examples from cancer:</p>
+<ul>
+<li>Time from surgery to death</li>
+<li>Time from start of treatment to progression</li>
+<li>Time from response to recurrence</li>
+</ul>
+</div>
+<div id="examples-from-other-fields" class="section level2">
+<h2>Examples from other fields</h2>
+<p>Time-to-event data is common in many fields including, but not limited to:</p>
+<ul>
+<li>Time from HIV infection to development of AIDS</li>
+<li>Time to heart attack</li>
+<li>Time to onset of substance abuse</li>
+<li>Time to initiation of sexual activity</li>
+<li>Time to machine malfunction</li>
+</ul>
+</div>
+<div id="aliases-for-survival-analysis" class="section level2">
+<h2>Aliases for survival analysis</h2>
+<p>Because survival analysis is common in many other fields, it also goes by other names:</p>
+<ul>
+<li>Reliability analysis</li>
+<li>Duration analysis</li>
+<li>Event history analysis</li>
+<li>Time-to-event analysis</li>
+</ul>
+</div>
+<div id="questions-of-interest" class="section level2">
+<h2>Questions of interest</h2>
+<p>The two most common questions I encounter related to survival analysis are:</p>
+<ol style="list-style-type: decimal">
+<li>What is the probability of survival to a certain point in time?</li>
+<li>What is the average survival time?</li>
+</ol>
+</div>
+</div>
+<div id="censoring" class="section level1 center">
+<h1>Censoring</h1>
+<div id="what-is-censoring" class="section level2">
+<h2>What is censoring?</h2>
+<p>In survival analysis it is common for the exact event time to be unknown, or unobserved, which is called censoring. A subject may be censored due to:</p>
+<ul>
+<li>Loss to follow-up</li>
+<li>Withdrawal from study</li>
+<li>No event by end of fixed study period</li>
+</ul>
+<p>Specifically these are examples of <strong>right</strong> censoring. Other common types of censoring include:</p>
+<ul>
+<li>Left</li>
+<li>Interval</li>
+</ul>
+</div>
+<div id="censored-survival-data" class="section level2">
+<h2>Censored survival data</h2>
+<p>When the exact event time is unknown then some patients are censored, and survival analysis methods are required.</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/swimmer-1.png" width="672" /></p>
+<p>In this example, how would we compute the proportion who are event-free at 10 years?</p>
+<ul>
+<li>Subjects 2, 3, 5, 6, 8, 9, and 10 were all event-free at 10 years.</li>
+<li>Subjects 4 and 7 had the event before 10 years.</li>
+<li>Subject 1 was censored before 10 years, so we don’t know whether they had the event or not by 10 years. How do we incorporate this subject into our estimate?</li>
+</ul>
+</div>
+<div id="we-can-incorporate-censored-data-using-survival-analysis-techniques" class="section level2">
+<h2>We can incorporate censored data using survival analysis techniques</h2>
+<p>Toy example of a Kaplan-Meier curve for this simple data (details to follow):</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<ul>
+<li>Horizontal lines represent survival duration for the interval</li>
+<li>An interval is terminated by an event</li>
+<li>The height of vertical lines show the change in cumulative probability</li>
+<li>Censored observations, indicated by tick marks, reduces the cumulative survival between intervals</li>
+</ul>
+</div>
+<div id="danger-of-ignoring-censoring" class="section level2">
+<h2>Danger of ignoring censoring</h2>
+<p><a href="https://callingbullshit.org/case_studies/case_study_musician_mortality.html">Case study: musicians and mortality</a></p>
+<p>Conclusion: Musical genre is associated with early death among musicians.</p>
+<p>Problem: this graph does not account for the right-censored nature of the data.</p>
+<p><img src="img/musician_death_graph.jpg" width="500" /></p>
+</div>
+<div id="components-of-survival-data" class="section level2">
+<h2>Components of survival data</h2>
+<p>For subject <span class="math inline">\(i\)</span>:</p>
+<ol style="list-style-type: decimal">
+<li>Event time <span class="math inline">\(T_i\)</span></li>
+<li>Censoring time <span class="math inline">\(C_i\)</span></li>
+<li><p>Event indicator <span class="math inline">\(\delta_i\)</span>:</p>
+<ul>
+<li>1 if event observed (i.e. <span class="math inline">\(T_i \leq C_i\)</span>)</li>
+<li>0 if censored (i.e. <span class="math inline">\(T_i &gt; C_i\)</span>)</li>
+</ul></li>
+<li><p>Observed time <span class="math inline">\(Y_i = \min(T_i, C_i)\)</span></p></li>
+</ol>
+</div>
+</div>
+<div id="data-example" class="section level1 center">
+<h1>Data example</h1>
+<div id="research-question-of-interest" class="section level2">
+<h2>Research question of interest</h2>
+<p>Investigating the “obesity paradox” in kidney cancer patients.</p>
+<ul>
+<li>Increased BMI associated with risk of kidney cancer</li>
+<li>Is increased BMI also associated with worse prognosis among kidney cancer patients?</li>
+</ul>
+</div>
+<div id="data-structure" class="section level2">
+<h2>Data structure</h2>
+<ul>
+<li>2119 kidney cancer patients</li>
+<li>Outcome: overall survival</li>
+<li>Predictor: BMI</li>
+</ul>
+<pre class="r"><code>df[, c(&quot;os_yrs&quot;, &quot;os&quot;, &quot;bmi_cat&quot;)] %&gt;% 
+    head</code></pre>
+<pre><code>##      os_yrs os bmi_cat
+## 1  1.569863  1       3
+## 2 10.243701  0       2
+## 3  3.945205  1       2
+## 4  3.326027  1       2
+## 5  8.547945  0       3
+## 6 10.180313  0       3</code></pre>
+<p>Variables:</p>
+<ul>
+<li>“os_yrs”: the observed time <span class="math inline">\(Y_i = min(T_i, C_i)\)</span></li>
+<li>“os”: the event indicator <span class="math inline">\(\delta_i\)</span></li>
+<li>“bmi_cat”: 1 = Normal BMI &lt; 25, 2 = Overweight BMI 25-30, 3 = Obese BMI &gt; 30</li>
+</ul>
+</div>
+</div>
+<div id="preparing-data-for-analysis" class="section level1 center">
+<h1>Preparing data for analysis</h1>
+<div id="dates" class="section level2">
+<h2>Dates</h2>
+<p>Data will often come with start and end dates rather than pre-calculated survival times. Our data example includes the following variables:</p>
+<ol style="list-style-type: decimal">
+<li>“proc_date”: Date of surgery</li>
+<li>“last_status_date”: Date of death or last follow-up</li>
+<li>“lat_status”: Character variable denoting whether the patient is alive, and the cause of death if dead</li>
+</ol>
+<p>The first step is to make sure these are formatted as dates in R.</p>
+</div>
+<div id="formatting-dates---base-r" class="section level2">
+<h2>Formatting dates - base R</h2>
+<p>First let’s look at the current format of our surgery date:</p>
+<pre class="r"><code>str(df$proc_date)</code></pre>
+<pre><code>##  chr [1:2119] &quot;20NOV1997&quot; &quot;22OCT2001&quot; &quot;21FEB2003&quot; &quot;04MAR2002&quot; ...</code></pre>
+<p>We see this is a character variable in a certain format, but we need it to be a</p>
+<pre class="r"><code>df &lt;- df %&gt;% 
+    mutate(proc_date_format1 = as.Date(proc_date, format = &quot;%d%b%Y&quot;))</code></pre>
+<p>And after formatting we see that surgery date has Date format now:</p>
+<pre class="r"><code>str(df$proc_date_format1)</code></pre>
+<pre><code>##  Date[1:2119], format: &quot;1997-11-20&quot; &quot;2001-10-22&quot; &quot;2003-02-21&quot; &quot;2002-03-04&quot; &quot;2001-11-19&quot; ...</code></pre>
+<ul>
+<li><p>Note that in base R the format must include the separator as well as the symbol. e.g. if your date is in format m/d/Y then you would need <code>format = &quot;%m/%d/%Y&quot;</code></p></li>
+<li><p>See a full list of date format symbols at <a href="https://www.statmethods.net/input/dates.html" class="uri">https://www.statmethods.net/input/dates.html</a></p></li>
+</ul>
+</div>
+<div id="formatting-dates---lubridate" class="section level2">
+<h2>Formatting dates - lubridate</h2>
+<p>We can also use the <code>lubridate</code> package to format dates. Again we look at our original surgery date variable:</p>
+<pre class="r"><code>str(df$proc_date)</code></pre>
+<pre><code>##  chr [1:2119] &quot;20NOV1997&quot; &quot;22OCT2001&quot; &quot;21FEB2003&quot; &quot;04MAR2002&quot; ...</code></pre>
+<p>And now use the <code>lubridate::dmy</code> function to format this into a Date:</p>
+<pre class="r"><code>df &lt;- df %&gt;% 
+    mutate(proc_date_format2 = lubridate::dmy(proc_date))</code></pre>
+<p>And again we see that <code>R</code> now recognizes surgery date as a Date format:</p>
+<pre class="r"><code>str(df$proc_date_format2)</code></pre>
+<pre><code>##  Date[1:2119], format: &quot;1997-11-20&quot; &quot;2001-10-22&quot; &quot;2003-02-21&quot; &quot;2002-03-04&quot; &quot;2001-11-19&quot; ...</code></pre>
+<ul>
+<li><p>The help page for <code>?ymd</code> will show all format options.</p></li>
+<li><p>Note that unlike the base R option, the separators do not need to be specified</p></li>
+</ul>
+</div>
+<div id="event-indicator" class="section level2">
+<h2>Event indicator</h2>
+<p>Most functions used in survival analysis will also require a binary indicator of event that is:</p>
+<ul>
+<li>0 for no event</li>
+<li>1 for event</li>
+</ul>
+<p>Currently our data example contains a character variable indicating whehter the patient is alive, and if not indicating the cause of death, so we must create a binary indicator.</p>
+<pre class="r"><code>table(df$last_status, useNA = &#39;ifany&#39;)</code></pre>
+<pre><code>## 
+##                     Alive  Death from Kidney Cancer 
+##                      1643                       244 
+##    Death from Other Cause Death from Unknown Causes 
+##                       202                        30</code></pre>
+<pre class="r"><code>df &lt;- df %&gt;% 
+    mutate(os_event = ifelse(last_status == &quot;Alive&quot;, 0, 1))
+
+table(df$os_event)</code></pre>
+<pre><code>## 
+##    0    1 
+## 1643  476</code></pre>
+</div>
+<div id="calculating-survival-times---base-r" class="section level2">
+<h2>Calculating survival times - base R</h2>
+<p>Now that we have our dates formatted, we need to calculate the difference between start and end time in some units, usually months or years.</p>
+<p>A base <code>R</code> solution to calculate the number of years from surgery to death:</p>
+<pre class="r"><code>df &lt;- df %&gt;% 
+    mutate(os_yrs_opt1 = as.numeric(difftime(last_status_date, proc_date, 
+                                             units = &quot;days&quot;)) / 365.25)</code></pre>
+<pre class="r"><code>summary(df$os_yrs_opt1)</code></pre>
+<pre><code>##      Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+##  0.002738  1.689254  3.786448  4.774907  7.137577 17.396304</code></pre>
+<ul>
+<li><p>Here we use <code>difftime</code> to calculate the number of days between our two dates and convert it to a numeric value using <code>as.numeric</code>. We then convert to years by dividing by 365.25, the average number of days in a year.</p></li>
+<li><p><em>Sidenote</em>: the &gt;0 nature of survival times is another reason why standard regression techniques such as linear regression would not be an appropriate way to analyze time-to-event data</p></li>
+</ul>
+</div>
+<div id="calculating-survival-times---lubridate" class="section level2">
+<h2>Calculating survival times - lubridate</h2>
+<p>We can also use the <code>lubridate</code> package to calculate the number of years from surgery to death:</p>
+<pre class="r"><code>library(lubridate)
+
+df &lt;- df %&gt;% 
+    mutate(os_yrs_opt2 = 
+               as.duration(proc_date %--% last_status_date) /
+               dyears(1))</code></pre>
+<pre class="r"><code>summary(df$os_yrs_opt2)</code></pre>
+<pre><code>##     Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+##  0.00274  1.69041  3.78904  4.77818  7.14247 17.40822</code></pre>
+<ul>
+<li>Here the operator <code>%--%</code> is used to designate a time interval, which is then converted to the number of elapsed seconds using <code>as.duration</code> and finally converted to years by dividing by <code>dyears(1)</code>, which gives the number of seconds in a year.</li>
+<li>If you look closely you will see the result differs slightly from the previous result due to rounding differences, but nothing that would impact our results</li>
+<li><em>Note</em>: we need to load the <code>lubridate</code> package using a call to <code>library</code> in order to be able to access the special operators (similar to situation with pipes)</li>
+</ul>
+</div>
+</div>
+<div id="analyzing-survival-data" class="section level1 center">
+<h1>Analyzing survival data</h1>
+<div id="questions-of-interest-1" class="section level2">
+<h2>Questions of interest</h2>
+<p>Recall the questions of interest:</p>
+<ol style="list-style-type: decimal">
+<li>What is the probability of surviving to a certain point in time?</li>
+<li>What is the average survival time?</li>
+</ol>
+</div>
+<div id="creating-survival-objects" class="section level2">
+<h2>Creating survival objects</h2>
+<p>The Kaplan-Meier method is the most common way to estimate survival times and probabilities. It is a non-parametric approach that results in a step function, where there is a step down each time an event occurs.</p>
+<ul>
+<li>The <code>Surv</code> function from the <code>survival</code> package creates a survival object for use as the response in a model formula. There will be one entry for each subject that is the survival time, which is followed by a <code>+</code> if the subject was censored. Let’s look at the first 10 observations:</li>
+</ul>
+<pre class="r"><code>survival::Surv(df$os_yrs, df$os)[1:10]</code></pre>
+<pre><code>##  [1]  1.569863  10.243701+  3.945205   3.326027   8.547945+ 10.180313+
+##  [7]  5.013699+  9.520548+  8.117808   4.805479+</code></pre>
+</div>
+<div id="estimating-survival-curves-with-the-kaplan-meier-method" class="section level2">
+<h2>Estimating survival curves with the Kaplan-Meier method</h2>
+<ul>
+<li>The <code>survival::survfit</code> function creates survival curves based on a formula. Let’s generate the overall survival curve for the entire cohort, assign it to object <code>f1</code>, and look at the <code>names</code> of that object:</li>
+</ul>
+<pre class="r"><code>f1 &lt;- survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df)
+names(f1)</code></pre>
+<pre><code>##  [1] &quot;n&quot;         &quot;time&quot;      &quot;n.risk&quot;    &quot;n.event&quot;   &quot;n.censor&quot; 
+##  [6] &quot;surv&quot;      &quot;type&quot;      &quot;std.err&quot;   &quot;lower&quot;     &quot;upper&quot;    
+## [11] &quot;conf.type&quot; &quot;conf.int&quot;  &quot;call&quot;</code></pre>
+<p>Some key components of this <code>survfit</code> object that will be used to create survival curves include:</p>
+<ul>
+<li><code>time</code>, which contains the start and endpoints of each time interval</li>
+<li><code>surv</code>, which contains the survival probability corresponding to each <code>time</code></li>
+</ul>
+</div>
+<div id="kaplan-meier-plot---base-r" class="section level2">
+<h2>Kaplan-Meier plot - base R</h2>
+<p>Now we plot the <code>survfit</code> object in base <code>R</code> to get the Kaplan-Meier plot:</p>
+<pre class="r"><code>plot(survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df), 
+     xlab = &quot;Years&quot;, 
+     ylab = &quot;Overall survival probability&quot;)</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<ul>
+<li>The default plot in base <code>R</code> shows the step function (solid line) with associated confidence intervals (dotted lines). Note that the tick marks for censored patients are not shown by default, but could be added using <code>mark.time = TRUE</code></li>
+</ul>
+</div>
+<div id="kaplan-meier-plot---ggsurvplot" class="section level2">
+<h2>Kaplan-Meier plot - ggsurvplot</h2>
+<p>Alternatively, the <code>ggsurvplot</code> function from the <code>survminer</code> package is built on <code>ggplot2</code>, and can be used to create Kaplan-Meier plots:</p>
+<pre class="r"><code>survminer::ggsurvplot(
+    fit = survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df), 
+    xlab = &quot;Years&quot;, 
+    ylab = &quot;Overall survival probability&quot;)</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<ul>
+<li>The default plot using <code>survminer::ggsurvplot</code> shows the step function (solid line) with associated confidence bands (shaded area). The tick marks for censored patients are shown by default, somewhat obscuring the line itself in this example, and could be supressed using <code>censor = FALSE</code></li>
+</ul>
+</div>
+<div id="estimating-x-year-survival" class="section level2">
+<h2>Estimating <span class="math inline">\(x\)</span>-year survival</h2>
+<p>One quantity often of interest in a survival analysis is the probability of surviving a certain number (<span class="math inline">\(x\)</span>) of years.</p>
+<p>For example, to estimate the probability of survivng to 5 years, use <code>summary</code> with the <code>times</code> argument:</p>
+<pre class="r"><code>summary(survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df), 
+        times = 5)</code></pre>
+<pre><code>## Call: survfit(formula = survival::Surv(os_yrs, os) ~ 1, data = df)
+## 
+##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
+##     5    854     297    0.808  0.0104        0.788        0.828</code></pre>
+<p>We find that the 5-year probability of survival in this study is 81%. The associated lower and upper bounds of the 95% confidence interval are also displayed.</p>
+</div>
+<div id="x-year-survival-and-the-survival-curve" class="section level2">
+<h2><span class="math inline">\(x\)</span>-year survival and the survival curve</h2>
+<p>The 5-year survival probability is the point on the y-axis that corresponds to 5 years on the x-axis for the survival curve.</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+</div>
+<div id="x-year-survival-is-often-estimated-incorrectly" class="section level2">
+<h2><span class="math inline">\(x\)</span>-year survival is often estimated incorrectly</h2>
+<p>What happens if you use a “naive” estimate?</p>
+<p>297 of the 2119 patients died by 5 years so:</p>
+<p><span class="math display">\[\Big(1 - \frac{297}{2119}\Big) \times 100 = 86\%\]</span></p>
+<ul>
+<li><p>You get an <strong>incorrect</strong> estimate of the 5-year probability of survival when you ignore the fact that 968 patients were censored before 5 years.</p></li>
+<li><p>Recall the <strong>correct</strong> estimate of the 5-year probability of survival was 81%.</p></li>
+</ul>
+</div>
+<div id="estimating-median-survival-time" class="section level2">
+<h2>Estimating median survival time</h2>
+<p>Another quantity often of interest in a survival analysis is the average survival time, which we quantify using the median (survival times are not expected to be normally distributed so the mean is not an appropriate summary).</p>
+<p>We can obtain this directly from our <code>survfit</code> object:</p>
+<pre class="r"><code>survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df)</code></pre>
+<pre><code>## Call: survfit(formula = survival::Surv(os_yrs, os) ~ 1, data = df)
+## 
+##       n  events  median 0.95LCL 0.95UCL 
+##  2119.0   476.0    12.7    11.9    13.8</code></pre>
+<p>We see the median survival time is 12.7 years. The lower and upper bounds of the 95% confidence interval are also displayed.</p>
+</div>
+<div id="median-survival-time-and-the-survival-curve" class="section level2">
+<h2>Median survival time and the survival curve</h2>
+<p>Median survival is the time corresponding to a survival probability of 0.5:</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+</div>
+<div id="median-survival-is-often-estimated-incorrectly" class="section level2">
+<h2>Median survival is often estimated incorrectly</h2>
+<p>What happens if you use a “naive” estimate?</p>
+<p>Summarize the median survival time among the 476 patients who died:</p>
+<pre class="r"><code>df$os_yrs[df$os == 1] %&gt;% 
+    median</code></pre>
+<pre><code>## [1] 3.493046</code></pre>
+<ul>
+<li><p>You get an <strong>incorrect</strong> estimate of median survival time of 3.5 years when you ignore the fact that censored patients also contribute follow-up time.</p></li>
+<li><p>Recall the <strong>correct</strong> estimate of median survival time is 12.7 years.</p></li>
+</ul>
+</div>
+</div>
+<div id="comparing-survival-times-between-groups" class="section level1 center">
+<h1>Comparing survival times between groups</h1>
+<div id="questions-of-interest-with-respect-to-between-group-differences" class="section level2">
+<h2>Questions of interest with respect to between-group differences</h2>
+<p>Is there a difference in survival probability between groups?</p>
+<p>From our example: does the probability of survival differ according to BMI among kidney cancer patients?</p>
+</div>
+<div id="kaplan-meier-plot-by-group" class="section level2">
+<h2>Kaplan-Meier plot by group</h2>
+<p>We can add a covariate to the right-hand side of the <code>survival::survfit</code> object to obtain a stratified Kaplan-Meier plot.</p>
+<p>Let’s also look at some other customization we can do with <code>survminer::ggsurvplot</code>.</p>
+<pre class="r"><code>survminer::ggsurvplot(
+    fit = survival::survfit(survival::Surv(os_yrs, os) ~ bmi_cat, data = df), 
+    xlab = &quot;Years&quot;,
+    ylab = &quot;Overall survival probability&quot;,
+    legend.title = &quot;BMI&quot;,
+    legend.labs = c(&quot;Normal&quot;, &quot;Overweight&quot;, &quot;Obese&quot;),
+    break.x.by = 5, 
+    palette = ezfun::msk_palette(&quot;contrast&quot;), 
+    censor = FALSE,
+    risk.table = TRUE,
+    risk.table.y.text = FALSE)</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<ul>
+<li>By looking at the curves, we can see that normal BMI patients have the lowest overall survival probability, followed by overweight BMI patients and obese BMI patients.</li>
+<li>The risk table below the plot shows us the number of patients at risk at certain time points, which can give an idea of how much information is being used to calculate the estimates at each time</li>
+</ul>
+</div>
+<div id="x-year-survival-probability-by-group" class="section level2">
+<h2><span class="math inline">\(x\)</span>-year survival probability by group</h2>
+<p>As before, we can get an estimate of, for example, 5-year survival by using <code>summary</code> with the <code>times</code> argument in our <code>survival::survfit</code> object:</p>
+<pre class="r"><code>summary(survival::survfit(survival::Surv(os_yrs, os) ~ bmi_cat, data = df), 
+        times = 5)</code></pre>
+<pre><code>## Call: survfit(formula = survival::Surv(os_yrs, os) ~ bmi_cat, data = df)
+## 
+##                 bmi_cat=1 
+##         time       n.risk      n.event     survival      std.err 
+##       5.0000     166.0000      88.0000       0.7288       0.0253 
+## lower 95% CI upper 95% CI 
+##       0.6808       0.7802 
+## 
+##                 bmi_cat=2 
+##         time       n.risk      n.event     survival      std.err 
+##       5.0000     335.0000     114.0000       0.8094       0.0166 
+## lower 95% CI upper 95% CI 
+##       0.7775       0.8426 
+## 
+##                 bmi_cat=3 
+##         time       n.risk      n.event     survival      std.err 
+##       5.0000     353.0000      95.0000       0.8476       0.0149 
+## lower 95% CI upper 95% CI 
+##       0.8188       0.8773</code></pre>
+<p>To summarize:</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">BMI</th>
+<th align="left">5-year estimate (95% CI)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Normal</td>
+<td align="left">0.73 (0.68-0.78)</td>
+</tr>
+<tr class="even">
+<td align="left">Overweight</td>
+<td align="left">0.81 (0.78-0.84)</td>
+</tr>
+<tr class="odd">
+<td align="left">Obese</td>
+<td align="left">0.85 (0.82-0.88)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="log-rank-test-for-between-group-significance-test" class="section level2">
+<h2>Log-rank test for between-group significance test</h2>
+<ul>
+<li>We can conduct between-group significance tests using a log-rank test.</li>
+<li>The log-rank test equally weights observations over the entire follow-up time and is the most common way to compare survival times between groups.</li>
+<li>There are versions that more heavily weight the early or late follow-up that could be more appropriate depending on the research question.</li>
+</ul>
+<p>We get the log-rank p-value using the <code>survival::survdiff</code> function:</p>
+<pre class="r"><code>survival::survdiff(survival::Surv(df$os_yrs, df$os) ~ df$bmi_cat)</code></pre>
+<pre><code>## Call:
+## survival::survdiff(formula = survival::Surv(df$os_yrs, df$os) ~ 
+##     df$bmi_cat)
+## 
+##                N Observed Expected (O-E)^2/E (O-E)^2/V
+## df$bmi_cat=1 420      132      100    9.9411   12.6414
+## df$bmi_cat=2 806      182      184    0.0171    0.0279
+## df$bmi_cat=3 893      162      192    4.6359    7.7841
+## 
+##  Chisq= 14.6  on 2 degrees of freedom, p= 7e-04</code></pre>
+<p>And we see that the p-value is &lt;.001, indicating a significant difference in overall survival according to BMI.</p>
+</div>
+</div>
+<div id="regression" class="section level1 center">
+<h1>Regression</h1>
+<div id="the-cox-regression-model" class="section level2">
+<h2>The Cox regression model</h2>
+<p>We may want to quantify an effect size for a single variable, or include more than one variable into a regression model to account for the effects of multiple variables.</p>
+<p>The Cox regression model is a semi-parametric model that can be used to fit univariable and multivariable regression models that have survival outcomes.</p>
+<p>Some key assumptions of the model:</p>
+<ul>
+<li>non-informative censoring</li>
+<li>proportional hazards</li>
+</ul>
+<p><em>Note</em>: parametric regression models for survival outcomes are also available, but I won’t cover them in detail here.</p>
+</div>
+<div id="cox-regression-example-using-a-single-covariate" class="section level2">
+<h2>Cox regression example using a single covariate</h2>
+<p>We can fit regression models for survival data using the <code>survival::coxph</code> function, which takes a <code>survival::Surv</code> object on the left hand side and has standard syntax for regression formulas in <code>R</code> on the right hand side.</p>
+<pre class="r"><code>survival::coxph(survival::Surv(os_yrs, os) ~ factor(bmi_cat), data = df)</code></pre>
+<p>We can see a tidy version of the output using the <code>tidy</code> function from the <code>broom</code> package:</p>
+<pre class="r"><code>broom::tidy(survival::coxph(survival::Surv(os_yrs, os) ~ factor(bmi_cat), 
+                            data = df))</code></pre>
+<pre><code>##               term   estimate std.error statistic      p.value   conf.low
+## 1 factor(bmi_cat)2 -0.2844188 0.1144802 -2.484436 0.0129756683 -0.5087958
+## 2 factor(bmi_cat)3 -0.4441733 0.1174706 -3.781144 0.0001561095 -0.6744115
+##    conf.high
+## 1 -0.0600417
+## 2 -0.2139351</code></pre>
+</div>
+<div id="hazard-ratios" class="section level2">
+<h2>Hazard ratios</h2>
+<p>The quantity of interest from a Cox regression model is a <strong>hazard ratio (HR)</strong>.</p>
+<p>If you have a regression parameter <span class="math inline">\(\beta\)</span> (from column <code>estimate</code> in our <code>survival::coxph</code>) then HR = <span class="math inline">\(\exp(\beta)\)</span>.</p>
+<p>For example, from our example we obtain the regression parameter <span class="math inline">\(\beta_1=-0.4441733\)</span> for obese vs normal BMI, so we have HR = <span class="math inline">\(\exp(\beta_1)=0.64\)</span>.</p>
+<p>A HR &lt; 1 indicates reduced hazard of death whereas a HR &gt; 1 indicates an increased hazard of death.</p>
+<p>So we would say that obese BMI kidney cancer patients have 0.64 times reduced hazard of death as compared to normal BMI kidney cancer patients.</p>
+</div>
+<div id="summary" class="section level2">
+<h2>Summary</h2>
+<ul>
+<li>Time-to-event data is common</li>
+<li>Survival analysis techniques are required to account for censored data</li>
+<li>The <code>survival</code> package provides tools for survival analysis, including the <code>Surv</code> and <code>survfit</code> functions</li>
+<li>The <code>survminer</code> package allows for customization of Kaplan-Meier plots based on <code>ggplot2</code></li>
+<li>Between-group comparisons can be made with the log-rank test using <code>survival::survdiff</code></li>
+<li>Multiavariable Cox regression analysis can be accomplished using <code>survival::coxph</code></li>
+</ul>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
