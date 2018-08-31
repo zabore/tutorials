@@ -454,7 +454,7 @@ div.tocify {
 <ol style="list-style-type: decimal">
 <li>“proc_date”: Date of surgery</li>
 <li>“last_status_date”: Date of death or last follow-up</li>
-<li>“lat_status”: Character variable denoting whether the patient is alive, and the cause of death if dead</li>
+<li>“last_status”: Character variable denoting whether the patient is alive, and the cause of death if dead</li>
 </ol>
 <p>The first step is to make sure these are formatted as dates in R.</p>
 </div>
@@ -463,7 +463,7 @@ div.tocify {
 <p>First let’s look at the current format of our surgery date:</p>
 <pre class="r"><code>str(df$proc_date)</code></pre>
 <pre><code>##  chr [1:2119] &quot;20NOV1997&quot; &quot;22OCT2001&quot; &quot;21FEB2003&quot; &quot;04MAR2002&quot; ...</code></pre>
-<p>We see this is a character variable in a certain format, but we need it to be a</p>
+<p>We see this is a character variable in a certain format, but we need it to be formatted as a Date.</p>
 <pre class="r"><code>df &lt;- df %&gt;% 
     mutate(proc_date_format1 = as.Date(proc_date, format = &quot;%d%b%Y&quot;))</code></pre>
 <p>And after formatting we see that surgery date has Date format now:</p>

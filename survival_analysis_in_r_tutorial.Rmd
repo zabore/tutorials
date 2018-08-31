@@ -205,7 +205,7 @@ Data will often come with start and end dates rather than pre-calculated surviva
 
 1. "proc_date": Date of surgery
 2. "last_status_date": Date of death or last follow-up
-3. "lat_status": Character variable denoting whether the patient is alive, and the cause of death if dead
+3. "last_status": Character variable denoting whether the patient is alive, and the cause of death if dead
 
 The first step is to make sure these are formatted as dates in R. 
 
@@ -218,8 +218,7 @@ First let's look at the current format of our surgery date:
 str(df$proc_date)
 ```
 
-We see this is a character variable in a certain format, but we need it to be a 
-
+We see this is a character variable in a certain format, but we need it to be formatted as a Date.
 
 ```{r format_date1}
 df <- df %>% 
