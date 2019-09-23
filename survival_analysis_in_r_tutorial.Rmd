@@ -10,31 +10,58 @@ This tutorial provides an introduction to survival analysis, and to conducting a
 
 This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center R-Presenters series on August 30, 2018.
 
+It was then modified for a more extensive training at Memorial Sloan Kettering Cancer Center in March, 2019.
+
 
 ```{r setup, include=FALSE}
 # load packages
 library(knitr)
 library(tidyverse)
-library(broom)
+library(lubridate)
+library(survival)
+library(survminer)
 
-# load my package to access msk_palette with MSK brand colors
-devtools::install_github("zabore/ezfun")
+# set output options
+opts_chunk$set(fig.width = 5, 
+               fig.height = 4
+)
 ```
 
 
-```{r loaddata, echo = FALSE}
-load(here::here("data", "survival_data_example.RData"))
+# Part 1: Introduction to Survival Analysis
+
+This presentation will cover some basics of survival analysis, and the following series tutorial papers can be helpful for additional reading:
+
+> Clark, T., Bradburn, M., Love, S., & Altman, D. (2003). Survival analysis part I: Basic concepts and first analyses. 232-238. ISSN 0007-0920.
+
+> M J Bradburn, T G Clark, S B Love, & D G Altman. (2003). Survival Analysis Part II: Multivariate data analysis – an introduction to concepts and methods. British Journal of Cancer, 89(3), 431-436.
+
+> Bradburn, M., Clark, T., Love, S., & Altman, D. (2003). Survival analysis Part III: Multivariate data analysis -- choosing a model and assessing its adequacy and fit. 89(4), 605-11.
+
+> Clark, T., Bradburn, M., Love, S., & Altman, D. (2003). Survival analysis part IV: Further concepts and methods in survival analysis. 781-786. ISSN 0007-0920.
+
+
+## Packages
+
+Some packages we'll be using today include:
+
+- `lubridate`
+- `survival`
+- `survminer`
+
+```{r}
+library(survival)
+library(survminer)
+library(lubridate)
 ```
 
-
-# Introduction {.center}
 
 
 ## What is survival data?
 
-Time-to-event data that consists of a distinct start time and end time.
+Time-to-event data that consist of a distinct start time and end time.
 
-Examples from cancer:
+Examples from cancer
 
 - Time from surgery to death
 - Time from start of treatment to progression
@@ -43,7 +70,7 @@ Examples from cancer:
 
 ## Examples from other fields
 
-Time-to-event data is common in many fields including, but not limited to:
+Time-to-event data are common in many fields including, but not limited to
 
 - Time from HIV infection to development of AIDS
 - Time to heart attack
@@ -54,7 +81,7 @@ Time-to-event data is common in many fields including, but not limited to:
 
 ## Aliases for survival analysis
 
-Because survival analysis is common in many other fields, it also goes by other names:
+Because survival analysis is common in many other fields, it also goes by other names
 
 - Reliability analysis
 - Duration analysis
@@ -62,52 +89,53 @@ Because survival analysis is common in many other fields, it also goes by other 
 - Time-to-event analysis
 
 
-## Questions of interest
+## The lung dataset
 
-The two most common questions I encounter related to survival analysis are:
+The `lung` dataset is available from the `survival` package in `R`. The data contain subjects with advanced lung cancer from the North Central Cancer Treatment Group. Some variables we will use to demonstrate methods today include
 
-1. What is the probability of survival to a certain point in time?
-2. What is the average survival time?
-
-
-# Censoring {.center}
+- time:	Survival time in days
+- status:	censoring status 1=censored, 2=dead
+- sex: Male=1 Female=2
 
 
 ## What is censoring?
 
-In survival analysis it is common for the exact event time to be unknown, or unobserved, which is called censoring. A subject may be censored due to:
+```{r trial_anatomy, echo = FALSE}
+include_graphics(here::here("img", "trial_anatomy.png"))
+```
+
+> RICH JT, NEELY JG, PANIELLO RC, VOELKER CCJ, NUSSENBAUM B, WANG EW. A PRACTICAL GUIDE TO UNDERSTANDING KAPLAN-MEIER CURVES. Otolaryngology head and neck surgery: official journal of American Academy of Otolaryngology Head and Neck Surgery. 2010;143(3):331-336. doi:10.1016/j.otohns.2010.05.007.
+
+
+## Types of censoring
+
+A subject may be censored due to:
 
 - Loss to follow-up
 - Withdrawal from study
 - No event by end of fixed study period
 
-Specifically these are examples of **right** censoring. Other common types of censoring include:
+Specifically these are examples of **right** censoring. 
 
-- Left
-- Interval
+Left censoring and interval censoring are also possible, and methods exist to analyze this type of data, but this training will be limited to right censoring.
 
 
 ## Censored survival data
 
-When the exact event time is unknown then some patients are censored, and survival analysis methods are required.
-
 ```{r swimmer, echo = FALSE}
 # make fake data
 set.seed(20180809)
-fkdt <- data_frame(Subject = as.factor(1:10), 
+fkdt <- tibble(Subject = as.factor(1:10), 
                    Years = sample(4:20, 10, replace = T),
                    censor = sample(c("Censor", rep("Event", 2)), 10, 
                                    replace = T)) 
-# %>% mutate(Subject = fct_reorder(Subject, Years, desc = TRUE))
 
 # plot with shapes to indicate censoring or event
 ggplot(fkdt, aes(Subject, Years)) + 
-    geom_bar(stat = "identity", width = 0.5, 
-             fill = ezfun::msk_palette("main")[3]) + 
+    geom_bar(stat = "identity", width = 0.5) + 
     geom_point(data = fkdt, 
                aes(Subject, Years, color = censor, shape = censor), 
                size = 6) +
-    scale_color_manual(values = ezfun::msk_palette("contrast")[2:3]) +
     coord_flip() +
     theme_minimal() + 
     theme(legend.title = element_blank(),
@@ -116,40 +144,22 @@ ggplot(fkdt, aes(Subject, Years)) +
 
 In this example, how would we compute the proportion who are event-free at 10 years?
 
-- Subjects 2, 3, 5, 6, 8, 9, and 10 were all event-free at 10 years.
-- Subjects 4 and 7 had the event before 10 years.
-- Subject 1 was censored before 10 years, so we don't know whether they had the event or not by 10 years. How do we incorporate this subject into our estimate?
+Subjects 2, 3, 5, 6, 8, 9, and 10 were all **event-free at 10 years**. Subjects 4 and 7 had the **event before 10 years**. Subject 1 was **censored before 10 years**, so we don't know whether they had the event or not by 10 years - how do we incorporate this subject into our estimate?
 
 
-## We can incorporate censored data using survival analysis techniques
+## Distribution of follow-up time
 
-Toy example of a Kaplan-Meier curve for this simple data (details to follow):
+- Censored subjects still provide information so must be appropriately included in the analysis
+- Distribution of follow-up times is skewed, and may differ between censored patients and those with events
+- Follow-up times are always positive
 
-```{r echo = FALSE}
-library(survival)
-plot(survfit(Surv(Years, ifelse(censor == "Event", 1, 0)) ~ 1, data = fkdt), 
-     xlab = "Years", 
-     ylab = "Survival probability", 
-     mark.time = T, 
-     conf.int = FALSE)
-```
-
-- Horizontal lines represent survival duration for the interval
-- An interval is terminated by an event
-- The height of vertical lines show the change in cumulative probability
-- Censored observations, indicated by tick marks, reduces the cumulative survival between intervals
-
-
-## Danger of ignoring censoring
-
-[Case study: musicians and mortality](https://callingbullshit.org/case_studies/case_study_musician_mortality.html)
-
-Conclusion: Musical genre is associated with early death among musicians.
-
-Problem: this graph does not account for the right-censored nature of the data.
-
-```{r echo = FALSE}
-include_graphics("./img/musician_death_graph.jpg")
+```{r fuptimes, echo = FALSE}
+ggplot(lung, aes(x = time, fill = factor(status))) +
+  geom_histogram(bins = 25, alpha = 0.6, position = "identity") +
+  scale_fill_manual(values = c("blue", "red"), labels = c("Censored", "Dead")) +
+  ezfun::theme_ezbasic() +
+  labs(x = "Days",
+       y = "Count")
 ```
 
 
@@ -162,190 +172,142 @@ For subject $i$:
 3. Event indicator $\delta_i$: 
 
     - 1 if event observed (i.e. $T_i \leq C_i$)
-    - 0 if censored (i.e. $T_i > C_i$)
+    - 0 if censored (i.e. $T_i > C_i$) 
     
 4. Observed time $Y_i = \min(T_i, C_i)$
 
+The observed times and an event indicator are provided in the `lung` data
 
-# Data example {.center}
+- time:	Survival time in days ($Y_i$)
+- status:	censoring status 1=censored, 2=dead ($\delta_i$)
 
-
-## Research question of interest
-
-Investigating the "obesity paradox" in kidney cancer patients.
-
-- Increased BMI associated with risk of kidney cancer
-- Is increased BMI also associated with worse prognosis among kidney cancer patients?
-
-
-## Data structure
-
-- `r nrow(df)` kidney cancer patients 
-- Outcome: overall survival
-- Predictor: BMI
-
-```{r peekdata}
-df[, c("os_yrs", "os", "bmi_cat")] %>% 
-    head
+```{r viewlung, echo = FALSE}
+kable(head(lung))
 ```
 
-Variables:
 
-- "os_yrs": the observed time $Y_i = min(T_i, C_i)$
-- "os": the event indicator $\delta_i$
-- "bmi_cat": 1 = Normal BMI < 25, 2 = Overweight BMI 25-30, 3 = Obese BMI > 30 
+## Dealing with dates in R
 
+Data will often come with start and end dates rather than pre-calculated survival times. The first step is to make sure these are formatted as dates in R. 
 
-# Preparing data for analysis {.center}
+Let's create a small example dataset with variables `sx_date` for surgery date and `last_fup_date` for the last follow-up date.
 
+```{r datedata}
+date_ex <- 
+  tibble(
+    sx_date = c("2007-06-22", "2004-02-13", "2010-10-27"), 
+    last_fup_date = c("2017-04-15", "2018-07-04", "2016-10-31")
+    )
 
-## Dates
+date_ex
+```
 
-Data will often come with start and end dates rather than pre-calculated survival times. Our data example includes the following variables:
-
-1. "proc_date": Date of surgery
-2. "last_status_date": Date of death or last follow-up
-3. "last_status": Character variable denoting whether the patient is alive, and the cause of death if dead
-
-The first step is to make sure these are formatted as dates in R. 
+We see these are both character variables, which will often be the case, but we need them to be formatted as dates. 
 
 
 ## Formatting dates - base R
 
-First let's look at the current format of our surgery date:
-
-```{r}
-str(df$proc_date)
-```
-
-We see this is a character variable in a certain format, but we need it to be formatted as a Date.
-
 ```{r format_date1}
-df <- df %>% 
-    mutate(proc_date_format1 = as.Date(proc_date, format = "%d%b%Y"))
+date_ex %>% 
+  mutate(
+    sx_date = as.Date(sx_date, format = "%Y-%m-%d"), 
+    last_fup_date = as.Date(last_fup_date, format = "%Y-%m-%d") 
+    )
 ```
 
-And after formatting we see that surgery date has Date format now:
-
-```{r}
-str(df$proc_date_format1)
-```
-
-
-- Note that in base R the format must include the separator as well as the symbol. e.g. if your date is in format m/d/Y then you would need `format = "%m/%d/%Y"`
-
+- Note that in base `R` the format must include the separator as well as the symbol. e.g. if your date is in format m/d/Y then you would need `format = "%m/%d/%Y"`
 - See a full list of date format symbols at [https://www.statmethods.net/input/dates.html](https://www.statmethods.net/input/dates.html)
 
 
-## Formatting dates - lubridate
+## Formatting dates - lubridate package
 
-We can also use the `lubridate` package to format dates. Again we look at our original surgery date variable:
+We can also use the `lubridate` package to format dates. In this case, use the `ymd` function
 
-```{r}
-str(df$proc_date)
+```{r format_date2, message = FALSE}
+date_ex %>% 
+  mutate(
+    sx_date = ymd(sx_date), 
+    last_fup_date = ymd(last_fup_date)
+    )
 ```
 
-And now use the `lubridate::dmy` function to format this into a Date:
-
-```{r format_date2}
-df <- df %>% 
-    mutate(proc_date_format2 = lubridate::dmy(proc_date))
-```
-
-And again we see that `R` now recognizes surgery date as a Date format:
-
-```{r}
-str(df$proc_date_format2)
-```
-
-- The help page for `?ymd` will show all format options.
-
-- Note that unlike the base R option, the separators do not need to be specified
-
-
-## Event indicator
-
-Most functions used in survival analysis will also require a binary indicator of event that is:
-
-- 0 for no event
-- 1 for event
-
-Currently our data example contains a character variable indicating whehter the patient is alive, and if not indicating the cause of death, so we must create a binary indicator.
-
-```{r}
-table(df$last_status, useNA = 'ifany')
-
-df <- df %>% 
-    mutate(os_event = ifelse(last_status == "Alive", 0, 1))
-
-table(df$os_event)
-```
+- Note that unlike the base `R` option, the separators do not need to be specified
+- The help page for `?dmy` will show all format options.
 
 
 ## Calculating survival times - base R
 
-Now that we have our dates formatted, we need to calculate the difference between start and end time in some units, usually months or years.
+Now that the dates formatted, we need to calculate the difference between start and end time in some units, usually months or years. In base `R`, use `difftime` to calculate the number of days between our two dates and convert it to a numeric value using `as.numeric`. Then convert to years by dividing by `365.25`, the average number of days in a year.
 
-A base `R` solution to calculate the number of years from surgery to death:
-
-```{r echo = FALSE}
-# need to actually properly format the real dates for use
-df <- df %>% 
-    mutate(proc_date = as.Date(proc_date, format = "%d%b%Y"),
-           last_status_date = as.Date(last_status_date, format = "%d%b%Y"))
+```{r format_for_real, echo = FALSE}
+# First need to actually format the dates in the date_ex dataset
+date_ex <- 
+  date_ex %>% 
+  mutate(last_fup_date = ymd(last_fup_date), 
+         sx_date = ymd(sx_date))
 ```
-
 
 ```{r difftime_ex1}
-df <- df %>% 
-    mutate(os_yrs_opt1 = as.numeric(difftime(last_status_date, proc_date, 
-                                             units = "days")) / 365.25)
+date_ex %>% 
+  mutate(
+    os_yrs = 
+      as.numeric(
+        difftime(last_fup_date, 
+                 sx_date, 
+                 units = "days")) / 365.25
+    )
 ```
-
-
-```{r}
-summary(df$os_yrs_opt1)
-```
-
-
-- Here we use `difftime` to calculate the number of days between our two dates and convert it to a numeric value using `as.numeric`. We then convert to years by dividing by 365.25, the average number of days in a year.
-
-- *Sidenote*: the >0 nature of survival times is another reason why standard regression techniques such as linear regression would not be an appropriate way to analyze time-to-event data
 
 
 ## Calculating survival times - lubridate
 
-We can also use the `lubridate` package to calculate the number of years from surgery to death:
+Using the `lubridate` package, the operator `%--%` designates a time interval, which is then converted to the number of elapsed seconds using `as.duration` and finally converted to years by dividing by `dyears(1)`, which gives the number of seconds in a year.
 
 ```{r difftime_ex2, message = FALSE, warning = FALSE}
-library(lubridate)
-
-df <- df %>% 
-    mutate(os_yrs_opt2 = 
-               as.duration(proc_date %--% last_status_date) /
-               dyears(1))
+date_ex %>% 
+  mutate(
+    os_yrs = 
+      as.duration(sx_date %--% last_fup_date) / dyears(1)
+    )
 ```
 
-
-```{r}
-summary(df$os_yrs_opt2)
-```
-
-
-- Here the operator `%--%` is used to designate a time interval, which is then converted to the number of elapsed seconds using `as.duration` and finally converted to years by dividing by `dyears(1)`, which gives the number of seconds in a year.
-- If you look closely you will see the result differs slightly from the previous result due to rounding differences, but nothing that would impact our results
 - *Note*: we need to load the `lubridate` package using a call to `library` in order to be able to access the special operators (similar to situation with pipes)
 
 
-# Analyzing survival data {.center}
+## Event indicator
+
+For the components of survival data I mentioned the event indicator:
+
+Event indicator $\delta_i$: 
+
+  - 1 if event observed (i.e. $T_i \leq C_i$)
+  - 0 if censored (i.e. $T_i > C_i$) 
+
+However, in `R` the `Surv` function will also accept TRUE/FALSE (TRUE = event) or 1/2 (2 = event).
+
+In the `lung` data, we  have:
+
+- status:	censoring status 1=censored, 2=dead
 
 
-## Questions of interest
+## Survival function
 
-Recall the questions of interest:
+The probability that a subject will survive beyond any given specified time
 
-1. What is the probability of surviving to a certain point in time?
-2. What is the average survival time?
+$$S(t) = Pr(T>t) = 1 - F(t)$$
+
+$S(t)$: survival function
+$F(t) = Pr(T \leq t)$: cumulative distribution function
+
+In theory the survival function is smooth; in practice we observe events on a discrete time scale.
+
+
+## Survival probability
+
+- **Survival probability** at a certain time, $S(t)$, is a conditional probability of surviving beyond that time, given that an individual has survived just prior to that time.
+- Can be estimated as the number of patients who are alive without loss to follow-up at that time, divided by the number of patients who were alive just prior to that time
+- The **Kaplan-Meier** estimate of survival probability is the product of these conditional probabilities up until that time
+- At time 0, the survival probability is 1, i.e. $S(t_0) = 1$
 
 
 ## Creating survival objects
@@ -354,17 +316,17 @@ The Kaplan-Meier method is the most common way to estimate survival times and pr
 
 - The `Surv` function from the `survival` package creates a survival object for use as the response in a model formula. There will be one entry for each subject that is the survival time, which is followed by a `+` if the subject was censored. Let's look at the first 10 observations:
 
-```{r}
-survival::Surv(df$os_yrs, df$os)[1:10]
+```{r survfunc}
+Surv(lung$time, lung$status)[1:10]
 ```
 
 
 ## Estimating survival curves with the Kaplan-Meier method
 
-- The `survival::survfit` function creates survival curves based on a formula. Let's generate the overall survival curve for the entire cohort, assign it to object `f1`, and look at the `names` of that object:
+- The `survfit` function creates survival curves based on a formula. Let's generate the overall survival curve for the entire cohort, assign it to object `f1`, and look at the `names` of that object:
 
-```{r}
-f1 <- survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df)
+```{r lung_survfit}
+f1 <- survfit(Surv(time, status) ~ 1, data = lung)
 names(f1)
 ```
 
@@ -376,64 +338,77 @@ Some key components of this `survfit` object that will be used to create surviva
 
 ## Kaplan-Meier plot - base R
 
-Now we plot the `survfit` object in base `R` to get the Kaplan-Meier plot:
+Now we plot the `survfit` object in base `R` to get the Kaplan-Meier plot.
 
 ```{r}
-plot(survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df), 
-     xlab = "Years", 
+plot(survfit(Surv(time, status) ~ 1, data = lung), 
+     xlab = "Days", 
      ylab = "Overall survival probability")
 ```
 
-- The default plot in base `R` shows the step function (solid line) with associated confidence intervals (dotted lines). Note that the tick marks for censored patients are not shown by default, but could be added using `mark.time = TRUE`
+- The default plot in base `R` shows the step function (solid line) with associated confidence intervals (dotted lines)
+- Horizontal lines represent survival duration for the interval
+- An interval is terminated by an event
+- The height of vertical lines show the change in cumulative probability
+- Censored observations, indicated by tick marks, reduce the cumulative survival between intervals. (*Note* the tick marks for censored patients are not shown by default, but could be added using the option `mark.time = TRUE`)
 
 
 ## Kaplan-Meier plot - ggsurvplot
 
-Alternatively, the `ggsurvplot` function from the `survminer` package is built on `ggplot2`, and can be used to create Kaplan-Meier plots:
+Alternatively, the `ggsurvplot` function from the `survminer` package is built on `ggplot2`, and can be used to create Kaplan-Meier plots. Checkout the [cheatsheet](https://rpkgs.datanovia.com/survminer/survminer_cheatsheet.pdf) for the `survminer` package.
 
 ```{r, message = FALSE, warning = FALSE}
-survminer::ggsurvplot(
-    fit = survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df), 
-    xlab = "Years", 
+ggsurvplot(
+    fit = survfit(Surv(time, status) ~ 1, data = lung), 
+    xlab = "Days", 
     ylab = "Overall survival probability")
 ```
 
-- The default plot using `survminer::ggsurvplot` shows the step function (solid line) with associated confidence bands (shaded area). The tick marks for censored patients are shown by default, somewhat obscuring the line itself in this example, and could be supressed using `censor = FALSE`
+- The default plot using `ggsurvplot` shows the step function (solid line) with associated confidence bands (shaded area). 
+- The tick marks for censored patients are shown by default, somewhat obscuring the line itself in this example, and could be supressed using the option `censor = FALSE`
+
 
 ## Estimating $x$-year survival
 
-One quantity often of interest in a survival analysis is the probability of surviving a certain number ($x$) of years.
+One quantity often of interest in a survival analysis is the probability of surviving beyond a certain number ($x$) of years.
 
-For example, to estimate the probability of survivng to 5 years, use `summary` with the `times` argument:
+For example, to estimate the probability of survivng to $1$ year, use `summary` with the `times` argument (*Note* the `time` variable in the `lung` data is actually in days, so we need to use `times = 365.25`)
 
-```{r}
-summary(survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df), 
-        times = 5)
+```{r 5yrest}
+summary(survfit(Surv(time, status) ~ 1, data = lung), times = 365.25)
 ```
 
-We find that the 5-year probability of survival in this study is `r round(summary(f1, times = 5)$surv * 100)`%. The associated lower and upper bounds of the 95\% confidence interval are also displayed.
+We find that the $1$-year probability of survival in this study is `r round(summary(survfit(Surv(time, status) ~ 1, data = lung), times = 365.25)$surv * 100)`%. 
+
+The associated lower and upper bounds of the 95\% confidence interval are also displayed.
 
 
 ## $x$-year survival and the survival curve
 
-The 5-year survival probability is the point on the y-axis that corresponds to 5 years on the x-axis for the survival curve.
+The $1$-year survival probability is the point on the y-axis that corresponds to $1$ year on the x-axis for the survival curve.
 
-```{r, message = FALSE, echo = FALSE}
-survplot1 <- survminer::ggsurvplot(survival::survfit(
-    survival::Surv(os_yrs, os) ~ 1, data = df), 
-           xlab = "Years",
-           ylab = "Overall survival probability",
-           break.x.by = 5, 
-           palette = ezfun::msk_palette("main")) +
-    geom_segment(x = 5, xend = 5, y = -1, yend = 0.808, col = 2, lwd = 2) +
-    geom_segment(x = 5, xend = -0.7, y = 0.808, yend = 0.808, 
-                 arrow = arrow(length = unit(0.3, "inches")), col = 2, 
-                 lwd = 2)
+```{r, message = FALSE, echo = FALSE, fig.height = 5}
+plot_main <- 
+  ggsurvplot(
+    data = lung, 
+    fit = f1,
+    xlab = "Months",
+    legend = "none",
+    xscale = 30.4,
+    break.x.by = 182.4, 
+    risk.table = TRUE,
+    risk.table.y.text = FALSE)
 
-survplot1$plot <- survplot1$plot +
-    annotate("text", x = 0.2, y = 0.7, label = "81%", size = 6, col = 2)
+plot1 <- plot_main
 
-survplot1
+plot1$plot <- plot1$plot + 
+  geom_segment(x = 365.25, xend = 365.25, y = -0.05, yend = 0.4092416, 
+               size = 1.5) +
+  geom_segment(x = 365.25, xend = -40, y = 0.4092416, yend = 0.4092416,
+               size = 1.5, 
+               arrow = arrow(length = unit(0.2, "inches"))) 
+
+plot1
 ```
 
 
@@ -441,49 +416,67 @@ survplot1
 
 What happens if you use a "naive" estimate? 
 
-`r table(df$os[df$os_yrs <= 5])[2]` of the `r nrow(df)` patients died by 5 years so:
+`r table(lung$status[lung$time <= 365.25])[2]` of the `r nrow(lung)` patients died by $1$ year so:
 
-$$\Big(1 - \frac{297}{2119}\Big) \times 100 = 86\%$$
+$$\Big(1 - \frac{121}{228}\Big) \times 100 = 47\%$$
+- You get an **incorrect** estimate of the $1$-year probability of survival when you ignore the fact that `r table(lung$status[lung$time <= 365.25])[1]` patients were censored before $1$ year.
 
-- You get an **incorrect** estimate of the 5-year probability of survival when you ignore the fact that `r table(df$os[df$os_yrs <= 5])[1]` patients were censored before 5 years.
+- Recall the **correct** estimate of the $1$-year probability of survival was `r round(summary(f1, times = 365.25)$surv * 100)`%.
 
-- Recall the **correct** estimate of the 5-year probability of survival was `r round(summary(f1, times = 5)$surv * 100)`%.
+
+## Impact on $x$-year survival of ignoring censoring
+
+- Imagine two studies, each with 228 subjects. There are 165 deaths in each study. No censoring in one (orange line), 63 patients censored in the other (blue line)
+- Ignoring censoring leads to an **overestimate** of the overall survival probability, because the censored subjects only contribute information for **part** of the follow-up time, and then fall out of the risk set, thus pulling down the cumulative probability of survival
+
+```{r echo = FALSE, message = FALSE, fig.height = 6}
+fakedata2 <- lung %>% 
+  mutate(time = ifelse(status == 2, time, 1022), 
+         group = "No censoring") %>% 
+  full_join(mutate(lung, group = "With censoring"))
+
+fit3 <- survfit(Surv(time, status) ~ group, data = fakedata2)
+
+ggsurvplot(
+  data = fakedata2, 
+  fit = fit3,
+  xlab = "Months",
+  legend = "bottom",
+  legend.title = "",
+  legend.labs = c("No censoring", "With censoring"),
+  xscale = 30.4,
+  break.x.by = 182.4, 
+  risk.table = TRUE,
+  risk.table.y.text = FALSE)
+```
 
 
 ## Estimating median survival time
 
-Another quantity often of interest in a survival analysis is the average survival time, which we quantify using the median (survival times are not expected to be normally distributed so the mean is not an appropriate summary). 
+Another quantity often of interest in a survival analysis is the average survival time, which we quantify using the median. Survival times are not expected to be normally distributed so the mean is not an appropriate summary. 
 
-We can obtain this directly from our `survfit` object:
+We can obtain this directly from our `survfit` object
 
 ```{r}
-survival::survfit(survival::Surv(os_yrs, os) ~ 1, data = df)
+survfit(Surv(time, status) ~ 1, data = lung)
 ```
 
-We see the median survival time is `r round(summary(f1)$table["median"], 1)` years. The lower and upper bounds of the 95\% confidence interval are also displayed.
+We see the median survival time is `r round(summary(f1)$table["median"], 1)` days The lower and upper bounds of the 95\% confidence interval are also displayed.
 
 
 ## Median survival time and the survival curve
 
-Median survival is the time corresponding to a survival probability of 0.5: 
+Median survival is the time corresponding to a survival probability of $0.5$: 
 
-```{r, message = FALSE, echo = FALSE}
-survplot2 <- survminer::ggsurvplot(survival::survfit(
-    survival::Surv(os_yrs, os) ~ 1, data = df), 
-           xlab = "Years",
-           ylab = "Overall survival probability",
-           break.x.by = 5, 
-           palette = ezfun::msk_palette("main")) +
-    geom_segment(x = -1, xend = 12.6794, y = 0.5, yend = 0.5, 
-                 col = 2, lwd = 2) +
-    geom_segment(x = 12.6794, xend = 12.6794, y = 0.5, yend = -0.02, 
-                 arrow = arrow(length = unit(0.3, "inches")), col = 2, 
-                 lwd = 2)
+```{r, message = FALSE, echo = FALSE, fig.height = 5}
+plot2 <- plot_main
 
-survplot2$plot <- survplot2$plot +
-    annotate("text", x = 9.5, y = 0.02, label = "12.7 years", size = 6, col = 2)
+plot2$plot <- plot2$plot + 
+  geom_segment(x = -45, xend = 310, y = 0.5, yend = 0.5,  size = 1.5) +
+  geom_segment(x = 310, xend = 310, y = 0.5, yend = -0.03, size = 1.5, 
+               arrow = arrow(length = unit(0.2, "inches")))
 
-survplot2
+plot2
 ```
 
 
@@ -491,88 +484,72 @@ survplot2
 
 What happens if you use a "naive" estimate? 
 
-Summarize the median survival time among the `r table(df$os)[2]` patients who died:
+Summarize the median survival time among the `r table(lung$status)[2]` patients who died
 
 ```{r}
-df$os_yrs[df$os == 1] %>% 
-    median
+lung %>% 
+  filter(status == 2) %>% 
+  summarize(median_surv = median(time))
 ```
 
-- You get an **incorrect** estimate of median survival time of `r round(median(df$os_yrs[df$os == 1]), 1)` years when you ignore the fact that censored patients also contribute follow-up time.
-
-- Recall the **correct** estimate of median survival time is `r round(summary(f1)$table["median"], 1)` years.
-
-
-# Comparing survival times between groups {.center}
+- You get an **incorrect** estimate of median survival time of `r round(median(lung$time[lung$status == 2]), 1)` days when you ignore the fact that censored patients also contribute follow-up time.
+- Recall the **correct** estimate of median survival time is `r round(summary(f1)$table["median"], 1)` days.
 
 
-## Questions of interest with respect to between-group differences
+## Impact on median survival of ignoring censoring
 
-Is there a difference in survival probability between groups?
+- Ignoring censoring creates an artificially lowered survival curve because the follow-up time that censored patients contribute is excluded (purple line)
+- The true survival curve for the `lung` data is shown in blue for comparison
 
-From our example: does the probability of survival differ according to BMI among kidney cancer patients?
+```{r echo = FALSE, fig.height = 6, message = FALSE}
+fakedata <- lung %>% 
+  filter(status == 2) %>% 
+  mutate(group = "Ignoring censoring") %>% 
+  full_join(mutate(lung, group = "With censoring"))
 
+fit2 <- survfit(Surv(time, status) ~ group, data = fakedata)
 
-## Kaplan-Meier plot by group
-
-We can add a covariate to the right-hand side of the `survival::survfit` object to obtain a stratified Kaplan-Meier plot. 
-
-Let's also look at some other customization we can do with `survminer::ggsurvplot`.
-
-```{r fig.height = 6}
-survminer::ggsurvplot(
-    fit = survival::survfit(survival::Surv(os_yrs, os) ~ bmi_cat, data = df), 
-    xlab = "Years",
-    ylab = "Overall survival probability",
-    legend.title = "BMI",
-    legend.labs = c("Normal", "Overweight", "Obese"),
-    break.x.by = 5, 
-    palette = ezfun::msk_palette("contrast"), 
-    censor = FALSE,
-    risk.table = TRUE,
-    risk.table.y.text = FALSE)
+ggsurvplot(
+  data = fakedata, 
+  fit = fit2,
+  xlab = "Months",
+  legend = "bottom",
+  legend.title = "",
+  legend.labs = c("Ignoring censoring", "With censoring"),
+  xscale = 30.4,
+  break.x.by = 182.4, 
+  risk.table = TRUE, 
+  risk.table.y.text = FALSE)
 ```
 
-- By looking at the curves, we can see that normal BMI patients have the lowest overall survival probability, followed by overweight BMI patients and obese BMI patients.
-- The risk table below the plot shows us the number of patients at risk at certain time points, which can give an idea of how much information is being used to calculate the estimates at each time
 
+## Comparing survival times between groups
 
-## $x$-year survival probability by group
+- We can conduct between-group significance tests using a log-rank test
+- The log-rank test equally weights observations over the entire follow-up time and is the most common way to compare survival times between groups
+- There are versions that more heavily weight the early or late follow-up that could be more appropriate depending on the research question (see `?survdiff` for different test options)
 
-As before, we can get an estimate of, for example, 5-year survival by using `summary` with the `times` argument in our `survival::survfit` object:
+We get the log-rank p-value using the `survdiff` function. For example, we can test whether there was a difference in survival time according to sex in the `lung` data
 
 ```{r}
-summary(survival::survfit(survival::Surv(os_yrs, os) ~ bmi_cat, data = df), 
-        times = 5)
-```
-
-To summarize:
-
-```{r echo = FALSE}
-library(survival)
-tab <- ezfun::uvsurv(NULL, "bmi_cat", "os", "os_yrs", 5, df)[-1, c(1, 3)]
-colnames(tab) <- c("BMI", "5-year estimate (95% CI)")
-tab[, 1] <- c("Normal", "Overweight", "Obese")
-kable(tab, row.names = FALSE)
+survdiff(Surv(time, status) ~ sex, data = lung)
 ```
 
 
-## Log-rank test for between-group significance test
+## Extracting information from a survdiff object
 
-- We can conduct between-group significance tests using a log-rank test. 
-- The log-rank test equally weights observations over the entire follow-up time and is the most common way to compare survival times between groups.
-- There are versions that more heavily weight the early or late follow-up that could be more appropriate depending on the research question.
-
-We get the log-rank p-value using the `survival::survdiff` function:
+It's actually a bit cumbersome to extract a p-value from the results of `survdiff`. Here's a line of code to do it 
 
 ```{r}
-survival::survdiff(survival::Surv(df$os_yrs, df$os) ~ df$bmi_cat)
+sd <- survdiff(Surv(time, status) ~ sex, data = lung)
+1 - pchisq(sd$chisq, length(sd$n) - 1)
 ```
 
-And we see that the p-value is <.001, indicating a significant difference in overall survival according to BMI.
+Or there is the `sdp` function in the `ezfun` package, which you can install using `devtools::install_github("zabore/ezfun")`. It returns a formatted p-value
 
-
-# Regression {.center}
+```{r}
+ezfun::sdp(sd)
+```
 
 
 ## The Cox regression model
@@ -581,48 +558,860 @@ We may want to quantify an effect size for a single variable, or include more th
 
 The Cox regression model is a semi-parametric model that can be used to fit univariable and multivariable regression models that have survival outcomes.
 
+$$h(t|X_i) = h_0(t) \exp(\beta_1 X_{i1} + \cdots + \beta_p X_{ip})$$
+
+$h(t)$:  hazard, or the instantaneous rate at which events occur
+$h_0(t)$: underlying baseline hazard
+
 Some key assumptions of the model:
 
 - non-informative censoring
 - proportional hazards
 
-*Note*: parametric regression models for survival outcomes are also available, but I won't cover them in detail here.
+*Note*: parametric regression models for survival outcomes are also available, but they won't be addressed in this training
 
+We can fit regression models for survival data using the `coxph` function, which takes a `Surv` object on the left hand side and has standard syntax for regression formulas in `R` on the right hand side.
 
-## Cox regression example using a single covariate
-
-We can fit regression models for survival data using the `survival::coxph` function, which takes a `survival::Surv` object on the left hand side and has standard syntax for regression formulas in `R` on the right hand side.
-
-```{r eval = FALSE}
-survival::coxph(survival::Surv(os_yrs, os) ~ factor(bmi_cat), data = df)
+```{r}
+coxph(Surv(time, status) ~ sex, data = lung)
 ```
+
+
+## Formatting Cox regression results
 
 We can see a tidy version of the output using the `tidy` function from the `broom` package:
 
 ```{r}
-broom::tidy(survival::coxph(survival::Surv(os_yrs, os) ~ factor(bmi_cat), 
-                            data = df))
+broom::tidy(
+  coxph(Surv(time, status) ~ sex, data = lung), 
+  exp = TRUE
+  ) %>% 
+  kable()
+```
+
+Or use `tbl_regression` from the `gtsummary` package
+
+```{r}
+coxph(Surv(time, status) ~ sex, data = lung) %>% 
+  gtsummary::tbl_regression(exp = TRUE) 
 ```
 
 
 ## Hazard ratios
 
-The quantity of interest from a Cox regression model is a **hazard ratio (HR)**.
+- The quantity of interest from a Cox regression model is a **hazard ratio (HR)**. The HR represents the ratio of hazards between two groups at any particular point in time.
+- The HR is interpreted as the instantaneous rate of occurrence of the event of interest in those who are still at risk for the event. It is **not** a risk, though it is commonly interpreted as such.
+- If you have a regression parameter $\beta$ (from column `estimate` in our `coxph`) then HR = $\exp(\beta)$.
 
-If you have a regression parameter $\beta$ (from column `estimate` in our `survival::coxph`) then HR = $\exp(\beta)$.
+- A HR < 1 indicates reduced hazard of death whereas a HR > 1 indicates an increased hazard of death. 
+- So our HR = 0.59 implies that around 0.6 times as many females are dying as males, at any given time.
 
-For example, from our example we obtain the regression parameter $\beta_1=-0.4441733$ for obese vs normal BMI, so we have HR = $\exp(\beta_1)=0.64$. 
+```{r echo = FALSE, fig.height = 6}
+fit4 <- survfit(Surv(time, status) ~ sex, data = lung)
 
-A HR < 1 indicates reduced hazard of death whereas a HR > 1 indicates an increased hazard of death.
+ggsurvplot(data = lung, 
+           fit = fit4,
+           xlab = "Months",
+           xscale = 30.4,
+           break.x.by = 182.4,
+           fun = "cumhaz",
+           legend.title = "",
+           legend.labs = c("Male", "Female"),
+           legend = "bottom", 
+           risk.table = TRUE,
+           risk.table.y.text = FALSE)
+```
 
-So we would say that obese BMI kidney cancer patients have 0.64 times reduced hazard of death as compared to normal BMI kidney cancer patients.
+
+# Part 2: Landmark Analysis and Time Dependent Covariates
+
+In Part 1 we covered using log-rank tests and Cox regression to examine associations between covariates of interest and survival outcomes.
+
+But these analyses rely on the covariate being measured at **baseline**, that is, before follow-up time for the event begins.
+
+What happens if you are interested in a covariate that is measured **after** follow-up time begins?
+
+
+## Example: tumor response
+
+Example: Overall survival is measured from treatment start, and interest is in the association between complete response to treatment and survival.
+
+- Anderson et al (JCO, 1983) described why tradional methods such as log-rank tests or Cox regression are biased in favor of responders in this scenario and proposed the landmark approach.
+- The **null hypothesis** in the landmark approach is that survival from landmark does not depend on response status at landmark.
+
+> Anderson, J., Cain, K., & Gelber, R. (1983). Analysis of survival by tumor response. Journal of Clinical Oncology : Official Journal of the American Society of Clinical Oncology, 1(11), 710-9.
+
+
+## Other examples
+
+Some other possible covariates of interest in cancer research that may not be measured at baseline include: 
+
+- tranplant failure
+- graft versus host disease
+- second resection
+- adjuvant therapy
+- compliance
+- adverse events
+
+
+## Example data - the BMT dataset from SemiCompRisks package
+
+Data on 137 bone marrow transplant patients. Variables of interest include:
+
+- `T1` time (in days) to death or last follow-up
+- `delta1` death indicator; 1-Dead, 0-Alive
+- `TA` time (in days) to acute graft-versus-host disease
+- `deltaA` acute graft-versus-host disease indicator; 1-Developed acute graft-versus-host disease, 0-Never developed acute graft-versus-host disease
+
+Let's load the data for use in examples throughout 
+
+```{r}
+data(BMT, package = "SemiCompRisks")
+```
+
+
+## Landmark method
+
+1. Select a fixed time after baseline as your landmark time. *Note*: this should be done based on clinical information, prior to data inspection
+2. Subset population for those followed at least until landmark time. *Note*: always report the number excluded due to the event of interest or censoring prior to the landmark time.
+3. Calculate follow-up from landmark time and apply traditional log-rank tests or Cox regression
+
+In the `BMT` data interest is in the association between acute graft versus host disease (aGVHD) and survival. But aGVHD is assessed after the transplant, which is our baseline, or start of follow-up, time. 
+
+**Step 1** Select landmark time
+
+Typically aGVHD occurs within the first 90 days following transplant, so we use a 90-day landmark.
+
+Interest is in the association between acute graft versus host disease (aGVHD) and survival. But aGVHD is assessed after the transplant, which is our baseline, or start of follow-up, time.
+
+**Step 2** Subset population for those followed at least until landmark time
+
+```{r}
+lm_dat <- 
+  BMT %>% 
+  filter(T1 >= 90) 
+```
+
+This reduces our sample size from `r nrow(BMT)` to `r nrow(lm_dat)`.
+
+- All `r nrow(BMT) - nrow(lm_dat)` excluded patients died before the 90 day landmark
+
+Interest is in the association between acute graft versus host disease (aGVHD) and survival. But aGVHD is assessed after the transplant, which is our baseline, or start of follow-up, time.
+
+**Step 3** Calculate follow-up time from landmark and apply traditional methods. 
+
+```{r}
+lm_dat <- 
+  lm_dat %>% 
+  mutate(
+    lm_T1 = T1 - 90
+    )
+
+lm_fit <- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)
+```
+ 
+
+```{r echo = FALSE, fig.height = 6}
+ggsurvplot(
+  fit = lm_fit, 
+  data = lm_dat,
+  xlab = "Days from 90-day landmark",
+  risk.table = TRUE,
+  risk.table.y.text = FALSE,
+  pval = TRUE
+)
+```
+
+
+## Cox regression landmark example using BMT data
+
+In Cox regression you can use the `subset` option in `coxph` to exclude those patients who were not followed through the landmark time
+
+```{r}
+coxph(
+  Surv(T1, delta1) ~ deltaA, 
+  subset = T1 >= 90, 
+  data = BMT
+  ) %>% 
+  gtsummary::tbl_regression(exp = TRUE)
+```
+
+
+## Time-dependent covariate
+
+An alternative to a landmark analysis is incorporation of a time-dependent covariate. This may be more appropriate when
+
+- the value of a covariate is changing over time
+- there is not an obvious landmark time
+- use of a landmark would lead to many exclusions
+
+
+## Time-dependent covariate data setup
+
+Analysis of time-dependent covariates in `R` requires setup of a special dataset. See the detailed paper on this by the author of the `survival` package [Using Time Dependent Covariates and Time Dependent Coefficients in the Cox Model](https://cran.r-project.org/web/packages/survival/vignettes/timedep.pdf). 
+
+There was no ID variable in the `BMT` data, which is needed to create the special dataset, so create one called `my_id`.
+
+```{r}
+bmt <- rowid_to_column(BMT, "my_id")
+```
+
+Use the `tmerge` function with the `event` and `tdc` function options to create the special dataset.
+
+- `tmerge` creates a long dataset with multiple time intervals for the different covariate values for each patient
+- `event` creates the new event indicator to go with the newly created time intervals
+- `tdc` creates the time-dependent covariate indicator to go with the newly created time intervals
+
+```{r}
+td_dat <- 
+  tmerge(
+    data1 = bmt %>% select(my_id, T1, delta1), 
+    data2 = bmt %>% select(my_id, T1, delta1, TA, deltaA), 
+    id = my_id, 
+    death = event(T1, delta1),
+    agvhd = tdc(TA)
+    )
+```
+
+
+## Time-dependent covariate - single patient example
+
+To see what this does, let's look at the data for the first 5 individual patients.
+
+The variables of interest in the original data looked like
+
+```{r echo = FALSE}
+bmt %>% 
+  select(my_id, T1, delta1, TA, deltaA) %>% 
+  filter(my_id %in% seq(1, 5))
+```
+
+The new dataset for these same patients looks like
+
+```{r echo = FALSE}
+td_dat %>% 
+  filter(my_id %in% seq(1, 5))
+```
+
+
+## Time-dependent covariate - Cox regression
+
+Now we can analyze this time-dependent covariate as usual using Cox regression with `coxph` and an alteration to our use of `Surv` to include arguments to both `time` and `time2`
+
+```{r}
+coxph(
+  Surv(time = tstart, time2 = tstop, event = death) ~ agvhd, 
+  data = td_dat
+  ) %>% 
+  gtsummary::tbl_regression(exp = TRUE)
+```
 
 
 ## Summary
 
-- Time-to-event data is common
-- Survival analysis techniques are required to account for censored data
-- The `survival` package provides tools for survival analysis, including the `Surv` and `survfit` functions
-- The `survminer` package allows for customization of Kaplan-Meier plots based on `ggplot2`
-- Between-group comparisons can be made with the log-rank test using `survival::survdiff`
-- Multiavariable Cox regression analysis can be accomplished using `survival::coxph` 
+We find that acute graft versus host disease is not significantly associated with death using either landmark analysis or a time-dependent covariate.
+
+Often one will want to use landmark analysis for visualization of a single covariate, and Cox regression with a time-dependent covariate for univariable and multivariable modeling.
+
+
+# Part 3: Competing Risks
+
+## Packages
+
+The primary package for use in competing risks analyses is
+
+- `cmprsk`
+
+```{r}
+library(cmprsk)
+```
+
+
+## What are competing risks?
+
+When subjects have multiple possible events in a time-to-event setting
+
+Examples:
+
+- recurrence 
+- death from disease
+- death from other causes
+- treatment response
+
+All or some of these (among others) may be possible events in any given study.
+
+
+## So what's the problem?
+
+Unobserved dependence among event times is the fundamental problem that leads to the need for special consideration.
+
+For example, one can imagine that patients who recur are more likely to die, and therefore times to recurrence and times to death would not be independent events.
+
+
+## Background on competing risks
+
+Two approaches to analysis in the presence of multiple potential outcomes:
+
+1. Cause-specific hazard of a given event: this represents the rate per unit of time of the event among those not having failed from other events
+2. Cumulative incidence of given event: this represents the rate per unit of time of the event as well as the influence of competing events
+
+Each of these approaches may only illuminate one important aspect of the data while possibly obscuring others, and the chosen approach should depend on the question of interest.
+
+
+## A bunch of additional notes and references
+
+- When the events are independent (almost never true), cause-specific hazards is unbiased
+- When the events are dependent, a variety of results can be obtained depending on the setting
+- Cumulative incidence using Kaplan-Meier is always >= cumulative incidence using competing risks methods, so can only lead to an overestimate of the cumulative incidence, the amount of overestimation depends on event rates and dependence among events
+- To establish that a covariate is indeed acting on the event of interest, cause-specific hazards may be preferred for treatment or pronostic marker effect testing
+- To establish overall benefit, subdistribution hazards may be preferred for building prognostic nomograms or considering health economic effects to get a better sense of the influence of treatment and other covariates on an absolute scale
+
+> Dignam JJ, Zhang Q, Kocherginsky M. The use and interpretation of competing risks regression models. Clin Cancer Res. 2012;18(8):2301-8.
+
+> Kim HT. Cumulative incidence in competing risks data and competing risks regression analysis. Clin Cancer Res. 2007 Jan 15;13(2 Pt 1):559-65.
+
+> Satagopan JM, Ben-Porat L, Berwick M, Robson M, Kutler D, Auerbach AD. A note on competing risks in survival data analysis. Br J Cancer. 2004;91(7):1229-35.
+
+> Austin, P., & Fine, J. (2017). Practical recommendations for reporting Fine‐Gray model analyses for competing risk data. Statistics in Medicine, 36(27), 4391-4400.
+
+
+## Cumulative incidence for competing risks
+
+- Non-parametric estimation of the cumulative incidence
+- Estimates the cumulative incidence of the event of interest
+- At any point in time the sum of the cumulative incidence of each event is equal to the total cumulative incidence of any event (not true in the cause-specific setting)
+- Gray's test is a modified Chi-squared test used to compare 2 or more groups
+
+
+## Example Melanoma data from the MASS package
+
+We use the `Melanoma` data from the `MASS` package to illustrate these concepts. It contains variables:
+
+- `time` survival time in days, possibly censored.
+- `status` 1 died from melanoma, 2 alive, 3 dead from other causes.
+- `sex` 1 = male, 0 = female.
+- `age` age in years.
+- `year` of operation.
+- `thickness` tumor thickness in mm.
+- `ulcer` 1 = presence, 0 = absence.
+
+```{r}
+data(Melanoma, package = "MASS")
+```
+
+
+## Cumulative incidence in Melanoma data
+
+Estimate the cumulative incidence in the context of competing risks using the `cuminc` function.
+
+*Note*: in the `Melanoma` data, censored patients are coded as $2$ for `status`, so we cannot use the `cencode` option default of $0$
+
+```{r}
+cuminc(Melanoma$time, Melanoma$status, cencode = 2)
+```
+
+
+## Plot the cumulative incidence - base R
+
+Generate a base `R` plot with all the defaults.
+
+```{r}
+ci_fit <- 
+  cuminc(
+    ftime = Melanoma$time, 
+    fstatus = Melanoma$status, 
+    cencode = 2
+    )
+```
+
+```{r}
+plot(ci_fit)
+```
+
+In the legend: 
+
+- The first number indicates the group, in this case there is only an overall estimate so it is $1$ for both
+- The second number indicates the event type, in this case the solid line is $1$ for death from melanoma and the dashed line is $3$ for death from other causes
+
+
+## Plot the cumulative incidence - ggcompetingrisks 
+
+We can also plot the cumulative incidence using the `ggscompetingrisks` function from the `survminer` package. 
+
+In this case we get a panel labeled according to the group, and a legend labeled event, indicating the type of event for each line. 
+
+*Notes* 
+
+- you can use the option `multiple_panels = FALSE` to have all groups plotted on a single panel
+- unlike base `R` the y-axis does not go to 1 by default, so you must change it manually 
+
+```{r}
+ggcompetingrisks(ci_fit)
+```
+
+
+## Compare cumulative incidence between groups
+
+In `cuminc` Gray's test is used for between-group tests.
+
+As an example, compare the `Melanoma` outcomes according to `ulcer`, the presence or absence of ulceration. The results of the tests can be found in `Tests`.
+
+
+```{r}
+ci_ulcer <- 
+  cuminc(
+    ftime = Melanoma$time, 
+    fstatus = Melanoma$status, 
+    group = Melanoma$ulcer,
+    cencode = 2
+    )
+
+ci_ulcer[["Tests"]]
+```
+
+
+## Plot cumulative incidence according to group - ggcompetingrisks
+
+```{r}
+ggcompetingrisks(
+  fit = ci_ulcer, 
+  multiple_panels = FALSE,
+  xlab = "Days",
+  ylab = "Cumulative incidence of event",
+  title = "Death by ulceration",
+  ylim = c(0, 1)
+)
+```
+
+
+## Plotting cumulative incidence by group - manually
+
+*Note* I personally find the `ggcompetingrisks` function to be lacking in customization, especially compared to `ggsurvplot`. I typically do my own plotting, by first creating a tidy dataset of the `cuminc` fit results, and then plotting the results. See the source code for this presentation for details of the underlying code.
+
+```{r echo = FALSE}
+ciplotdat <- 
+  ci_ulcer %>% 
+  list_modify("Tests" = NULL) %>% 
+  map_df(`[`, c("time", "est"), .id = "id") %>% 
+  mutate(id = recode(
+    id, 
+    "0 1" = "Not ulcerated:Death melanoma", 
+    "0 3" = "Not ulcerated:Death other causes", 
+    "1 1" = "Ulcerated:Death melanoma",
+    "1 3" = "Ulcerated:Death other causes")
+    ) %>% 
+  separate(id, c("Ulceration", "Event"), ":") 
+
+ggplot(ciplotdat, aes(x = time, y = est, color = Ulceration)) +
+  geom_step(lwd = 1.2, aes(linetype = Event))  +
+  ylim(c(0, 1)) +
+  theme_classic() +
+  theme(plot.title = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.position = "bottom") +
+  labs(x = "Days", 
+       y = "Cumulative incidence",
+       title = "Death by ulceration status") +
+  annotate("text", x = 0, y = 1, hjust = 0,
+           label = paste0(
+             "Death melanoma p = ", 
+             ifelse(ci_ulcer$Tests[1, 2] < .001, 
+                    "<.001", 
+                    round(ci_ulcer$Tests[1, 2], 3)))) + 
+  annotate("text", x = 0, y = 0.92, hjust = 0,
+           label = paste0(
+             "Death other causes p = ", 
+             ifelse(ci_ulcer$Tests[2, 2] < .001, 
+                    "<.001", 
+                    round(ci_ulcer$Tests[2, 2], 3)))) 
+```
+
+
+## Plotting a single event type - manually
+
+Often only one of the event types will be of interest, though we still want to account for the competing event. In that case the event of interest can be plotted alone. Again, I do this manually by first creating a tidy dataset of the `cuminc` fit results, and then plotting the results. See the source code for this presentation for details of the underlying code.
+
+```{r echo = FALSE}
+ciplotdat1 <- 
+  ci_ulcer %>% 
+  list_modify("Tests" = NULL) %>% 
+  map_df(`[`, c("time", "est"), .id = "id") %>% 
+  filter(id %in% c("0 1", "1 1")) %>% 
+  mutate(Ulceration = recode(
+    id, 
+    "0 1" = "Not ulcerated", 
+    "1 1" = "Ulcerated")
+    )
+
+ggplot(ciplotdat1, aes(x = time, y = est, color = Ulceration)) +
+  geom_step(lwd = 1.2)  +
+  ylim(c(0, 1)) +
+  theme_classic() +
+  theme(plot.title = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.position = "bottom") +
+  labs(x = "Days", 
+       y = "Cumulative incidence",
+       title = "Melanoma death by ulceration status") +
+  annotate("text", x = 0, y = 1, hjust = 0,
+           label = paste0(
+             "p-value = ", 
+             ifelse(ci_ulcer$Tests[1, 2] < .001, 
+                    "<.001", 
+                    round(ci_ulcer$Tests[1, 2], 3))))
+```
+
+
+## Add the numbers at risk table
+
+You may want to add the numbers of risk table to a cumulative incidence plot, and there is no easy way to do this that I know of. See the source code for this presentation for one example
+
+1. Get a plot from base `R`, `ggcompetingrisks`, or `ggplot`
+2. Get the number at risk table from a `ggsurvplot` using the `survfit` where all events count as a single composite endpoint
+    - Force the axes to have the same limits and breaks and titles
+    - Make sure the colors/linetypes match for the group labels
+    - Try to get the fontsize to be the same
+3. Then combine the plot and the risktable. I use the `plot_grid` function from the `cowplot` package for this
+    - I do NOT know how to change the "Number at risk" text size...
+
+```{r echo = FALSE, fig.height = 5}
+mel_plot <- 
+  ggplot(ciplotdat1, aes(x = time, y = est, color = Ulceration)) +
+  geom_step(lwd = 1.2)  +
+  ylim(c(0, 1)) +
+  coord_cartesian(xlim = c(0, 5000)) +
+  scale_x_continuous(breaks = seq(0, 5000, 1000)) +
+  theme_classic() +
+  theme(plot.title = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.position = "bottom") +
+  labs(x = "Days", 
+       y = "Cumulative incidence",
+       title = "Melanoma death by ulceration status") +
+  annotate("text", x = 0, y = 1, hjust = 0,
+           label = paste0(
+             "p-value = ", 
+             ifelse(ci_ulcer$Tests[1, 2] < .001, 
+                    "<.001", 
+                    round(ci_ulcer$Tests[1, 2], 3))))
+
+mel_fit <- survfit(
+  Surv(time, ifelse(status != 2, 1, 0)) ~ ulcer, 
+  data = Melanoma
+)
+
+num <- ggsurvplot(
+  fit = mel_fit, 
+  risk.table = TRUE, 
+  risk.table.y.text = FALSE,
+  ylab = "Days",
+  tables.theme = theme_cleantable(),
+  risk.table.fontsize = 3.2
+  )
+
+cowplot::plot_grid(
+  mel_plot, 
+  num$table, 
+  nrow = 2, 
+  rel_heights = c(4, 1), 
+  align = "v", 
+  axis = "b"
+  )
+```
+
+
+## Competing risks regression
+
+Two approaches:
+
+1. Cause-specific hazards 
+    - instantaneous rate of occurrence of the given type of
+event in subjects who are currently event‐free
+    - estimated using Cox regression (`coxph` function)
+2. Subdistribution hazards 
+    - instantaneous rate of occurrence of the given type of event in subjects who have not yet experienced an event of that type
+    - estimated using Fine-Gray regression (`crr` function)
+    
+    
+## Competing risks regression in Melanoma data - subdistribution hazard approach
+
+Let's say we're interested in looking at the effect of age and sex on death from melanoma, with death from other causes as a competing event.
+
+Notes:
+
+- `crr` requires specification of covariates as a matrix
+- If more than one event is of interest, you can request results for a different event by using the `failcode` option, by default results are returned for `failcode = 1`
+
+```{r}
+shr_fit <- 
+  crr(
+    ftime = Melanoma$time,
+    fstatus = Melanoma$status,
+    cov1 = Melanoma[, c("sex", "age")],
+    cencode = 2
+    )
+
+shr_fit
+```
+
+In the previous example, both `sex` and `age` were coded as numeric variables. The `crr` function can't naturally handle character variables, and you will get an error, so if character variables are present we have to create dummy variables using `model.matrix`
+
+```{r eval = FALSE}
+# Create an example character variable
+chardat <- 
+  Melanoma %>% 
+  mutate(
+    sex_char = ifelse(sex == 0, "Male", "Female")
+  )
+
+# Create dummy variables with model.matrix
+# The [, -1] removes the intercept
+covs1 <- model.matrix(~ sex_char + age, data = chardat)[, -1]
+
+# Now we can pass that to the cov1 argument, and it will work
+crr(
+  ftime = chardat$time,
+  fstatus = chardat$status,
+  cov1 = covs1,
+  cencode = 2
+  )
+```
+
+
+## Formatting results from crr
+
+Output from `crr` is not supported by either `broom::tidy()` or `gtsummary::tbl_regression()` at this time. As an alternative, try the (not flexible, but better than nothing?) `mvcrrres` from my `ezfun` package
+
+```{r}
+ezfun::mvcrrres(shr_fit) %>% 
+  kable()
+```
+
+
+## Competing risks regression in Melanoma data - cause-specific hazard approach
+
+Censor all subjects who didn't have the event of interest, in this case death from melanoma, and use `coxph` as before. So patients who died from other causes are now censored for the cause-specific hazard approach to competing risks.
+
+Results can be formatted with `broom::tidy()` or `gtsummary::tbl_regression()`
+
+```{r}
+chr_fit <- 
+  coxph(
+    Surv(time, ifelse(status == 1, 1, 0)) ~ sex + age, 
+    data = Melanoma
+    )
+
+broom::tidy(chr_fit, exp = TRUE) %>% 
+  kable()
+
+gtsummary::tbl_regression(chr_fit, exp = TRUE)
+```
+
+
+# Part 4: Advanced Topics
+
+## What we've covered
+
+- The basics of survival analysis including the Kaplan-Meier survival function and Cox regression
+- Landmark analysis and time-dependent covariates
+- Cumulative incidence and regression for competing risks analyses
+
+
+## What's left?
+
+A variety of bits and pieces of things that may come up and be handy to know:
+
+1. Assessing the proportional hazards assumption
+2. Making a smooth survival plot based on $x$-year survival according to a continuous covariate
+3. Conditional survival
+
+
+## Assessing proportional hazards
+
+One assumption of the Cox proportional hazards regression model is that the hazards are proportional at each point in time throughout follow-up. How can we check to see if our data meet this assumption?
+
+Use the `cox.zph` function from the survival package. It results in two main things:
+
+1. A hypothesis test of whether the effect of each covariate differs according to time, and a global test of all covariates at once.
+    - This is done by testiung for an interaction effect between the covariate and log(time) 
+    - A significant p-value indicates that the proportional hazards assumption is violated
+    
+2. Plots of the Schoenfeld residuals
+    - Deviation from a zero-slope line is evidence that the proportional hazards assumption is violated
+
+```{r}
+mv_fit <- coxph(Surv(time, status) ~ sex + age, data = lung)
+cz <- cox.zph(mv_fit)
+print(cz)
+plot(cz)
+```
+
+
+## Smooth survival plot - quantile of survival
+
+Sometimes you will want to visualize a survival estimate according to a continuous variable. The `sm.survival` function from the `sm` package allows you to do this for a quantile of the distribution of survival data. The default quantile is `p = 0.5` for median survival.
+
+```{r message = FALSE}
+library(sm)
+
+sm.options(
+  list(
+    xlab = "Age (years)",
+    ylab = "Time to death (years)")
+  )
+
+sm.survival(
+  x = lung$age,
+  y = lung$time,
+  status = lung$status,
+  h = sd(lung$age) / nrow(lung)^(-1/4)
+  )
+```
+
+- The x's represent events
+- The o's represent censoring
+- The line is a smoothed estimate of median survival according to age
+    - In this case, too smooth!
+
+The option `h` is the smoothing parameter. This should be related to the standard deviation of the continuous covariate, $x$. Suggested to start with $\frac{sd(x)}{n^{-1/4}}$ then reduce by $1/2$, $1/4$, etc to get a good amount of smoothing. The previous plot was too smooth so let's reduce it by $1/4$
+
+```{r}
+sm.survival(
+  x = lung$age,
+  y = lung$time,
+  status = lung$status,
+  h = (1/4) * sd(lung$age) / nrow(lung)^(-1/4)
+  )
+```
+
+
+
+## Conditional survival
+
+Sometimes it is of interest to generate survival estimates among a group of patients who have already survived for some length of time.
+
+$$S(y|x) = \frac{S(x + y)}{S(x)}$$
+
+- $y$: number of additional survival years of interest
+- $x$: number of years a patient has already survived
+
+> Zabor, E., Gonen, M., Chapman, P., & Panageas, K. (2013). Dynamic prognostication using conditional survival estimates. Cancer, 119(20), 3589-3592.
+
+
+## Conditional survival estimates
+
+The estimates are easy to generate with basic math on your own. 
+
+Alternatively, I have simple package in development called `condsurv` to generate estimates and plots related to conditional survival. We can use the `conditional_surv_est` function to get estimates and 95% confidence intervals. Let's condition on survival to 6-months
+
+```{r eval = FALSE}
+remotes::install_github("zabore/condsurv")
+```
+
+
+```{r}
+library(condsurv)
+
+fit1 <- survfit(Surv(time, status) ~ 1, data = lung)
+
+prob_times <- seq(365.25, 182.625 * 5, 182.625)
+
+purrr::map_df(
+  prob_times, 
+  ~conditional_surv_est(
+    basekm = fit1, 
+    t1 = 182.625, 
+    t2 = .x) 
+  ) %>% 
+  mutate(months = round(prob_times / 30.4)) %>% 
+  select(months, everything()) %>% 
+  kable()
+```
+Recall that our initial $1$-year survival estimate was `r round(summary(fit1, times = 365.25)$surv, 2)`. We see that for patients who have already survived 6-months this increases to 0.58.
+
+## Conditional survival plots
+
+We can also visualize conditional survival data based on different lengths of time survived. The `condsurv::condKMggplot` function can help with this.
+
+```{r fig.width = 7}
+cond_times <- seq(0, 182.625 * 4, 182.625)
+
+gg_conditional_surv(
+  basekm = fit1, 
+  at = cond_times,
+  main = "Conditional survival in lung data",
+  xlab = "Days"
+  ) +
+  labs(color = "Conditional time")
+```
+
+The resulting plot has one survival curve for each time on which we condition. In this case the first line is the overall survival curve since it is conditioning on time 0.
+
+
+
+
+```{r}
+knit_exit()
+```
+
+As of September 23, 2019 I couldn't use sm_predict. I got the error "Error: `unnest_()` is deprecated as of tidyr 1.0.0.
+Please use `unnest()` instead."
+
+
+## Smooth survival plot - $x$-year survival
+
+Often it will be of interest to plot $x$-year survival by a continuous covariate, rather than the median or another quantile.
+
+Dan Sjoberg wrote a package to do that. You can install the `sjosmooth` package from GitHub
+
+```{r eval = FALSE}
+remotes::install_github("ddsjoberg/sjosmooth")
+```
+
+```{r message = FALSE}
+library(sjosmooth)
+```
+
+Detailed instructions and tutorials are available at [http://www.danieldsjoberg.com/sjosmooth/](http://www.danieldsjoberg.com/sjosmooth/).
+1
+Use the `sm_predict` function to get the predicted 1-year survival over the range of your continuous variable.
+
+```{r error = FALSE}
+sm_pred <-
+  sm_predict(
+    data = lung, 
+    method = "coxph",
+    formula = Surv(time) ~ age, 
+    newdata = dplyr::tibble(age = seq(39, 82, 1), time = 365.25),
+    type = "survival"
+  ) 
+```
+
+Then plot as usual
+
+```{r}
+ggplot(sm_pred, aes(x = age, y = .fitted)) +
+  geom_line() +
+  labs(
+    x = "Age (years)",
+    y = "1-year survival probability"
+  )
+```
+
+Notes;
+
+- You can add confidence intervals to this plot, see documentation
+- You may want to restrict the range, as at the end of the distributions you may not have sufficient data to make good predictions (as I suspect is the case here)
+
+
+
+
+
+
+
+
+
+
+
+
+
