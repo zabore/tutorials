@@ -1066,17 +1066,11 @@ ggplot(ciplotdat1, aes(x = time, y = est, color = Ulceration)) +
 
 ## Add the numbers at risk table
 
-You may want to add the numbers of risk table to a cumulative incidence plot, and there is no easy way to do this that I know of. See the source code for this presentation for one example
+You may want to add the numbers of risk table to a cumulative incidence plot, and there is no easy way to do this that I know of. See the source code for this presentation for one example (by popular demand, source code now included directly below for one specific example)
 
 1. Get a plot from base `R`, `ggcompetingrisks`, or `ggplot`
-2. Get the number at risk table from a `ggsurvplot` using the `survfit` where all events count as a single composite endpoint
-    - Force the axes to have the same limits and breaks and titles
-    - Make sure the colors/linetypes match for the group labels
-    - Try to get the fontsize to be the same
-3. Then combine the plot and the risktable. I use the `plot_grid` function from the `cowplot` package for this
-    - I do NOT know how to change the "Number at risk" text size...
 
-```{r echo = FALSE, fig.height = 5}
+```{r}
 mel_plot <- 
   ggplot(ciplotdat1, aes(x = time, y = est, color = Ulceration)) +
   geom_step(lwd = 1.2)  +
@@ -1096,7 +1090,14 @@ mel_plot <-
              ifelse(ci_ulcer$Tests[1, 2] < .001, 
                     "<.001", 
                     round(ci_ulcer$Tests[1, 2], 3))))
+```
 
+2. Get the number at risk table from a `ggsurvplot` using the `survfit` where all events count as a single composite endpoint
+    - Force the axes to have the same limits and breaks and titles
+    - Make sure the colors/linetypes match for the group labels
+    - Try to get the fontsize to be the same
+    
+```{r warning = FALSE}
 mel_fit <- survfit(
   Surv(time, ifelse(status != 2, 1, 0)) ~ ulcer, 
   data = Melanoma
@@ -1107,13 +1108,19 @@ num <- ggsurvplot(
   risk.table = TRUE, 
   risk.table.y.text = FALSE,
   ylab = "Days",
-  tables.theme = theme_cleantable(),
-  risk.table.fontsize = 3.2
+  risk.table.fontsize = 3.2,
+  tables.theme = theme_survminer(font.main = 10),
+  title = "Test"
   )
+```
 
+3. Then combine the plot and the risktable. I use the `plot_grid` function from the `cowplot` package for this
+    - Thanks to several readers for emailing me with tips on how to change the size of the text that reads "Number at risk"! I used the one suggested by Charles Champeaux, implemented above in the line `tables.theme = theme_survminer(font.main = 10)`!
+
+```{r fig.height = 5}
 cowplot::plot_grid(
   mel_plot, 
-  num$table, 
+  num$table + theme_cleantable(), 
   nrow = 2, 
   rel_heights = c(4, 1), 
   align = "v", 
