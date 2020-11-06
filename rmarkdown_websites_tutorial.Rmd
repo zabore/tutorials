@@ -7,11 +7,13 @@ output:
         toc_float: TRUE
 ---
 
-This tutorial provides an introduction to creating websites using R, R Markdown and GitHub pages. 
+This tutorial provides an introduction to creating websites using R, R Markdown and GitHub pages.
 
-This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.
+Updates were made on November 6, 2020 to simplify the personal website example as some extraneous pieces of information there were giving people problems. See new example website for my cats, John and Pete!
 
 The current version was updated and presented at the R Ladies NYC Meetup on February 15, 2018.
+
+This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.
 
 
 ## Types of websites
@@ -69,10 +71,7 @@ There are other free sites for website hosting, and another popular choice is [N
 
 ## Personal websites
 
-An example from the homepage of  [my personal website](http://www.emilyzabor.com/):
-
-<img src="img/personal.png" style="border: #A9A9A9 1px solid; width:75%">
-
+Let's say that I wanted to build a website for my cats.
 
 There are two main steps for creating a personal website that will be hosted on GitHub:
 
@@ -105,57 +104,50 @@ Note: After creating the R Project and initial files, you may need to close the 
 
 Edit the `_site.yml` file to change the metadata, layout, and  theme of your website. Preview Jekyll themes [here](http://jekyllthemes.org/) and play around with different options. Themes are easy to change even after you have added content. 
 
-For example, the `_site.yml` for my personal website looks like this:
+For example, the `_site.yml` for my cats' personal website looks like this:
 
 ```{r eval = FALSE}
-name: "Emily C. Zabor"
-output_dir: "."
+name: "cat-website"
 navbar:
-  title: "Emily C. Zabor"
+  title: "My cats' website"
   left:
-    - text: "Writing"
-      href: research.html
-    - text: "Speaking"
-      href: talks.html
-    - text: "Programming"
-      href: software.html
-    - text: "Teaching"
-      href: teaching.html
-  right:
+    - text: "Home"
+      href: index.html
+  right: 
     - icon: fa-envelope fa-lg
-      href: contact.html
+      href: mailto:<cats@catemail.com>
     - icon: fa-github fa-lg
-      href: http://github.com/zabore
-    - icon: fa-twitter fa-lg
-      href: https://twitter.com/zabormetrics
-    - icon: fa-linkedin fa-lg
-      href: https://www.linkedin.com/in/emily-zabor-59b902b7/
+      href: http://github.com/<YOUR_GH_NAME>/
 output:
   html_document:
-    theme: paper
-    css: 'styles.css'
+    theme: darkly
 ```
+
+Choose a default theme from <https://bootswatch.com/3/> for easy implementation.
 
 Edit and create `.Rmd` files that contain your website content, which will produce the html pages of your website when you knit them. 
 
-For example, the `index.Rmd` file for my personal website homepage looks like this:
+For example, the `index.Rmd` file for my cats' personal website homepage looks like this:
 
 ```{r eval = FALSE}
 ---
+title: "My cats have a website!"
 ---
 
-<link rel="stylesheet" href="styles.css" type="text/css">
+This is John.
 
-<img src="images/emily_2.jpg" style="width:25%; border:10px solid; margin-right: 20px" align="left">
+<img src="files/john.jpg" style="width:50%">
 
-I like to analyze data to answer research questions and test hypotheses. Currently I investigate questions related to breast cancer through my work as a Research Biostatistician at [Memorial Sloan Kettering Cancer Center](https://www.mskcc.org/departments/epidemiology-biostatistics) in the department of Epidemiology & Biostatistics. 
+This is Pete.
 
-I graduated from the [University of Minnesota](http://www.sph.umn.edu/academics/divisions/biostatistics/) with a MS in biostatistics in 2010. In 2012 I began working toward my DrPH in biostatistics as a part-time student at [Columbia University](https://www.mailman.columbia.edu/become-student/departments/biostatistics), where I am investigating statistical methods for the study of etiologic heterogeneity in epidemiologic studies under the advisement of [Dr. Shuang Wang](https://www.mailman.columbia.edu/people/our-faculty/sw2206) at Columbia University and [Dr. Colin Begg](https://www.mskcc.org/profile/colin-begg) at Memorial Sloan Kettering Cancer Center. I expect to graduate by the end of 2018.
+<img src="files/pete.jpg" style="width:50%">
 
-I am a well-known R enthusiast, including serving on the board and being an active member of [R Ladies NYC](http://www.rladiesnyc.org/). 
+They are brothers!
 
-My full CV is available [here](files/Zabor_CV_2017_Q4.pdf).
+<img src="files/brother_kitties.jpg" style="width:50%">
 ```
+
+In this example the image files are stored in a subdirectory of YOUR_GH_NAME.github.io named "files". 
 
 Once you have your content written and the layout setup, on the Build tab in RStudio, select "Build Website":
 
@@ -164,6 +156,10 @@ Once you have your content written and the layout setup, on the Build tab in RSt
 Now your local directory contains all of the files needed for your website:
 
 <img src="img/directory.png" style="border: #A9A9A9 1px solid; width:75%">
+
+And here's what the resulting website looks like, hi kitties!
+
+<img src="img/example-website-finished.png" style="border: #A9A9A9 1px solid; width:75%">
 
 
 ### Deploy website
@@ -187,6 +183,7 @@ Advanced approach (recommended):
 <img src="img/rstudiogit.png" style="border: #A9A9A9 1px solid; width:75%">
 
 - But this is not a Git/GitHub tutorial. If you want to learn more about Git/GitHub, which I encourage you to do, here's a great resource to get you started: [http://happygitwithr.com/](http://happygitwithr.com/)
+
 
 
 ### Custom domains
@@ -366,7 +363,6 @@ To get around this, you need to include an empty file named `.nojekyll` in your 
 A compiled list of the additional resources/links presented throughout this tutorial:
 
 - [http://rmarkdown.rstudio.com/rmarkdown_websites.html](http://rmarkdown.rstudio.com/rmarkdown_websites.html): an overview of R Markdown website basics
-- [http://jekyllthemes.org/](http://jekyllthemes.org/): Jekyll themes for use with your R Markdown website
 - [http://happygitwithr.com/](http://happygitwithr.com/): an introduction to Git/GitHub
 - [http://pkgdown.r-lib.org/](http://pkgdown.r-lib.org/): Hadley Wickham's `pkgdown` website
 - [https://bookdown.org/yihui/blogdown/](https://bookdown.org/yihui/blogdown/): Yihui Xie's blogdown book

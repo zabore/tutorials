@@ -352,7 +352,10 @@ div.tocify {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="http://www.emilyzabor.com">fa-home fa-lg</a>
+  <a href="http://www.emilyzabor.com">
+    <span class="fa fa-home fa-lg"></span>
+     
+  </a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
@@ -408,8 +411,9 @@ div.tocify {
 
 
 <p>This tutorial provides an introduction to creating websites using R, R Markdown and GitHub pages.</p>
-<p>This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.</p>
+<p>Updates were made on November 6, 2020 to simplify the personal website example as some extraneous pieces of information there were giving people problems. See new example website for my cats, John and Pete!</p>
 <p>The current version was updated and presented at the R Ladies NYC Meetup on February 15, 2018.</p>
+<p>This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center Department of Epidemiology and Biostatistics R User Group meeting on January 23, 2018.</p>
 <div id="types-of-websites" class="section level2">
 <h2>Types of websites</h2>
 <p>The main types of websites you may want to create include:</p>
@@ -452,8 +456,7 @@ Hello, Website! Welcome to the world.</code></pre>
 </div>
 <div id="personal-websites" class="section level2">
 <h2>Personal websites</h2>
-<p>An example from the homepage of <a href="http://www.emilyzabor.com/">my personal website</a>:</p>
-<p><img src="img/personal.png" style="border: #A9A9A9 1px solid; width:75%"></p>
+<p>Let’s say that I wanted to build a website for my cats.</p>
 <p>There are two main steps for creating a personal website that will be hosted on GitHub:</p>
 <ol style="list-style-type: decimal">
 <li>GitHub setup</li>
@@ -485,53 +488,46 @@ Hello, Website! Welcome to the world.</code></pre>
 <div id="create-content" class="section level3">
 <h3>Create content</h3>
 <p>Edit the <code>_site.yml</code> file to change the metadata, layout, and theme of your website. Preview Jekyll themes <a href="http://jekyllthemes.org/">here</a> and play around with different options. Themes are easy to change even after you have added content.</p>
-<p>For example, the <code>_site.yml</code> for my personal website looks like this:</p>
-<pre class="r"><code>name: &quot;Emily C. Zabor&quot;
-output_dir: &quot;.&quot;
+<p>For example, the <code>_site.yml</code> for my cats’ personal website looks like this:</p>
+<pre class="r"><code>name: &quot;cat-website&quot;
 navbar:
-  title: &quot;Emily C. Zabor&quot;
+  title: &quot;My cats&#39; website&quot;
   left:
-    - text: &quot;Writing&quot;
-      href: research.html
-    - text: &quot;Speaking&quot;
-      href: talks.html
-    - text: &quot;Programming&quot;
-      href: software.html
-    - text: &quot;Teaching&quot;
-      href: teaching.html
-  right:
+    - text: &quot;Home&quot;
+      href: index.html
+  right: 
     - icon: fa-envelope fa-lg
-      href: contact.html
+      href: mailto:&lt;cats@catemail.com&gt;
     - icon: fa-github fa-lg
-      href: http://github.com/zabore
-    - icon: fa-twitter fa-lg
-      href: https://twitter.com/zabormetrics
-    - icon: fa-linkedin fa-lg
-      href: https://www.linkedin.com/in/emily-zabor-59b902b7/
+      href: http://github.com/&lt;YOUR_GH_NAME&gt;/
 output:
   html_document:
-    theme: paper
-    css: &#39;styles.css&#39;</code></pre>
+    theme: darkly</code></pre>
+<p>Choose a default theme from <a href="https://bootswatch.com/3/" class="uri">https://bootswatch.com/3/</a> for easy implementation.</p>
 <p>Edit and create <code>.Rmd</code> files that contain your website content, which will produce the html pages of your website when you knit them.</p>
-<p>For example, the <code>index.Rmd</code> file for my personal website homepage looks like this:</p>
+<p>For example, the <code>index.Rmd</code> file for my cats’ personal website homepage looks like this:</p>
 <pre class="r"><code>---
+title: &quot;My cats have a website!&quot;
 ---
 
-&lt;link rel=&quot;stylesheet&quot; href=&quot;styles.css&quot; type=&quot;text/css&quot;&gt;
+This is John.
 
-&lt;img src=&quot;images/emily_2.jpg&quot; style=&quot;width:25%; border:10px solid; margin-right: 20px&quot; align=&quot;left&quot;&gt;
+&lt;img src=&quot;files/john.jpg&quot; style=&quot;width:50%&quot;&gt;
 
-I like to analyze data to answer research questions and test hypotheses. Currently I investigate questions related to breast cancer through my work as a Research Biostatistician at [Memorial Sloan Kettering Cancer Center](https://www.mskcc.org/departments/epidemiology-biostatistics) in the department of Epidemiology &amp; Biostatistics. 
+This is Pete.
 
-I graduated from the [University of Minnesota](http://www.sph.umn.edu/academics/divisions/biostatistics/) with a MS in biostatistics in 2010. In 2012 I began working toward my DrPH in biostatistics as a part-time student at [Columbia University](https://www.mailman.columbia.edu/become-student/departments/biostatistics), where I am investigating statistical methods for the study of etiologic heterogeneity in epidemiologic studies under the advisement of [Dr. Shuang Wang](https://www.mailman.columbia.edu/people/our-faculty/sw2206) at Columbia University and [Dr. Colin Begg](https://www.mskcc.org/profile/colin-begg) at Memorial Sloan Kettering Cancer Center. I expect to graduate by the end of 2018.
+&lt;img src=&quot;files/pete.jpg&quot; style=&quot;width:50%&quot;&gt;
 
-I am a well-known R enthusiast, including serving on the board and being an active member of [R Ladies NYC](http://www.rladiesnyc.org/). 
+They are brothers!
 
-My full CV is available [here](files/Zabor_CV_2017_Q4.pdf).</code></pre>
+&lt;img src=&quot;files/brother_kitties.jpg&quot; style=&quot;width:50%&quot;&gt;</code></pre>
+<p>In this example the image files are stored in a subdirectory of YOUR_GH_NAME.github.io named “files”.</p>
 <p>Once you have your content written and the layout setup, on the Build tab in RStudio, select “Build Website”:</p>
 <p><img src="img/build.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 <p>Now your local directory contains all of the files needed for your website:</p>
 <p><img src="img/directory.png" style="border: #A9A9A9 1px solid; width:75%"></p>
+<p>And here’s what the resulting website looks like, hi kitties!</p>
+<p><img src="img/example-website-finished.png" style="border: #A9A9A9 1px solid; width:75%"></p>
 </div>
 <div id="deploy-website" class="section level3">
 <h3>Deploy website</h3>
@@ -685,7 +681,6 @@ blogdown::install_hugo()</code></pre>
 <p>A compiled list of the additional resources/links presented throughout this tutorial:</p>
 <ul>
 <li><a href="http://rmarkdown.rstudio.com/rmarkdown_websites.html">http://rmarkdown.rstudio.com/rmarkdown_websites.html</a>: an overview of R Markdown website basics</li>
-<li><a href="http://jekyllthemes.org/">http://jekyllthemes.org/</a>: Jekyll themes for use with your R Markdown website</li>
 <li><a href="http://happygitwithr.com/">http://happygitwithr.com/</a>: an introduction to Git/GitHub</li>
 <li><a href="http://pkgdown.r-lib.org/">http://pkgdown.r-lib.org/</a>: Hadley Wickham’s <code>pkgdown</code> website</li>
 <li><a href="https://bookdown.org/yihui/blogdown/">https://bookdown.org/yihui/blogdown/</a>: Yihui Xie’s blogdown book</li>
