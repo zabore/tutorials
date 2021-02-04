@@ -10,4 +10,4 @@ pagetitle: "Tutorials"
 
 [**Survival analysis in R**](survival_analysis_in_r_tutorial.html): a detailed tutorial on conducting survival analyses in R, including an introduction to the basics of survival analysis, landmark analyses and time-dependent covariates, competing risks, and a selection of advanced topics.
 
-[**Creating websites in R**](rmarkdown_websites_tutorial.html): a basic introduction to creating simple websites in RMarkdown, using my own personal site as an example.
+[**Creating websites in R**](rmarkdown_websites_tutorial.html): a basic introduction to creating simple websites in RMarkdown, using a website for my cats as an example.

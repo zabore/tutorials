@@ -7,6 +7,9 @@ output:
         toc_float: TRUE
 ---
 
+<link rel="stylesheet" href="styles.css" type="text/css">
+<link rel="stylesheet" href="academicicons/css/academicons.min.css"/>
+
 This tutorial provides an introduction to creating websites using R, R Markdown and GitHub pages.
 
 Updates were made on November 6, 2020 to simplify the personal website example as some extraneous pieces of information there were giving people problems. See new example website for my cats, John and Pete!

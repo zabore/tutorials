@@ -6,13 +6,16 @@ output:
         toc_float: TRUE
 ---
 
+<link rel="stylesheet" href="styles.css" type="text/css">
+<link rel="stylesheet" href="academicicons/css/academicons.min.css"/>
+
 This tutorial provides an introduction to survival analysis, and to conducting a survival analysis in R.
 
 This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center R-Presenters series on August 30, 2018.
 
 It was then modified for a more extensive training at Memorial Sloan Kettering Cancer Center in March, 2019.
 
-Please click the GitHub icon in the header above to go to the GitHub repository for this tutorial, where all of the source code for this tutorial can be accessed in the file `survival_analysis_in_r.Rmd`.
+The full source code for this tutorial can be found at: [https://github.com/zabore/tutorials/blob/master/survival_analysis_in_r_tutorial.Rmd](https://github.com/zabore/tutorials/blob/master/survival_analysis_in_r_tutorial.Rmd)
 
 
 ```{r setup, include=FALSE}
