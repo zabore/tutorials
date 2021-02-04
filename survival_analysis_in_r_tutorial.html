@@ -28,6 +28,15 @@
 <link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
 <link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
 
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css">
   pre:not([class]) {
@@ -72,6 +81,7 @@ h6 {
   text-align: left;
 }
 </style>
+
 
 <link rel="stylesheet" href="styles.css" type="text/css" />
 
@@ -351,13 +361,16 @@ div.tocify {
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li>
-  <a href="http://www.emilyzabor.com">fa-home fa-lg</a>
+  <a href="http://www.emilyzabor.com">
+    <span class="fas fa-home fa-lg"></span>
+     
+  </a>
 </li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
   <a href="http://www.emilyzabor.com/contact.html">
-    <span class="fa fa-envelope fa-lg"></span>
+    <span class="fas fa-envelope fa-lg"></span>
      
   </a>
 </li>
@@ -375,19 +388,19 @@ div.tocify {
 </li>
 <li>
   <a href="http://github.com/zabore">
-    <span class="fa fa-github fa-lg"></span>
+    <span class="fas fa-github fa-lg"></span>
      
   </a>
 </li>
 <li>
   <a href="https://twitter.com/zabormetrics">
-    <span class="fa fa-twitter fa-lg"></span>
+    <span class="fas fa-twitter fa-lg"></span>
      
   </a>
 </li>
 <li>
   <a href="https://www.linkedin.com/in/emily-zabor-59b902b7/">
-    <span class="fa fa-linkedin fa-lg"></span>
+    <span class="fas fa-linkedin fa-lg"></span>
      
   </a>
 </li>
@@ -825,8 +838,6 @@ names(f1)</code></pre>
 <li>Imagine two studies, each with 228 subjects. There are 165 deaths in each study. No censoring in one (orange line), 63 patients censored in the other (blue line)</li>
 <li>Ignoring censoring leads to an <strong>overestimate</strong> of the overall survival probability, because the censored subjects only contribute information for <strong>part</strong> of the follow-up time, and then fall out of the risk set, thus pulling down the cumulative probability of survival</li>
 </ul>
-<pre><code>## Warning: Vectorized input to `element_text()` is not officially supported.
-## Results may be unexpected or may change in future versions of ggplot2.</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-5-1.png" width="480" /></p>
 </div>
 <div id="estimating-median-survival-time" class="section level2">
@@ -865,8 +876,6 @@ names(f1)</code></pre>
 <li>Ignoring censoring creates an artificially lowered survival curve because the follow-up time that censored patients contribute is excluded (purple line)</li>
 <li>The true survival curve for the <code>lung</code> data is shown in blue for comparison</li>
 </ul>
-<pre><code>## Warning: Vectorized input to `element_text()` is not officially supported.
-## Results may be unexpected or may change in future versions of ggplot2.</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-9-1.png" width="480" /></p>
 </div>
 <div id="comparing-survival-times-between-groups" class="section level2">
@@ -1331,8 +1340,6 @@ names(f1)</code></pre>
 <li><p>A HR &lt; 1 indicates reduced hazard of death whereas a HR &gt; 1 indicates an increased hazard of death.</p></li>
 <li><p>So our HR = 0.59 implies that around 0.6 times as many females are dying as males, at any given time.</p></li>
 </ul>
-<pre><code>## Warning: Vectorized input to `element_text()` is not officially supported.
-## Results may be unexpected or may change in future versions of ggplot2.</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-16-1.png" width="480" /></p>
 </div>
 </div>
@@ -1404,8 +1411,6 @@ names(f1)</code></pre>
     )
 
 lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
-<pre><code>## Warning: Vectorized input to `element_text()` is not officially supported.
-## Results may be unexpected or may change in future versions of ggplot2.</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-20-1.png" width="480" /></p>
 </div>
 <div id="cox-regression-landmark-example-using-bmt-data" class="section level2">
@@ -2380,11 +2385,73 @@ ci_ulcer[[&quot;Tests&quot;]]</code></pre>
 <div id="plotting-cumulative-incidence-by-group---manually" class="section level2">
 <h2>Plotting cumulative incidence by group - manually</h2>
 <p><em>Note</em> I personally find the <code>ggcompetingrisks</code> function to be lacking in customization, especially compared to <code>ggsurvplot</code>. I typically do my own plotting, by first creating a tidy dataset of the <code>cuminc</code> fit results, and then plotting the results. See the source code for this presentation for details of the underlying code.</p>
+<pre class="r"><code>ciplotdat &lt;- 
+  ci_ulcer %&gt;% 
+  list_modify(&quot;Tests&quot; = NULL) %&gt;% 
+  map_df(`[`, c(&quot;time&quot;, &quot;est&quot;), .id = &quot;id&quot;) %&gt;% 
+  mutate(id = recode(
+    id, 
+    &quot;0 1&quot; = &quot;Not ulcerated:Death melanoma&quot;, 
+    &quot;0 3&quot; = &quot;Not ulcerated:Death other causes&quot;, 
+    &quot;1 1&quot; = &quot;Ulcerated:Death melanoma&quot;,
+    &quot;1 3&quot; = &quot;Ulcerated:Death other causes&quot;)
+    ) %&gt;% 
+  separate(id, c(&quot;Ulceration&quot;, &quot;Event&quot;), &quot;:&quot;) 
+
+ggplot(ciplotdat, aes(x = time, y = est, color = Ulceration)) +
+  geom_step(lwd = 1.2, aes(linetype = Event))  +
+  ylim(c(0, 1)) +
+  theme_classic() +
+  theme(plot.title = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.position = &quot;bottom&quot;) +
+  labs(x = &quot;Days&quot;, 
+       y = &quot;Cumulative incidence&quot;,
+       title = &quot;Death by ulceration status&quot;) +
+  annotate(&quot;text&quot;, x = 0, y = 1, hjust = 0,
+           label = paste0(
+             &quot;Death melanoma p = &quot;, 
+             ifelse(ci_ulcer$Tests[1, 2] &lt; .001, 
+                    &quot;&lt;.001&quot;, 
+                    round(ci_ulcer$Tests[1, 2], 3)))) + 
+  annotate(&quot;text&quot;, x = 0, y = 0.92, hjust = 0,
+           label = paste0(
+             &quot;Death other causes p = &quot;, 
+             ifelse(ci_ulcer$Tests[2, 2] &lt; .001, 
+                    &quot;&lt;.001&quot;, 
+                    round(ci_ulcer$Tests[2, 2], 3)))) </code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-35-1.png" width="480" /></p>
 </div>
 <div id="plotting-a-single-event-type---manually" class="section level2">
 <h2>Plotting a single event type - manually</h2>
 <p>Often only one of the event types will be of interest, though we still want to account for the competing event. In that case the event of interest can be plotted alone. Again, I do this manually by first creating a tidy dataset of the <code>cuminc</code> fit results, and then plotting the results. See the source code for this presentation for details of the underlying code.</p>
+<pre class="r"><code>ciplotdat1 &lt;- 
+  ci_ulcer %&gt;% 
+  list_modify(&quot;Tests&quot; = NULL) %&gt;% 
+  map_df(`[`, c(&quot;time&quot;, &quot;est&quot;), .id = &quot;id&quot;) %&gt;% 
+  filter(id %in% c(&quot;0 1&quot;, &quot;1 1&quot;)) %&gt;% 
+  mutate(Ulceration = recode(
+    id, 
+    &quot;0 1&quot; = &quot;Not ulcerated&quot;, 
+    &quot;1 1&quot; = &quot;Ulcerated&quot;)
+    )
+
+ggplot(ciplotdat1, aes(x = time, y = est, color = Ulceration)) +
+  geom_step(lwd = 1.2)  +
+  ylim(c(0, 1)) +
+  theme_classic() +
+  theme(plot.title = element_text(size = 14),
+        legend.title = element_blank(),
+        legend.position = &quot;bottom&quot;) +
+  labs(x = &quot;Days&quot;, 
+       y = &quot;Cumulative incidence&quot;,
+       title = &quot;Melanoma death by ulceration status&quot;) +
+  annotate(&quot;text&quot;, x = 0, y = 1, hjust = 0,
+           label = paste0(
+             &quot;p-value = &quot;, 
+             ifelse(ci_ulcer$Tests[1, 2] &lt; .001, 
+                    &quot;&lt;.001&quot;, 
+                    round(ci_ulcer$Tests[1, 2], 3))))</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-36-1.png" width="480" /></p>
 </div>
 <div id="add-the-numbers-at-risk-table" class="section level2">
@@ -3121,7 +3188,6 @@ gg_conditional_surv(
   labs(color = &quot;Conditional time&quot;)</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-49-1.png" width="672" /></p>
 <p>The resulting plot has one survival curve for each time on which we condition. In this case the first line is the overall survival curve since it is conditioning on time 0.</p>
-<pre class="r"><code>knit_exit()</code></pre>
 </div>
 </div>
 
@@ -3136,7 +3202,7 @@ gg_conditional_surv(
 
 // add bootstrap table styles to pandoc tables
 function bootstrapStylePandocTables() {
-  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
 }
 $(document).ready(function () {
   bootstrapStylePandocTables();
