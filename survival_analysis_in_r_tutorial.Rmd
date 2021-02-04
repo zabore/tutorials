@@ -27,6 +27,9 @@ library(survminer)
 opts_chunk$set(fig.width = 5, 
                fig.height = 4
 )
+
+opts_knit$set(warning = FALSE,
+              message = FALSE)
 ```
 
 
@@ -431,7 +434,7 @@ $$\Big(1 - \frac{121}{228}\Big) \times 100 = 47\%$$
 - Imagine two studies, each with 228 subjects. There are 165 deaths in each study. No censoring in one (orange line), 63 patients censored in the other (blue line)
 - Ignoring censoring leads to an **overestimate** of the overall survival probability, because the censored subjects only contribute information for **part** of the follow-up time, and then fall out of the risk set, thus pulling down the cumulative probability of survival
 
-```{r echo = FALSE, message = FALSE, fig.height = 6}
+```{r echo = FALSE, message = FALSE, warning = FALSE, fig.height = 6}
 fakedata2 <- lung %>% 
   mutate(time = ifelse(status == 2, time, 1022), 
          group = "No censoring") %>% 
@@ -503,7 +506,7 @@ lung %>%
 - Ignoring censoring creates an artificially lowered survival curve because the follow-up time that censored patients contribute is excluded (purple line)
 - The true survival curve for the `lung` data is shown in blue for comparison
 
-```{r echo = FALSE, fig.height = 6, message = FALSE}
+```{r echo = FALSE, fig.height = 6, message = FALSE, warning = FALSE}
 fakedata <- lung %>% 
   filter(status == 2) %>% 
   mutate(group = "Ignoring censoring") %>% 
@@ -608,7 +611,7 @@ coxph(Surv(time, status) ~ sex, data = lung) %>%
 - A HR < 1 indicates reduced hazard of death whereas a HR > 1 indicates an increased hazard of death. 
 - So our HR = 0.59 implies that around 0.6 times as many females are dying as males, at any given time.
 
-```{r echo = FALSE, fig.height = 6}
+```{r echo = FALSE, fig.height = 6, warning = FALSE, message = FALSE}
 fit4 <- survfit(Surv(time, status) ~ sex, data = lung)
 
 ggsurvplot(data = lung, 
@@ -713,7 +716,7 @@ lm_fit <- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)
 ```
  
 
-```{r echo = FALSE, fig.height = 6}
+```{r echo = FALSE, fig.height = 6, warning = FALSE, message = FALSE}
 ggsurvplot(
   fit = lm_fit, 
   data = lm_dat,
@@ -990,7 +993,7 @@ ggcompetingrisks(
 
 *Note* I personally find the `ggcompetingrisks` function to be lacking in customization, especially compared to `ggsurvplot`. I typically do my own plotting, by first creating a tidy dataset of the `cuminc` fit results, and then plotting the results. See the source code for this presentation for details of the underlying code.
 
-```{r echo = FALSE}
+```{r}
 ciplotdat <- 
   ci_ulcer %>% 
   list_modify("Tests" = NULL) %>% 
@@ -1033,7 +1036,7 @@ ggplot(ciplotdat, aes(x = time, y = est, color = Ulceration)) +
 
 Often only one of the event types will be of interest, though we still want to account for the competing event. In that case the event of interest can be plotted alone. Again, I do this manually by first creating a tidy dataset of the `cuminc` fit results, and then plotting the results. See the source code for this presentation for details of the underlying code.
 
-```{r echo = FALSE}
+```{r}
 ciplotdat1 <- 
   ci_ulcer %>% 
   list_modify("Tests" = NULL) %>% 
@@ -1359,7 +1362,7 @@ The resulting plot has one survival curve for each time on which we condition. I
 
 
 
-```{r}
+```{r echo = FALSE}
 knit_exit()
 ```
 
