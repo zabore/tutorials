@@ -933,7 +933,7 @@ ci_fit <-
 ```
 
 ```{r}
-plot(ci_fit)
+plot(ci_fit, xlab = "Days")
 ```
 
 In the legend: 
@@ -954,7 +954,7 @@ In this case we get a panel labeled according to the group, and a legend labeled
 - unlike base `R` the y-axis does not go to 1 by default, so you must change it manually 
 
 ```{r}
-ggcompetingrisks(ci_fit)
+ggcompetingrisks(ci_fit, xlab = "Days")
 ```
 
 
