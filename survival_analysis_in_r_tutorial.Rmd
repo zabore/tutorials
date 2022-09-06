@@ -164,6 +164,7 @@ In this section, we will use the following packages:
 ```{r message = FALSE, warning = FALSE}
 # install.packages(c("survival", "lubridate", "ggsurvfit", "gtsummary", "tidycmprsk"))
 # remotes::install_github("zabore/condsurv")
+# remotes::install_github("zabore/ezfun")
 library(survival)
 library(lubridate)
 library(ggsurvfit)
@@ -287,8 +288,8 @@ We will use the {ggsurvfit} package to generate Kaplan-Meier plots. This package
 
 *Note*: alternatively, survival plots can be created using base R or the {survminer} package.
 
-The {ggsurvfit} package works best if you create the `survfit` object using the included `ggsurvfit::survfit2()` function, which uses similar syntax to what we saw previously with `survival::survfit()`.
-
+The {ggsurvfit} package works best if you create the `survfit` object using the included `ggsurvfit::survfit2()` function, which uses the same syntax to what we saw previously with `survival::survfit()`.
+The `ggsurvfit::survfit2()` tracks the environment from the function call, which allows the plot to have better default values for labeling and p-value reporting.
 
 ```{r}
 survfit2(Surv(time, status) ~ 1, data = lung) %>% 
@@ -296,7 +297,7 @@ survfit2(Surv(time, status) ~ 1, data = lung) %>%
   labs(
     x = "Days",
     y = "Overall survival probability"
-    )
+  )
 ```
 
 The default plot in `ggsurvfit()` shows the step function only. We can add the confidence interval using `add_confidence_interval()`:
@@ -307,11 +308,11 @@ survfit2(Surv(time, status) ~ 1, data = lung) %>%
   labs(
     x = "Days",
     y = "Overall survival probability"
-    ) + 
+  ) + 
   add_confidence_interval()
 ```
 
-Typically we will also want to see the numbers at risk in a table below the x-axis. We can add this using `add_risk_table()`:
+Typically we will also want to see the numbers at risk in a table below the x-axis. We can add this using `add_risktable()`:
 
 ```{r}
 survfit2(Surv(time, status) ~ 1, data = lung) %>% 
@@ -400,7 +401,7 @@ We can produce nice tables of $x$-time survival probability estimates using the 
 survfit(Surv(time, status) ~ 1, data = lung) %>% 
   tbl_survfit(
     times = 365.25,
-    label_header = "1-year survival (95% CI)"
+    label_header = "**1-year survival (95% CI)**"
   )
 ```
 
@@ -472,7 +473,7 @@ We can produce nice tables of median survival time estimates using the `tbl_surv
 survfit(Surv(time, status) ~ 1, data = lung) %>% 
   tbl_survfit(
     probs = 0.5,
-    label_header = "Median survival (95% CI)"
+    label_header = "**Median survival (95% CI)**"
   )
 ```
 
@@ -590,6 +591,7 @@ Typically aGVHD occurs within the first 90 days following transplant, so we use 
 **Step 2** Subset population for those followed at least until landmark time
 
 ```{r}
+# what do you think of recoding the stratifying variable here to be character/factor so the figures turn out looking a bit better
 lm_dat <- 
   BMT %>% 
   filter(T1 >= 90) 
@@ -805,17 +807,15 @@ cuminc(Surv(time, status) ~ 1, data = Melanoma) %>%
   add_risktable()
 ```
 
-If we want to include both event types, we can call the `autoplot()` function from the {tidycmprsk} package:
+If we want to include both event types, specify the outcomes in the `ggcuminc(outcome=)` argument:
 
 ```{r}
 cuminc(Surv(time, status) ~ 1, data = Melanoma) %>% 
-  autoplot(outcomes = c("1", "2")) + 
+  ggcuminc(outcome = c("1", "2")) +
+  ylim(c(0, 1)) + 
   labs(
-    x = "Days",
-    y = "Cumulative Incidence",
-    linetype = "Event type"
-  ) +
-  ylim(c(0, 1))
+    x = "Days"
+  )
 ```
 
 Now let's say we wanted to examine death from melanoma or other causes in the `Melanoma` data, according to `ulcer`, the presence or absence of ulceration. We can estimate the cumulative incidence at various times by group and display that in a table using the `tbl_cuminc()` function from the {tidycmprsk} package, and add Gray's test to test for a difference between groups over the entire follow-up period using the `add_p()` function.
@@ -930,6 +930,7 @@ Here we see that with p-values >0.05, we do not reject the null hypothesis, and 
 Sometimes you will want to visualize a survival estimate according to a continuous variable. The `sm.survival` function from the `sm` package allows you to do this for a quantile of the distribution of survival data. The default quantile is `p = 0.5` for median survival.
 
 ```{r message = FALSE, warning = FALSE}
+# install.packages("sm")
 library(sm)
 
 sm.options(
