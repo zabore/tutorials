@@ -591,7 +591,6 @@ Typically aGVHD occurs within the first 90 days following transplant, so we use 
 **Step 2** Subset population for those followed at least until landmark time
 
 ```{r}
-# what do you think of recoding the stratifying variable here to be character/factor so the figures turn out looking a bit better
 lm_dat <- 
   BMT %>% 
   filter(T1 >= 90) 
