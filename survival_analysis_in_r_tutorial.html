@@ -13,22 +13,14 @@
 
 <title>Survival Analysis in R</title>
 
-<script src="site_libs/header-attrs-2.10/header-attrs.js"></script>
-<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<link href="site_libs/bootstrap-3.3.5/css/paper.min.css" rel="stylesheet" />
-<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
-<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
-<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
-<style>h1 {font-size: 34px;}
-       h1.title {font-size: 38px;}
-       h2 {font-size: 30px;}
-       h3 {font-size: 24px;}
-       h4 {font-size: 18px;}
-       h5 {font-size: 16px;}
-       h6 {font-size: 12px;}
-       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
-       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+<link href="site_libs/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-5.1.3/bootstrap.bundle.min.js"></script>
+<script src="site_libs/bs3compat-0.4.0/transition.js"></script>
+<script src="site_libs/bs3compat-0.4.0/tabs.js"></script>
+<script src="site_libs/bs3compat-0.4.0/bs3compat.js"></script>
 <script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
@@ -62,7 +54,7 @@ if (window.hljs) {
 
 
 
-<link rel="stylesheet" href="styles.css" type="text/css" />
+
 
 
 
@@ -86,6 +78,9 @@ button.code-folding-btn:focus {
 }
 summary {
   display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
 }
 pre code {
   padding: 0;
@@ -143,11 +138,15 @@ $(document).ready(function () {
     href = "index.html";
   var menuAnchor = $('a[href="' + href + '"]');
 
-  // mark it active
-  menuAnchor.tab('show');
-
-  // if it's got a parent navbar menu mark it active as well
-  menuAnchor.closest('li.dropdown').addClass('active');
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
 
   // Navbar adjustments
   var navHeight = $(".navbar").first().height() + 15;
@@ -283,6 +282,12 @@ div.tocify {
   border-radius: 0px;
 }
 
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
 
 </style>
 
@@ -311,7 +316,7 @@ div.tocify {
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
   <div class="container">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -329,12 +334,6 @@ div.tocify {
       </ul>
       <ul class="nav navbar-nav navbar-right">
         <li>
-  <a href="http://www.emilyzabor.com/contact.html">
-    <span class="fa fa-envelope fa-lg"></span>
-     
-  </a>
-</li>
-<li>
   <a href="https://scholar.google.com/citations?user=tLbQTZMAAAAJ&amp;hl=en">
     <span class="ai ai-google-scholar ai-lg"></span>
      
@@ -378,51 +377,54 @@ div.tocify {
 </div>
 
 
-<p><link rel="stylesheet" href="styles.css" type="text/css"> <link rel="stylesheet" href="academicicons/css/academicons.min.css"/></p>
-<p>This tutorial provides an introduction to survival analysis, and to conducting a survival analysis in R.</p>
-<p>This tutorial was originally presented at the Memorial Sloan Kettering Cancer Center R-Presenters series on August 30, 2018.</p>
-<p>It was then modified for a more extensive training at Memorial Sloan Kettering Cancer Center in March, 2019.</p>
-<p>The full source code for this tutorial can be found at: <a href="https://github.com/zabore/tutorials/blob/master/survival_analysis_in_r_tutorial.Rmd">https://github.com/zabore/tutorials/blob/master/survival_analysis_in_r_tutorial.Rmd</a></p>
-<div id="part-1-introduction-to-survival-analysis" class="section level1">
+<p><link rel="stylesheet" href="academicicons/css/academicons.min.css"/></p>
+<p>This tutorial provides an introduction to survival analysis, and to
+conducting a survival analysis in R. This tutorial was originally
+presented at the Memorial Sloan Kettering Cancer Center R-Presenters
+series on August 30, 2018. It was then modified for a more extensive
+training at Memorial Sloan Kettering Cancer Center in March, 2019.
+Updates, sometimes significant, are made when new functionality becomes
+available in R. This tutorial reflects my own opinions about the best
+functionality available in R for survival analysis.</p>
+<p><strong>Last updated: 2022-09-06</strong></p>
+<div id="part-1-introduction-to-survival-analysis"
+class="section level1">
 <h1>Part 1: Introduction to Survival Analysis</h1>
-<p>This presentation will cover some basics of survival analysis, and the following series tutorial papers can be helpful for additional reading:</p>
+<p>This presentation will cover some basics of survival analysis, and
+the following series of tutorial papers can be helpful for additional
+reading:</p>
 <blockquote>
-<p>Clark, T., Bradburn, M., Love, S., &amp; Altman, D. (2003). Survival analysis part I: Basic concepts and first analyses. 232-238. ISSN 0007-0920.</p>
+<p>Clark, T., Bradburn, M., Love, S., &amp; Altman, D. (2003). Survival
+analysis part I: Basic concepts and first analyses. 232-238. ISSN
+0007-0920.</p>
 </blockquote>
 <blockquote>
-<p>M J Bradburn, T G Clark, S B Love, &amp; D G Altman. (2003). Survival Analysis Part II: Multivariate data analysis – an introduction to concepts and methods. British Journal of Cancer, 89(3), 431-436.</p>
+<p>M J Bradburn, T G Clark, S B Love, &amp; D G Altman. (2003). Survival
+Analysis Part II: Multivariate data analysis – an introduction to
+concepts and methods. British Journal of Cancer, 89(3), 431-436.</p>
 </blockquote>
 <blockquote>
-<p>Bradburn, M., Clark, T., Love, S., &amp; Altman, D. (2003). Survival analysis Part III: Multivariate data analysis – choosing a model and assessing its adequacy and fit. 89(4), 605-11.</p>
+<p>Bradburn, M., Clark, T., Love, S., &amp; Altman, D. (2003). Survival
+analysis Part III: Multivariate data analysis – choosing a model and
+assessing its adequacy and fit. 89(4), 605-11.</p>
 </blockquote>
 <blockquote>
-<p>Clark, T., Bradburn, M., Love, S., &amp; Altman, D. (2003). Survival analysis part IV: Further concepts and methods in survival analysis. 781-786. ISSN 0007-0920.</p>
+<p>Clark, T., Bradburn, M., Love, S., &amp; Altman, D. (2003). Survival
+analysis part IV: Further concepts and methods in survival analysis.
+781-786. ISSN 0007-0920.</p>
 </blockquote>
-<div id="packages" class="section level2">
-<h2>Packages</h2>
-<p>Some packages we’ll be using today include:</p>
-<ul>
-<li><code>lubridate</code></li>
-<li><code>survival</code></li>
-<li><code>survminer</code></li>
-</ul>
-<pre class="r"><code>library(survival)
-library(survminer)
-library(lubridate)</code></pre>
-</div>
-<div id="what-is-survival-data" class="section level2">
-<h2>What is survival data?</h2>
-<p>Time-to-event data that consist of a distinct start time and end time.</p>
-<p>Examples from cancer</p>
+<div id="the-basics" class="section level2">
+<h2>The basics</h2>
+<p>Survival data are time-to-event data that consist of a distinct start
+time and end time.</p>
+<p>Examples from cancer:</p>
 <ul>
 <li>Time from surgery to death</li>
 <li>Time from start of treatment to progression</li>
 <li>Time from response to recurrence</li>
 </ul>
-</div>
-<div id="examples-from-other-fields" class="section level2">
-<h2>Examples from other fields</h2>
-<p>Time-to-event data are common in many fields including, but not limited to</p>
+<p>Time-to-event data are common in many other fields. Some other
+examples include:</p>
 <ul>
 <li>Time from HIV infection to development of AIDS</li>
 <li>Time to heart attack</li>
@@ -430,172 +432,155 @@ library(lubridate)</code></pre>
 <li>Time to initiation of sexual activity</li>
 <li>Time to machine malfunction</li>
 </ul>
-</div>
-<div id="aliases-for-survival-analysis" class="section level2">
-<h2>Aliases for survival analysis</h2>
-<p>Because survival analysis is common in many other fields, it also goes by other names</p>
+<p>Because time-to-event data are common in many fields, it also goes by
+names besides survival analysis including:</p>
 <ul>
 <li>Reliability analysis</li>
 <li>Duration analysis</li>
 <li>Event history analysis</li>
 <li>Time-to-event analysis</li>
 </ul>
-</div>
-<div id="the-lung-dataset" class="section level2">
-<h2>The lung dataset</h2>
-<p>The <code>lung</code> dataset is available from the <code>survival</code> package in <code>R</code>. The data contain subjects with advanced lung cancer from the North Central Cancer Treatment Group. Some variables we will use to demonstrate methods today include</p>
-<ul>
-<li>time: Survival time in days</li>
-<li>status: censoring status 1=censored, 2=dead</li>
-<li>sex: Male=1 Female=2</li>
-</ul>
-</div>
-<div id="what-is-censoring" class="section level2">
-<h2>What is censoring?</h2>
+<p>A key feature of survival data is <strong>censoring</strong>.</p>
 <p><img src="img/trial_anatomy.png" width="522" /></p>
 <blockquote>
-<p>RICH JT, NEELY JG, PANIELLO RC, VOELKER CCJ, NUSSENBAUM B, WANG EW. A PRACTICAL GUIDE TO UNDERSTANDING KAPLAN-MEIER CURVES. Otolaryngology head and neck surgery: official journal of American Academy of Otolaryngology Head and Neck Surgery. 2010;143(3):331-336. <a href="doi:10.1016/j.otohns.2010.05.007" class="uri">doi:10.1016/j.otohns.2010.05.007</a>.</p>
+<p>RICH JT, NEELY JG, PANIELLO RC, VOELKER CCJ, NUSSENBAUM B, WANG EW. A
+PRACTICAL GUIDE TO UNDERSTANDING KAPLAN-MEIER CURVES. Otolaryngology
+head and neck surgery: official journal of American Academy of
+Otolaryngology Head and Neck Surgery. 2010;143(3):331-336. <a
+href="doi:10.1016/j.otohns.2010.05.007"
+class="uri">doi:10.1016/j.otohns.2010.05.007</a>.</p>
 </blockquote>
-</div>
-<div id="types-of-censoring" class="section level2">
-<h2>Types of censoring</h2>
 <p>A subject may be censored due to:</p>
 <ul>
 <li>Loss to follow-up</li>
 <li>Withdrawal from study</li>
 <li>No event by end of fixed study period</li>
 </ul>
-<p>Specifically these are examples of <strong>right</strong> censoring.</p>
-<p>Left censoring and interval censoring are also possible, and methods exist to analyze this type of data, but this training will be limited to right censoring.</p>
-</div>
-<div id="censored-survival-data" class="section level2">
-<h2>Censored survival data</h2>
+<p>Specifically these are examples of <strong>right</strong> censoring.
+Left censoring and interval censoring are also possible, and methods
+exist to analyze these types of data, but this tutorial will be focus on
+right censoring.</p>
+<p>To illustrate the impact of censoring, suppose we have the following
+data:</p>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/swimmer-1.png" width="480" /></p>
-<p>In this example, how would we compute the proportion who are event-free at 10 years?</p>
-<p>Subjects 6 and 7 were <strong>event-free at 10 years</strong>. Subjects 2, 9, and 10 had the <strong>event before 10 years</strong>. Subjects 1, 3, 4, 5, and 8 were <strong>censored before 10 years</strong>, so we don’t know whether they had the event or not by 10 years - how do we incorporate these subjects into our estimate?</p>
-</div>
-<div id="distribution-of-follow-up-time" class="section level2">
-<h2>Distribution of follow-up time</h2>
+<p>How would we compute the proportion who are event-free at 10
+years?</p>
 <ul>
-<li>Censored subjects still provide information so must be appropriately included in the analysis</li>
-<li>Distribution of follow-up times is skewed, and may differ between censored patients and those with events</li>
+<li>Subjects 6 and 7 were <strong>event-free at 10 years</strong>.</li>
+<li>Subjects 2, 9, and 10 had the <strong>event before 10
+years</strong>.</li>
+<li>Subjects 1, 3, 4, 5, and 8 were <strong>censored before 10
+years</strong>, so we don’t know whether they had the event or not at 10
+years. But we know something about them - that they were each followed
+for a certain amount of time without the event of interest prior to
+being censored.</li>
+</ul>
+<p><em>Survival analysis techniques provide a way to appropriately
+account for censored patients in the analysis.</em></p>
+<p>Other reasons specialized analysis techniques are needed:</p>
+<ul>
+<li>The distribution of follow-up times is skewed, and may differ
+between censored patients and those with events</li>
 <li>Follow-up times are always positive</li>
 </ul>
+<p>Example of the distribution of follow-up times according to event
+status:</p>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/fuptimes-1.png" width="480" /></p>
-</div>
-<div id="components-of-survival-data" class="section level2">
-<h2>Components of survival data</h2>
-<p>For subject <span class="math inline">\(i\)</span>:</p>
-<ol style="list-style-type: decimal">
-<li><p>Event time <span class="math inline">\(T_i\)</span></p></li>
-<li><p>Censoring time <span class="math inline">\(C_i\)</span></p></li>
-<li><p>Event indicator <span class="math inline">\(\delta_i\)</span>:</p>
+<p>To analyze survival data, we need to know the observed time <span
+class="math inline">\(Y_i\)</span> and the event indicator <span
+class="math inline">\(\delta_i\)</span>. For subject <span
+class="math inline">\(i\)</span>:</p>
 <ul>
-<li>1 if event observed (i.e. <span class="math inline">\(T_i \leq C_i\)</span>)</li>
-<li>0 if censored (i.e. <span class="math inline">\(T_i &gt; C_i\)</span>)</li>
-</ul></li>
-<li><p>Observed time <span class="math inline">\(Y_i = \min(T_i, C_i)\)</span></p></li>
-</ol>
-<p>The observed times and an event indicator are provided in the <code>lung</code> data</p>
-<ul>
-<li>time: Survival time in days (<span class="math inline">\(Y_i\)</span>)</li>
-<li>status: censoring status 1=censored, 2=dead (<span class="math inline">\(\delta_i\)</span>)</li>
+<li>Observed time <span class="math inline">\(Y_i = \min(T_i,
+C_i)\)</span> where <span class="math inline">\(T_i\)</span> = event
+time and <span class="math inline">\(C_i\)</span> = censoring time</li>
+<li>Event indicator <span class="math inline">\(\delta_i\)</span> = 1 if
+event observed (i.e. <span class="math inline">\(T_i \leq C_i\)</span>),
+= 0 if censored (i.e. <span class="math inline">\(T_i &gt;
+C_i\)</span>)</li>
 </ul>
-<table>
-<thead>
-<tr class="header">
-<th align="right">inst</th>
-<th align="right">time</th>
-<th align="right">status</th>
-<th align="right">age</th>
-<th align="right">sex</th>
-<th align="right">ph.ecog</th>
-<th align="right">ph.karno</th>
-<th align="right">pat.karno</th>
-<th align="right">meal.cal</th>
-<th align="right">wt.loss</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="right">3</td>
-<td align="right">306</td>
-<td align="right">2</td>
-<td align="right">74</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="right">90</td>
-<td align="right">100</td>
-<td align="right">1175</td>
-<td align="right">NA</td>
-</tr>
-<tr class="even">
-<td align="right">3</td>
-<td align="right">455</td>
-<td align="right">2</td>
-<td align="right">68</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">90</td>
-<td align="right">90</td>
-<td align="right">1225</td>
-<td align="right">15</td>
-</tr>
-<tr class="odd">
-<td align="right">3</td>
-<td align="right">1010</td>
-<td align="right">1</td>
-<td align="right">56</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">90</td>
-<td align="right">90</td>
-<td align="right">NA</td>
-<td align="right">15</td>
-</tr>
-<tr class="even">
-<td align="right">5</td>
-<td align="right">210</td>
-<td align="right">2</td>
-<td align="right">57</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="right">90</td>
-<td align="right">60</td>
-<td align="right">1150</td>
-<td align="right">11</td>
-</tr>
-<tr class="odd">
-<td align="right">1</td>
-<td align="right">883</td>
-<td align="right">2</td>
-<td align="right">60</td>
-<td align="right">1</td>
-<td align="right">0</td>
-<td align="right">100</td>
-<td align="right">90</td>
-<td align="right">NA</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="right">12</td>
-<td align="right">1022</td>
-<td align="right">1</td>
-<td align="right">74</td>
-<td align="right">1</td>
-<td align="right">1</td>
-<td align="right">50</td>
-<td align="right">80</td>
-<td align="right">513</td>
-<td align="right">0</td>
-</tr>
-</tbody>
-</table>
+<p>The probability that a subject will survive beyond any given
+specified time</p>
+<p><span class="math display">\[S(t) = Pr(T&gt;t) = 1 -
+F(t)\]</span></p>
+<p><span class="math inline">\(S(t)\)</span>: survival function <span
+class="math inline">\(F(t) = Pr(T \leq t)\)</span>: cumulative
+distribution function</p>
+<p>In theory the survival function is smooth; in practice we observe
+events on a discrete time scale.</p>
+<p>The <strong>survival probability</strong> at a certain time, <span
+class="math inline">\(S(t)\)</span>, is a conditional probability of
+surviving beyond that time, given that an individual has survived just
+prior to that time. The survival probability can be estimated as the
+number of patients who are alive without loss to follow-up at that time,
+divided by the number of patients who were alive just prior to that
+time.</p>
+<p>The <strong>Kaplan-Meier</strong> estimate of survival probability at
+a given time is the product of these conditional probabilities up until
+that given time.</p>
+<p>At time 0, the survival probability is 1, i.e. <span
+class="math inline">\(S(t_0) = 1\)</span>.</p>
 </div>
-<div id="dealing-with-dates-in-r" class="section level2">
-<h2>Dealing with dates in R</h2>
-<p>Data will often come with start and end dates rather than pre-calculated survival times. The first step is to make sure these are formatted as dates in R.</p>
-<p>Let’s create a small example dataset with variables <code>sx_date</code> for surgery date and <code>last_fup_date</code> for the last follow-up date.</p>
+<div id="packages" class="section level2">
+<h2>Packages</h2>
+<p>In this section, we will use the following packages:</p>
+<pre class="r"><code># install.packages(c(&quot;survival&quot;, &quot;lubridate&quot;, &quot;ggsurvfit&quot;, &quot;gtsummary&quot;, &quot;tidycmprsk&quot;))
+# remotes::install_github(&quot;zabore/condsurv&quot;)
+library(survival)
+library(lubridate)
+library(ggsurvfit)
+library(gtsummary)
+library(tidycmprsk)
+library(condsurv)</code></pre>
+</div>
+<div id="the-lung-dataset" class="section level2">
+<h2>The <code>lung</code> dataset</h2>
+<p>Throughout this section, we will use the <code>lung</code> dataset
+from the {survival} package as example data. The data contain subjects
+with advanced lung cancer from the North Central Cancer Treatment Group.
+We will focus on the following variables throughout this tutorial:</p>
+<ul>
+<li>time: Observed survival time in days</li>
+<li>status: censoring status 1=censored, 2=dead</li>
+<li>sex: 1=Male, 2=Female</li>
+</ul>
+<p><em>Note that the status is coded in a non-standard way in this
+dataset. Typically you will see 1=event, 0=censored</em>. Let’s recode
+it to avoid confusion:</p>
+<pre class="r"><code>lung &lt;- 
+  lung %&gt;% 
+  mutate(
+    status = recode(status, `1` = 0, `2` = 1)
+  )</code></pre>
+<p>Now we have:</p>
+<ul>
+<li>time: Observed survival time in days</li>
+<li>status: censoring status 0=censored, 1=dead</li>
+<li>sex: 1=Male, 2=Female</li>
+</ul>
+<p>Here are the first 6 observations:</p>
+<pre class="r"><code>head(lung[, c(&quot;time&quot;, &quot;status&quot;, &quot;sex&quot;)])</code></pre>
+<pre><code>##   time status sex
+## 1  306      1   1
+## 2  455      1   1
+## 3 1010      0   1
+## 4  210      1   1
+## 5  883      1   1
+## 6 1022      0   1</code></pre>
+<p><em>Note</em>: the <code>Surv()</code> function in the {survival}
+package accepts by default TRUE/FALSE, where TRUE is event and FALSE is
+censored; 1/0 where 1 is event and 0 is censored; or 2/1 where 2 is
+event and 1 is censored. <strong>Please take care to ensure the event
+indicator is properly formatted.</strong></p>
+</div>
+<div id="calculating-survival-times" class="section level2">
+<h2>Calculating survival times</h2>
+<p>Data will often come with start and end dates rather than
+pre-calculated survival times. The first step is to make sure these are
+formatted as dates in R.</p>
+<p>Let’s create a small example dataset with variables
+<code>sx_date</code> for surgery date and <code>last_fup_date</code> for
+the last follow-up date:</p>
 <pre class="r"><code>date_ex &lt;- 
   tibble(
     sx_date = c(&quot;2007-06-22&quot;, &quot;2004-02-13&quot;, &quot;2010-10-27&quot;), 
@@ -603,250 +588,1114 @@ library(lubridate)</code></pre>
     )
 
 date_ex</code></pre>
-<pre><code>## # A tibble: 3 x 2
+<pre><code>## # A tibble: 3 × 2
 ##   sx_date    last_fup_date
 ##   &lt;chr&gt;      &lt;chr&gt;        
 ## 1 2007-06-22 2017-04-15   
 ## 2 2004-02-13 2018-07-04   
 ## 3 2010-10-27 2016-10-31</code></pre>
-<p>We see these are both character variables, which will often be the case, but we need them to be formatted as dates.</p>
-</div>
-<div id="formatting-dates---base-r" class="section level2">
-<h2>Formatting dates - base R</h2>
-<pre class="r"><code>date_ex %&gt;% 
-  mutate(
-    sx_date = as.Date(sx_date, format = &quot;%Y-%m-%d&quot;), 
-    last_fup_date = as.Date(last_fup_date, format = &quot;%Y-%m-%d&quot;) 
-    )</code></pre>
-<pre><code>## # A tibble: 3 x 2
-##   sx_date    last_fup_date
-##   &lt;date&gt;     &lt;date&gt;       
-## 1 2007-06-22 2017-04-15   
-## 2 2004-02-13 2018-07-04   
-## 3 2010-10-27 2016-10-31</code></pre>
-<ul>
-<li>Note that in base <code>R</code> the format must include the separator as well as the symbol. e.g. if your date is in format m/d/Y then you would need <code>format = "%m/%d/%Y"</code></li>
-<li>See a full list of date format symbols at <a href="https://www.statmethods.net/input/dates.html">https://www.statmethods.net/input/dates.html</a></li>
-</ul>
-</div>
-<div id="formatting-dates---lubridate-package" class="section level2">
-<h2>Formatting dates - lubridate package</h2>
-<p>We can also use the <code>lubridate</code> package to format dates. In this case, use the <code>ymd</code> function</p>
-<pre class="r"><code>date_ex %&gt;% 
+<p>We see these are both character variables, but we need them to be
+formatted as dates.</p>
+<p>We will use the {lubridate} package to work with dates. In this case,
+we need to use the <code>ymd()</code> function to change the format,
+since the dates are currently in the character format where the year
+comes first, followed by the month, and followed by the day.</p>
+<pre class="r"><code>date_ex &lt;-
+  date_ex %&gt;% 
   mutate(
     sx_date = ymd(sx_date), 
     last_fup_date = ymd(last_fup_date)
-    )</code></pre>
-<pre><code>## # A tibble: 3 x 2
+    )
+
+date_ex</code></pre>
+<pre><code>## # A tibble: 3 × 2
 ##   sx_date    last_fup_date
 ##   &lt;date&gt;     &lt;date&gt;       
 ## 1 2007-06-22 2017-04-15   
 ## 2 2004-02-13 2018-07-04   
 ## 3 2010-10-27 2016-10-31</code></pre>
-<ul>
-<li>Note that unlike the base <code>R</code> option, the separators do not need to be specified</li>
-<li>The help page for <code>?dmy</code> will show all format options.</li>
-</ul>
-</div>
-<div id="calculating-survival-times---base-r" class="section level2">
-<h2>Calculating survival times - base R</h2>
-<p>Now that the dates formatted, we need to calculate the difference between start and end time in some units, usually months or years. In base <code>R</code>, use <code>difftime</code> to calculate the number of days between our two dates and convert it to a numeric value using <code>as.numeric</code>. Then convert to years by dividing by <code>365.25</code>, the average number of days in a year.</p>
-<pre class="r"><code>date_ex %&gt;% 
+<p>Now we see that the two dates are formatted as date rather than as
+character. Access the help page with <code>?ymd</code> to see all date
+format options.</p>
+<p>Now that the dates are formatted, we need to calculate the difference
+between start and end dates in some units, usually months or years.
+Using the {lubridate} package, the operator <code>%--%</code> designates
+a time interval, which is then converted to the number of elapsed
+seconds using <code>as.duration()</code> and finally converted to years
+by dividing by <code>dyears(1)</code>, which gives the number of seconds
+in a year.</p>
+<pre class="r"><code>date_ex &lt;-
+  date_ex %&gt;% 
   mutate(
-    os_yrs = 
-      as.numeric(
-        difftime(last_fup_date, 
-                 sx_date, 
-                 units = &quot;days&quot;)) / 365.25
-    )</code></pre>
-<pre><code>## # A tibble: 3 x 3
+    os_yrs = as.duration(sx_date %--% last_fup_date) / dyears(1)
+    )
+
+date_ex</code></pre>
+<pre><code>## # A tibble: 3 × 3
 ##   sx_date    last_fup_date os_yrs
 ##   &lt;date&gt;     &lt;date&gt;         &lt;dbl&gt;
 ## 1 2007-06-22 2017-04-15      9.82
 ## 2 2004-02-13 2018-07-04     14.4 
 ## 3 2010-10-27 2016-10-31      6.01</code></pre>
+<p>Now we have our observed time for use in survival analysis.</p>
+<p><em>Note</em>: we need to load the {lubridate} package using a call
+to <code>library</code> in order to be able to access the special
+operators (similar to situation with pipes - i.e. we can’t use
+<code>lubridate::ymd()</code> and then expect to use the special
+operators).</p>
 </div>
-<div id="calculating-survival-times---lubridate" class="section level2">
-<h2>Calculating survival times - lubridate</h2>
-<p>Using the <code>lubridate</code> package, the operator <code>%--%</code> designates a time interval, which is then converted to the number of elapsed seconds using <code>as.duration</code> and finally converted to years by dividing by <code>dyears(1)</code>, which gives the number of seconds in a year.</p>
-<pre class="r"><code>date_ex %&gt;% 
-  mutate(
-    os_yrs = 
-      as.duration(sx_date %--% last_fup_date) / dyears(1)
-    )</code></pre>
-<pre><code>## # A tibble: 3 x 3
-##   sx_date    last_fup_date os_yrs
-##   &lt;date&gt;     &lt;date&gt;         &lt;dbl&gt;
-## 1 2007-06-22 2017-04-15      9.82
-## 2 2004-02-13 2018-07-04     14.4 
-## 3 2010-10-27 2016-10-31      6.01</code></pre>
-<ul>
-<li><em>Note</em>: we need to load the <code>lubridate</code> package using a call to <code>library</code> in order to be able to access the special operators (similar to situation with pipes)</li>
-</ul>
-</div>
-<div id="event-indicator" class="section level2">
-<h2>Event indicator</h2>
-<p>For the components of survival data I mentioned the event indicator:</p>
-<p>Event indicator <span class="math inline">\(\delta_i\)</span>:</p>
-<ul>
-<li>1 if event observed (i.e. <span class="math inline">\(T_i \leq C_i\)</span>)</li>
-<li>0 if censored (i.e. <span class="math inline">\(T_i &gt; C_i\)</span>)</li>
-</ul>
-<p>However, in <code>R</code> the <code>Surv</code> function will also accept TRUE/FALSE (TRUE = event) or 1/2 (2 = event).</p>
-<p>In the <code>lung</code> data, we have:</p>
-<ul>
-<li>status: censoring status 1=censored, 2=dead</li>
-</ul>
-</div>
-<div id="survival-function" class="section level2">
-<h2>Survival function</h2>
-<p>The probability that a subject will survive beyond any given specified time</p>
-<p><span class="math display">\[S(t) = Pr(T&gt;t) = 1 - F(t)\]</span></p>
-<p><span class="math inline">\(S(t)\)</span>: survival function <span class="math inline">\(F(t) = Pr(T \leq t)\)</span>: cumulative distribution function</p>
-<p>In theory the survival function is smooth; in practice we observe events on a discrete time scale.</p>
-</div>
-<div id="survival-probability" class="section level2">
-<h2>Survival probability</h2>
-<ul>
-<li><strong>Survival probability</strong> at a certain time, <span class="math inline">\(S(t)\)</span>, is a conditional probability of surviving beyond that time, given that an individual has survived just prior to that time.</li>
-<li>Can be estimated as the number of patients who are alive without loss to follow-up at that time, divided by the number of patients who were alive just prior to that time</li>
-<li>The <strong>Kaplan-Meier</strong> estimate of survival probability is the product of these conditional probabilities up until that time</li>
-<li>At time 0, the survival probability is 1, i.e. <span class="math inline">\(S(t_0) = 1\)</span></li>
-</ul>
-</div>
-<div id="creating-survival-objects" class="section level2">
-<h2>Creating survival objects</h2>
-<p>The Kaplan-Meier method is the most common way to estimate survival times and probabilities. It is a non-parametric approach that results in a step function, where there is a step down each time an event occurs.</p>
-<ul>
-<li>The <code>Surv</code> function from the <code>survival</code> package creates a survival object for use as the response in a model formula. There will be one entry for each subject that is the survival time, which is followed by a <code>+</code> if the subject was censored. Let’s look at the first 10 observations:</li>
-</ul>
+<div id="creating-survival-objects-and-curves" class="section level2">
+<h2>Creating survival objects and curves</h2>
+<p>The Kaplan-Meier method is the most common way to estimate survival
+times and probabilities. It is a non-parametric approach that results in
+a step function, where there is a step down each time an event
+occurs.</p>
+<p>The <code>Surv()</code> function from the {survival} package creates
+a survival object for use as the response in a model formula. There will
+be one entry for each subject that is the survival time, which is
+followed by a <code>+</code> if the subject was censored. Let’s look at
+the first 10 observations:</p>
 <pre class="r"><code>Surv(lung$time, lung$status)[1:10]</code></pre>
 <pre><code>##  [1]  306   455  1010+  210   883  1022+  310   361   218   166</code></pre>
+<p>We see that subject 1 had an event at time 306 days, subject 2 had an
+event at time 455 days, subject 3 was censored at time 1010 days,
+etc.</p>
+<p>The <code>survfit()</code> function creates survival curves using the
+Kaplan-Meier method based on a formula. Let’s generate the overall
+survival curve for the entire cohort, assign it to object
+<code>s1</code>, and look at the structure using <code>str()</code>:</p>
+<pre class="r"><code>s1 &lt;- survfit(Surv(time, status) ~ 1, data = lung)
+str(s1)</code></pre>
+<pre><code>## List of 16
+##  $ n        : int 228
+##  $ time     : num [1:186] 5 11 12 13 15 26 30 31 53 54 ...
+##  $ n.risk   : num [1:186] 228 227 224 223 221 220 219 218 217 215 ...
+##  $ n.event  : num [1:186] 1 3 1 2 1 1 1 1 2 1 ...
+##  $ n.censor : num [1:186] 0 0 0 0 0 0 0 0 0 0 ...
+##  $ surv     : num [1:186] 0.996 0.982 0.978 0.969 0.965 ...
+##  $ std.err  : num [1:186] 0.0044 0.00885 0.00992 0.01179 0.01263 ...
+##  $ cumhaz   : num [1:186] 0.00439 0.0176 0.02207 0.03103 0.03556 ...
+##  $ std.chaz : num [1:186] 0.00439 0.0088 0.00987 0.01173 0.01257 ...
+##  $ type     : chr &quot;right&quot;
+##  $ logse    : logi TRUE
+##  $ conf.int : num 0.95
+##  $ conf.type: chr &quot;log&quot;
+##  $ lower    : num [1:186] 0.987 0.966 0.959 0.947 0.941 ...
+##  $ upper    : num [1:186] 1 1 0.997 0.992 0.989 ...
+##  $ call     : language survfit(formula = Surv(time, status) ~ 1, data = lung)
+##  - attr(*, &quot;class&quot;)= chr &quot;survfit&quot;</code></pre>
+<p>Some key components of this <code>survfit</code> object that will be
+used to create survival curves include:</p>
+<ul>
+<li><code>time</code>: the timepoints at which the curve has a step,
+i.e. at least one event occurred</li>
+<li><code>surv</code>: the estimate of survival at the corresponding
+<code>time</code></li>
+</ul>
 </div>
-<div id="estimating-survival-curves-with-the-kaplan-meier-method" class="section level2">
-<h2>Estimating survival curves with the Kaplan-Meier method</h2>
-<ul>
-<li>The <code>survfit</code> function creates survival curves based on a formula. Let’s generate the overall survival curve for the entire cohort, assign it to object <code>f1</code>, and look at the <code>names</code> of that object:</li>
-</ul>
-<pre class="r"><code>f1 &lt;- survfit(Surv(time, status) ~ 1, data = lung)
-names(f1)</code></pre>
-<pre><code>##  [1] &quot;n&quot;         &quot;time&quot;      &quot;n.risk&quot;    &quot;n.event&quot;   &quot;n.censor&quot;  &quot;surv&quot;     
-##  [7] &quot;std.err&quot;   &quot;cumhaz&quot;    &quot;std.chaz&quot;  &quot;type&quot;      &quot;logse&quot;     &quot;conf.int&quot; 
-## [13] &quot;conf.type&quot; &quot;lower&quot;     &quot;upper&quot;     &quot;call&quot;</code></pre>
-<p>Some key components of this <code>survfit</code> object that will be used to create survival curves include:</p>
-<ul>
-<li><code>time</code>, which contains the start and endpoints of each time interval</li>
-<li><code>surv</code>, which contains the survival probability corresponding to each <code>time</code></li>
-</ul>
-</div>
-<div id="kaplan-meier-plot---base-r" class="section level2">
-<h2>Kaplan-Meier plot - base R</h2>
-<p>Now we plot the <code>survfit</code> object in base <code>R</code> to get the Kaplan-Meier plot.</p>
-<pre class="r"><code>plot(survfit(Surv(time, status) ~ 1, data = lung), 
-     xlab = &quot;Days&quot;, 
-     ylab = &quot;Overall survival probability&quot;)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-2-1.png" width="480" /></p>
-<ul>
-<li>The default plot in base <code>R</code> shows the step function (solid line) with associated confidence intervals (dotted lines)</li>
-<li>Horizontal lines represent survival duration for the interval</li>
-<li>An interval is terminated by an event</li>
-<li>The height of vertical lines show the change in cumulative probability</li>
-<li>Censored observations, indicated by tick marks, reduce the cumulative survival between intervals. (<em>Note</em> the tick marks for censored patients are not shown by default, but could be added using the option <code>mark.time = TRUE</code>)</li>
-</ul>
-</div>
-<div id="kaplan-meier-plot---ggsurvplot" class="section level2">
-<h2>Kaplan-Meier plot - ggsurvplot</h2>
-<p>Alternatively, the <code>ggsurvplot</code> function from the <code>survminer</code> package is built on <code>ggplot2</code>, and can be used to create Kaplan-Meier plots. Checkout the <a href="https://rpkgs.datanovia.com/survminer/survminer_cheatsheet.pdf">cheatsheet</a> for the <code>survminer</code> package.</p>
-<pre class="r"><code>ggsurvplot(
-    fit = survfit(Surv(time, status) ~ 1, data = lung), 
-    xlab = &quot;Days&quot;, 
-    ylab = &quot;Overall survival probability&quot;)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-3-1.png" width="480" /></p>
-<ul>
-<li>The default plot using <code>ggsurvplot</code> shows the step function (solid line) with associated confidence bands (shaded area).</li>
-<li>The tick marks for censored patients are shown by default, somewhat obscuring the line itself in this example, and could be supressed using the option <code>censor = FALSE</code></li>
-</ul>
+<div id="kaplan-meier-plots" class="section level2">
+<h2>Kaplan-Meier plots</h2>
+<p>We will use the {ggsurvfit} package to generate Kaplan-Meier plots.
+This package aims to ease plotting of time-to-event endpoints using the
+power of the {ggplot2} package. See <a
+href="http://www.danieldsjoberg.com/ggsurvfit/index.html">http://www.danieldsjoberg.com/ggsurvfit/index.html</a>
+for details.</p>
+<p><em>Note</em>: alternatively, survival plots can be created using
+base R or the {survminer} package.</p>
+<p>The {ggsurvfit} package works best if you create the
+<code>survfit</code> object using the included
+<code>ggsurvfit::survfit2()</code> function, which uses similar syntax
+to what we saw previously with <code>survival::survfit()</code>.</p>
+<pre class="r"><code>survfit2(Surv(time, status) ~ 1, data = lung) %&gt;% 
+  ggsurvfit() +
+  labs(
+    x = &quot;Days&quot;,
+    y = &quot;Overall survival probability&quot;
+    )</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-4-1.png" width="480" /></p>
+<p>The default plot in <code>ggsurvfit()</code> shows the step function
+only. We can add the confidence interval using
+<code>add_confidence_interval()</code>:</p>
+<pre class="r"><code>survfit2(Surv(time, status) ~ 1, data = lung) %&gt;% 
+  ggsurvfit() +
+  labs(
+    x = &quot;Days&quot;,
+    y = &quot;Overall survival probability&quot;
+    ) + 
+  add_confidence_interval()</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-5-1.png" width="480" /></p>
+<p>Typically we will also want to see the numbers at risk in a table
+below the x-axis. We can add this using
+<code>add_risk_table()</code>:</p>
+<pre class="r"><code>survfit2(Surv(time, status) ~ 1, data = lung) %&gt;% 
+  ggsurvfit() +
+  labs(
+    x = &quot;Days&quot;,
+    y = &quot;Overall survival probability&quot;
+    ) + 
+  add_confidence_interval() +
+  add_risktable()</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-6-1.png" width="480" /></p>
+<p>Plots can be customized using many standard {ggplot2} options.</p>
 </div>
 <div id="estimating-x-year-survival" class="section level2">
 <h2>Estimating <span class="math inline">\(x\)</span>-year survival</h2>
-<p>One quantity often of interest in a survival analysis is the probability of surviving beyond a certain number (<span class="math inline">\(x\)</span>) of years.</p>
-<p>For example, to estimate the probability of survivng to <span class="math inline">\(1\)</span> year, use <code>summary</code> with the <code>times</code> argument (<em>Note</em> the <code>time</code> variable in the <code>lung</code> data is actually in days, so we need to use <code>times = 365.25</code>)</p>
+<p>One quantity often of interest in a survival analysis is the
+probability of surviving beyond a certain number of years, <span
+class="math inline">\(x\)</span>.</p>
+<p>For example, to estimate the probability of surviving to <span
+class="math inline">\(1\)</span> year, use <code>summary</code> with the
+<code>times</code> argument (<em>Note:</em> the <code>time</code>
+variable in the <code>lung</code> data is actually in days, so we need
+to use <code>times = 365.25</code>)</p>
 <pre class="r"><code>summary(survfit(Surv(time, status) ~ 1, data = lung), times = 365.25)</code></pre>
 <pre><code>## Call: survfit(formula = Surv(time, status) ~ 1, data = lung)
 ## 
 ##  time n.risk n.event survival std.err lower 95% CI upper 95% CI
 ##   365     65     121    0.409  0.0358        0.345        0.486</code></pre>
-<p>We find that the <span class="math inline">\(1\)</span>-year probability of survival in this study is 41%.</p>
-<p>The associated lower and upper bounds of the 95% confidence interval are also displayed.</p>
-</div>
-<div id="x-year-survival-and-the-survival-curve" class="section level2">
-<h2><span class="math inline">\(x\)</span>-year survival and the survival curve</h2>
-<p>The <span class="math inline">\(1\)</span>-year survival probability is the point on the y-axis that corresponds to <span class="math inline">\(1\)</span> year on the x-axis for the survival curve.</p>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-4-1.png" width="480" /></p>
-</div>
-<div id="x-year-survival-is-often-estimated-incorrectly" class="section level2">
-<h2><span class="math inline">\(x\)</span>-year survival is often estimated incorrectly</h2>
+<p>We find that the <span class="math inline">\(1\)</span>-year
+probability of survival in this study is 41%.</p>
+<p>The associated lower and upper bounds of the 95% confidence interval
+are also displayed.</p>
+<p>The <span class="math inline">\(1\)</span>-year survival probability
+is the point on the y-axis that corresponds to <span
+class="math inline">\(1\)</span> year on the x-axis for the survival
+curve.</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-7-1.png" width="480" /></p>
 <p>What happens if you use a “naive” estimate?</p>
-<p>121 of the 228 patients died by <span class="math inline">\(1\)</span> year so:</p>
-<p><span class="math display">\[\Big(1 - \frac{121}{228}\Big) \times 100 = 47\%\]</span> - You get an <strong>incorrect</strong> estimate of the <span class="math inline">\(1\)</span>-year probability of survival when you ignore the fact that 42 patients were censored before <span class="math inline">\(1\)</span> year.</p>
-<ul>
-<li>Recall the <strong>correct</strong> estimate of the <span class="math inline">\(1\)</span>-year probability of survival was 41%.</li>
-</ul>
+<p>121 of the 228 patients in the <code>lung</code> data died by <span
+class="math inline">\(1\)</span> year so the “naive” estimate is
+calculated as:</p>
+<p><span class="math display">\[\Big(1 - \frac{121}{228}\Big) \times 100
+= 47\%\]</span> You get an <strong>incorrect</strong> estimate of the
+<span class="math inline">\(1\)</span>-year probability of survival when
+you ignore the fact that 42 patients were censored before <span
+class="math inline">\(1\)</span> year.</p>
+<p>Recall the <strong>correct</strong> estimate of the <span
+class="math inline">\(1\)</span>-year probability of survival,
+accounting for censoring using the Kaplan-Meier method, was 41%.</p>
+<p>Ignoring censoring leads to an <strong>overestimate</strong> of the
+overall survival probability. Imagine two studies, each with 228
+subjects. There are 165 deaths in each study. Censoring is ignored in
+one (pink line), censoring is accounted for in the other (blue line).
+The censored subjects only contribute information for a portion of the
+follow-up time, and then fall out of the risk set, thus pulling down the
+cumulative probability of survival. Ignoring censoring erroneously
+treats patients who are censored as part of the risk set for the entire
+follow-up period.</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-8-1.png" width="480" /></p>
+<p>We can produce nice tables of <span
+class="math inline">\(x\)</span>-time survival probability estimates
+using the <code>tbl_survfit()</code> function from the {gtsummary}
+package:</p>
+<pre class="r"><code>survfit(Surv(time, status) ~ 1, data = lung) %&gt;% 
+  tbl_survfit(
+    times = 365.25,
+    label_header = &quot;1-year survival (95% CI)&quot;
+  )</code></pre>
+<div id="thodvqsjjd" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#thodvqsjjd .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#thodvqsjjd .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#thodvqsjjd .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#thodvqsjjd .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#thodvqsjjd .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#thodvqsjjd .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#thodvqsjjd .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#thodvqsjjd .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#thodvqsjjd .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#thodvqsjjd .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#thodvqsjjd .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#thodvqsjjd .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#thodvqsjjd .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#thodvqsjjd .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#thodvqsjjd .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#thodvqsjjd .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#thodvqsjjd .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#thodvqsjjd .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#thodvqsjjd .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#thodvqsjjd .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#thodvqsjjd .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#thodvqsjjd .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#thodvqsjjd .gt_left {
+  text-align: left;
+}
+
+#thodvqsjjd .gt_center {
+  text-align: center;
+}
+
+#thodvqsjjd .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#thodvqsjjd .gt_font_normal {
+  font-weight: normal;
+}
+
+#thodvqsjjd .gt_font_bold {
+  font-weight: bold;
+}
+
+#thodvqsjjd .gt_font_italic {
+  font-style: italic;
+}
+
+#thodvqsjjd .gt_super {
+  font-size: 65%;
+}
+
+#thodvqsjjd .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#thodvqsjjd .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#thodvqsjjd .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#thodvqsjjd .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#thodvqsjjd .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#thodvqsjjd .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#thodvqsjjd .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col">1-year survival (95% CI)</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">Overall</td>
+<td class="gt_row gt_center">41% (34%, 49%)</td></tr>
+  </tbody>
+  
+  
+</table>
 </div>
-<div id="impact-on-x-year-survival-of-ignoring-censoring" class="section level2">
-<h2>Impact on <span class="math inline">\(x\)</span>-year survival of ignoring censoring</h2>
-<ul>
-<li>Imagine two studies, each with 228 subjects. There are 165 deaths in each study. No censoring in one (orange line), 63 patients censored in the other (blue line)</li>
-<li>Ignoring censoring leads to an <strong>overestimate</strong> of the overall survival probability, because the censored subjects only contribute information for <strong>part</strong> of the follow-up time, and then fall out of the risk set, thus pulling down the cumulative probability of survival</li>
-</ul>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-5-1.png" width="480" /></p>
+<p><br></p>
 </div>
 <div id="estimating-median-survival-time" class="section level2">
 <h2>Estimating median survival time</h2>
-<p>Another quantity often of interest in a survival analysis is the average survival time, which we quantify using the median. Survival times are not expected to be normally distributed so the mean is not an appropriate summary.</p>
-<p>We can obtain this directly from our <code>survfit</code> object</p>
+<p>Another quantity often of interest in a survival analysis is the
+average survival time, which we quantify using the median. Survival
+times are not expected to be normally distributed so the mean is not an
+appropriate summary.</p>
+<p>We can obtain the median survival directly from the
+<code>survfit</code> object:</p>
 <pre class="r"><code>survfit(Surv(time, status) ~ 1, data = lung)</code></pre>
 <pre><code>## Call: survfit(formula = Surv(time, status) ~ 1, data = lung)
 ## 
 ##        n events median 0.95LCL 0.95UCL
 ## [1,] 228    165    310     285     363</code></pre>
-<p>We see the median survival time is 310 days The lower and upper bounds of the 95% confidence interval are also displayed.</p>
-</div>
-<div id="median-survival-time-and-the-survival-curve" class="section level2">
-<h2>Median survival time and the survival curve</h2>
-<p>Median survival is the time corresponding to a survival probability of <span class="math inline">\(0.5\)</span>:</p>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-7-1.png" width="480" /></p>
-</div>
-<div id="median-survival-is-often-estimated-incorrectly" class="section level2">
-<h2>Median survival is often estimated incorrectly</h2>
+<p>We see the median survival time is 310 days The lower and upper
+bounds of the 95% confidence interval are also displayed.</p>
+<p>Median survival is the time corresponding to a survival probability
+of <span class="math inline">\(0.5\)</span>:</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-11-1.png" width="480" /></p>
 <p>What happens if you use a “naive” estimate?</p>
-<p>Summarize the median survival time among the 165 patients who died</p>
+<p>Summarize the median survival time among the 165 patients who
+died:</p>
 <pre class="r"><code>lung %&gt;% 
-  filter(status == 2) %&gt;% 
+  filter(status == 1) %&gt;% 
   summarize(median_surv = median(time))</code></pre>
 <pre><code>##   median_surv
 ## 1         226</code></pre>
-<ul>
-<li>You get an <strong>incorrect</strong> estimate of median survival time of 226 days when you ignore the fact that censored patients also contribute follow-up time.</li>
-<li>Recall the <strong>correct</strong> estimate of median survival time is 310 days.</li>
-</ul>
+<p>You get an <strong>incorrect</strong> estimate of median survival
+time of 226 days when you ignore the fact that censored patients also
+contribute follow-up time.</p>
+<p>Recall the <strong>correct</strong> estimate of median survival time
+is 310 days.</p>
+<p>Ignoring censoring will lead to an <strong>underestimate</strong> of
+median survival time because the follow-up time that censored patients
+contribute is excluded (pink line). The true survival curve accounting
+for censoring in the <code>lung</code> data is shown in blue for
+comparison.</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-13-1.png" width="480" /></p>
+<p>We can produce nice tables of median survival time estimates using
+the <code>tbl_survfit()</code> function from the {gtsummary}
+package:</p>
+<pre class="r"><code>survfit(Surv(time, status) ~ 1, data = lung) %&gt;% 
+  tbl_survfit(
+    probs = 0.5,
+    label_header = &quot;Median survival (95% CI)&quot;
+  )</code></pre>
+<div id="mpqwnvornv" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#mpqwnvornv .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#mpqwnvornv .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#mpqwnvornv .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#mpqwnvornv .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#mpqwnvornv .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#mpqwnvornv .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#mpqwnvornv .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#mpqwnvornv .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#mpqwnvornv .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#mpqwnvornv .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#mpqwnvornv .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#mpqwnvornv .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#mpqwnvornv .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mpqwnvornv .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#mpqwnvornv .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#mpqwnvornv .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mpqwnvornv .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#mpqwnvornv .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mpqwnvornv .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#mpqwnvornv .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mpqwnvornv .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#mpqwnvornv .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#mpqwnvornv .gt_left {
+  text-align: left;
+}
+
+#mpqwnvornv .gt_center {
+  text-align: center;
+}
+
+#mpqwnvornv .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#mpqwnvornv .gt_font_normal {
+  font-weight: normal;
+}
+
+#mpqwnvornv .gt_font_bold {
+  font-weight: bold;
+}
+
+#mpqwnvornv .gt_font_italic {
+  font-style: italic;
+}
+
+#mpqwnvornv .gt_super {
+  font-size: 65%;
+}
+
+#mpqwnvornv .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#mpqwnvornv .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#mpqwnvornv .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#mpqwnvornv .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#mpqwnvornv .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#mpqwnvornv .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#mpqwnvornv .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col">Median survival (95% CI)</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">Overall</td>
+<td class="gt_row gt_center">310 (285, 363)</td></tr>
+  </tbody>
+  
+  
+</table>
 </div>
-<div id="impact-on-median-survival-of-ignoring-censoring" class="section level2">
-<h2>Impact on median survival of ignoring censoring</h2>
-<ul>
-<li>Ignoring censoring creates an artificially lowered survival curve because the follow-up time that censored patients contribute is excluded (purple line)</li>
-<li>The true survival curve for the <code>lung</code> data is shown in blue for comparison</li>
-</ul>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-9-1.png" width="480" /></p>
+<p><br></p>
 </div>
-<div id="comparing-survival-times-between-groups" class="section level2">
+<div id="comparing-survival-times-between-groups"
+class="section level2">
 <h2>Comparing survival times between groups</h2>
-<ul>
-<li>We can conduct between-group significance tests using a log-rank test</li>
-<li>The log-rank test equally weights observations over the entire follow-up time and is the most common way to compare survival times between groups</li>
-<li>There are versions that more heavily weight the early or late follow-up that could be more appropriate depending on the research question (see <code>?survdiff</code> for different test options)</li>
-</ul>
-<p>We get the log-rank p-value using the <code>survdiff</code> function. For example, we can test whether there was a difference in survival time according to sex in the <code>lung</code> data</p>
+<p>We can conduct between-group significance tests using a log-rank
+test. The log-rank test equally weights observations over the entire
+follow-up time and is the most common way to compare survival times
+between groups. There are versions that more heavily weight the early or
+late follow-up that could be more appropriate depending on the research
+question (see <code>?survdiff</code> for different test options).</p>
+<p>We get the log-rank p-value using the <code>survdiff</code> function.
+For example, we can test whether there was a difference in survival time
+according to sex in the <code>lung</code> data:</p>
 <pre class="r"><code>survdiff(Surv(time, status) ~ sex, data = lung)</code></pre>
 <pre><code>## Call:
 ## survdiff(formula = Surv(time, status) ~ sex, data = lung)
@@ -856,30 +1705,34 @@ names(f1)</code></pre>
 ## sex=2  90       53     73.4      5.68      10.3
 ## 
 ##  Chisq= 10.3  on 1 degrees of freedom, p= 0.001</code></pre>
-</div>
-<div id="extracting-information-from-a-survdiff-object" class="section level2">
-<h2>Extracting information from a survdiff object</h2>
-<p>It’s actually a bit cumbersome to extract a p-value from the results of <code>survdiff</code>. Here’s a line of code to do it</p>
-<pre class="r"><code>sd &lt;- survdiff(Surv(time, status) ~ sex, data = lung)
-1 - pchisq(sd$chisq, length(sd$n) - 1)</code></pre>
-<pre><code>## [1] 0.001311165</code></pre>
-<p>Or there is the <code>sdp</code> function in the <code>ezfun</code> package, which you can install using <code>devtools::install_github("zabore/ezfun")</code>. It returns a formatted p-value</p>
-<pre class="r"><code>ezfun::sdp(sd)</code></pre>
-<pre><code>## [1] 0.001</code></pre>
+<p>We see that there was a significant difference in overall survival
+according to sex in the <code>lung</code> data, with a p-value of p =
+0.001.</p>
 </div>
 <div id="the-cox-regression-model" class="section level2">
 <h2>The Cox regression model</h2>
-<p>We may want to quantify an effect size for a single variable, or include more than one variable into a regression model to account for the effects of multiple variables.</p>
-<p>The Cox regression model is a semi-parametric model that can be used to fit univariable and multivariable regression models that have survival outcomes.</p>
-<p><span class="math display">\[h(t|X_i) = h_0(t) \exp(\beta_1 X_{i1} + \cdots + \beta_p X_{ip})\]</span></p>
-<p><span class="math inline">\(h(t)\)</span>: hazard, or the instantaneous rate at which events occur <span class="math inline">\(h_0(t)\)</span>: underlying baseline hazard</p>
+<p>We may want to quantify an effect size for a single variable, or
+include more than one variable into a regression model to account for
+the effects of multiple variables.</p>
+<p>The Cox regression model is a semi-parametric model that can be used
+to fit univariable and multivariable regression models that have
+survival outcomes.</p>
+<p><span class="math display">\[h(t|X_i) = h_0(t) \exp(\beta_1 X_{i1} +
+\cdots + \beta_p X_{ip})\]</span></p>
+<p><span class="math inline">\(h(t)\)</span>: hazard, or the
+instantaneous rate at which events occur <span
+class="math inline">\(h_0(t)\)</span>: underlying baseline hazard</p>
 <p>Some key assumptions of the model:</p>
 <ul>
 <li>non-informative censoring</li>
 <li>proportional hazards</li>
 </ul>
-<p><em>Note</em>: parametric regression models for survival outcomes are also available, but they won’t be addressed in this training</p>
-<p>We can fit regression models for survival data using the <code>coxph</code> function, which takes a <code>Surv</code> object on the left hand side and has standard syntax for regression formulas in <code>R</code> on the right hand side.</p>
+<p><em>Note</em>: parametric regression models for survival outcomes are
+also available, but they won’t be addressed in this tutorial</p>
+<p>We can fit regression models for survival data using the
+<code>coxph()</code> function from the {survival} package, which takes a
+<code>Surv()</code> object on the left hand side and has standard syntax
+for regression formulas in <code>R</code> on the right hand side.</p>
 <pre class="r"><code>coxph(Surv(time, status) ~ sex, data = lung)</code></pre>
 <pre><code>## Call:
 ## coxph(formula = Surv(time, status) ~ sex, data = lung)
@@ -889,44 +1742,18 @@ names(f1)</code></pre>
 ## 
 ## Likelihood ratio test=10.63  on 1 df, p=0.001111
 ## n= 228, number of events= 165</code></pre>
-</div>
-<div id="formatting-cox-regression-results" class="section level2">
-<h2>Formatting Cox regression results</h2>
-<p>We can see a tidy version of the output using the <code>tidy</code> function from the <code>broom</code> package:</p>
-<pre class="r"><code>broom::tidy(
-  coxph(Surv(time, status) ~ sex, data = lung), 
-  exp = TRUE
-  ) %&gt;% 
-  kable()</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left">term</th>
-<th align="right">estimate</th>
-<th align="right">std.error</th>
-<th align="right">statistic</th>
-<th align="right">p.value</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">sex</td>
-<td align="right">0.5880028</td>
-<td align="right">0.1671786</td>
-<td align="right">-3.176385</td>
-<td align="right">0.0014912</td>
-</tr>
-</tbody>
-</table>
-<p>Or use <code>tbl_regression</code> from the <code>gtsummary</code> package</p>
+<p>We can obtain tables of results using the
+<code>tbl_regression()</code> function from the {gtsummary} package,
+with the option to exponentiate set to TRUE to return the hazard ratio
+rather than the log hazard ratio:</p>
 <pre class="r"><code>coxph(Surv(time, status) ~ sex, data = lung) %&gt;% 
-  gtsummary::tbl_regression(exp = TRUE) </code></pre>
-<div id="bthodvqsjj" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  tbl_regression(exp = TRUE) </code></pre>
+<div id="cipwnwpuwt" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#bthodvqsjj .gt_table {
+#cipwnwpuwt .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -951,7 +1778,7 @@ names(f1)</code></pre>
   border-left-color: #D3D3D3;
 }
 
-#bthodvqsjj .gt_heading {
+#cipwnwpuwt .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -963,33 +1790,37 @@ names(f1)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#bthodvqsjj .gt_title {
+#cipwnwpuwt .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
   padding-top: 4px;
   padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-bottom-color: #FFFFFF;
   border-bottom-width: 0;
 }
 
-#bthodvqsjj .gt_subtitle {
+#cipwnwpuwt .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
   padding-top: 0;
   padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
 }
 
-#bthodvqsjj .gt_bottom_border {
+#cipwnwpuwt .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#bthodvqsjj .gt_col_headings {
+#cipwnwpuwt .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1004,7 +1835,7 @@ names(f1)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#bthodvqsjj .gt_col_heading {
+#cipwnwpuwt .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1024,7 +1855,7 @@ names(f1)</code></pre>
   overflow-x: hidden;
 }
 
-#bthodvqsjj .gt_column_spanner_outer {
+#cipwnwpuwt .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1036,15 +1867,15 @@ names(f1)</code></pre>
   padding-right: 4px;
 }
 
-#bthodvqsjj .gt_column_spanner_outer:first-child {
+#cipwnwpuwt .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#bthodvqsjj .gt_column_spanner_outer:last-child {
+#cipwnwpuwt .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#bthodvqsjj .gt_column_spanner {
+#cipwnwpuwt .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1056,8 +1887,11 @@ names(f1)</code></pre>
   width: 100%;
 }
 
-#bthodvqsjj .gt_group_heading {
-  padding: 8px;
+#cipwnwpuwt .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1078,7 +1912,7 @@ names(f1)</code></pre>
   vertical-align: middle;
 }
 
-#bthodvqsjj .gt_empty_group_heading {
+#cipwnwpuwt .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1093,15 +1927,15 @@ names(f1)</code></pre>
   vertical-align: middle;
 }
 
-#bthodvqsjj .gt_from_md > :first-child {
+#cipwnwpuwt .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#bthodvqsjj .gt_from_md > :last-child {
+#cipwnwpuwt .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#bthodvqsjj .gt_row {
+#cipwnwpuwt .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1120,7 +1954,7 @@ names(f1)</code></pre>
   overflow-x: hidden;
 }
 
-#bthodvqsjj .gt_stub {
+#cipwnwpuwt .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1129,10 +1963,29 @@ names(f1)</code></pre>
   border-right-style: solid;
   border-right-width: 2px;
   border-right-color: #D3D3D3;
-  padding-left: 12px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#bthodvqsjj .gt_summary_row {
+#cipwnwpuwt .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#cipwnwpuwt .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#cipwnwpuwt .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1142,17 +1995,26 @@ names(f1)</code></pre>
   padding-right: 5px;
 }
 
-#bthodvqsjj .gt_first_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
+#cipwnwpuwt .gt_first_summary_row {
   border-top-style: solid;
-  border-top-width: 2px;
   border-top-color: #D3D3D3;
 }
 
-#bthodvqsjj .gt_grand_summary_row {
+#cipwnwpuwt .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#cipwnwpuwt .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#cipwnwpuwt .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1162,7 +2024,7 @@ names(f1)</code></pre>
   padding-right: 5px;
 }
 
-#bthodvqsjj .gt_first_grand_summary_row {
+#cipwnwpuwt .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1172,11 +2034,11 @@ names(f1)</code></pre>
   border-top-color: #D3D3D3;
 }
 
-#bthodvqsjj .gt_striped {
+#cipwnwpuwt .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#bthodvqsjj .gt_table_body {
+#cipwnwpuwt .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1185,7 +2047,7 @@ names(f1)</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#bthodvqsjj .gt_footnotes {
+#cipwnwpuwt .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1199,13 +2061,16 @@ names(f1)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#bthodvqsjj .gt_footnote {
+#cipwnwpuwt .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#bthodvqsjj .gt_sourcenotes {
+#cipwnwpuwt .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1219,54 +2084,83 @@ names(f1)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#bthodvqsjj .gt_sourcenote {
+#cipwnwpuwt .gt_sourcenote {
   font-size: 90%;
-  padding: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#bthodvqsjj .gt_left {
+#cipwnwpuwt .gt_left {
   text-align: left;
 }
 
-#bthodvqsjj .gt_center {
+#cipwnwpuwt .gt_center {
   text-align: center;
 }
 
-#bthodvqsjj .gt_right {
+#cipwnwpuwt .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#bthodvqsjj .gt_font_normal {
+#cipwnwpuwt .gt_font_normal {
   font-weight: normal;
 }
 
-#bthodvqsjj .gt_font_bold {
+#cipwnwpuwt .gt_font_bold {
   font-weight: bold;
 }
 
-#bthodvqsjj .gt_font_italic {
+#cipwnwpuwt .gt_font_italic {
   font-style: italic;
 }
 
-#bthodvqsjj .gt_super {
+#cipwnwpuwt .gt_super {
   font-size: 65%;
 }
 
-#bthodvqsjj .gt_footnote_marks {
+#cipwnwpuwt .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
-  font-size: 65%;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#cipwnwpuwt .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#cipwnwpuwt .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#cipwnwpuwt .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#cipwnwpuwt .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#cipwnwpuwt .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#cipwnwpuwt .gt_indent_5 {
+  text-indent: 25px;
 }
 </style>
 <table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>p-value</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
@@ -1276,54 +2170,54 @@ names(f1)</code></pre>
 <td class="gt_row gt_center">0.001</td></tr>
   </tbody>
   
-  <tfoot>
-    <tr class="gt_footnotes">
-      <td colspan="4">
-        <p class="gt_footnote">
-          <sup class="gt_footnote_marks">
-            <em>1</em>
-          </sup>
-           
-          HR = Hazard Ratio, CI = Confidence Interval
-          <br />
-        </p>
-      </td>
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
     </tr>
   </tfoot>
 </table>
 </div>
+<p><br></p>
+<p>The quantity of interest from a Cox regression model is a
+<strong>hazard ratio (HR)</strong>. The HR represents the ratio of
+hazards between two groups at any particular point in time. The HR is
+interpreted as the instantaneous rate of occurrence of the event of
+interest in those who are still at risk for the event. It is
+<strong>not</strong> a risk, though it is commonly mis-interpreted as
+such. If you have a regression parameter <span
+class="math inline">\(\beta\)</span>, then HR = <span
+class="math inline">\(\exp(\beta)\)</span>.</p>
+<p>A HR &lt; 1 indicates reduced hazard of death whereas a HR &gt; 1
+indicates an increased hazard of death.</p>
+<p>So the HR = 0.59 implies that 0.59 times as many females are dying as
+males, at any given time. Stated differently, females have a
+significantly lower hazard of death than males in these data.</p>
 </div>
-<div id="hazard-ratios" class="section level2">
-<h2>Hazard ratios</h2>
-<ul>
-<li><p>The quantity of interest from a Cox regression model is a <strong>hazard ratio (HR)</strong>. The HR represents the ratio of hazards between two groups at any particular point in time.</p></li>
-<li><p>The HR is interpreted as the instantaneous rate of occurrence of the event of interest in those who are still at risk for the event. It is <strong>not</strong> a risk, though it is commonly interpreted as such.</p></li>
-<li><p>If you have a regression parameter <span class="math inline">\(\beta\)</span> (from column <code>estimate</code> in our <code>coxph</code>) then HR = <span class="math inline">\(\exp(\beta)\)</span>.</p></li>
-<li><p>A HR &lt; 1 indicates reduced hazard of death whereas a HR &gt; 1 indicates an increased hazard of death.</p></li>
-<li><p>So our HR = 0.59 implies that around 0.6 times as many females are dying as males, at any given time.</p></li>
-</ul>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-16-1.png" width="480" /></p>
 </div>
-</div>
-<div id="part-2-landmark-analysis-and-time-dependent-covariates" class="section level1">
+<div id="part-2-landmark-analysis-and-time-dependent-covariates"
+class="section level1">
 <h1>Part 2: Landmark Analysis and Time Dependent Covariates</h1>
-<p>In Part 1 we covered using log-rank tests and Cox regression to examine associations between covariates of interest and survival outcomes.</p>
-<p>But these analyses rely on the covariate being measured at <strong>baseline</strong>, that is, before follow-up time for the event begins.</p>
-<p>What happens if you are interested in a covariate that is measured <strong>after</strong> follow-up time begins?</p>
-<div id="example-tumor-response" class="section level2">
-<h2>Example: tumor response</h2>
-<p>Example: Overall survival is measured from treatment start, and interest is in the association between complete response to treatment and survival.</p>
-<ul>
-<li>Anderson et al (JCO, 1983) described why tradional methods such as log-rank tests or Cox regression are biased in favor of responders in this scenario and proposed the landmark approach.</li>
-<li>The <strong>null hypothesis</strong> in the landmark approach is that survival from landmark does not depend on response status at landmark.</li>
-</ul>
+<p>In Part 1 we covered using log-rank tests and Cox regression to
+examine associations between covariates of interest and survival
+outcomes. But these analyses rely on the covariate being measured at
+<strong>baseline</strong>, that is, before follow-up time for the event
+begins. What happens if you are interested in a covariate that is
+measured <strong>after</strong> follow-up time begins?</p>
+<p><strong>Example</strong>: Overall survival is measured from treatment
+start, and interest is in the association between complete response to
+treatment and survival.</p>
+<p>Anderson et al (JCO, 1983) described why traditional methods such as
+log-rank tests or Cox regression are biased in favor of responders in
+this scenario, and proposed the landmark approach. The <strong>null
+hypothesis</strong> in the landmark approach is that survival from
+landmark does not depend on response status at landmark.</p>
 <blockquote>
-<p>Anderson, J., Cain, K., &amp; Gelber, R. (1983). Analysis of survival by tumor response. Journal of Clinical Oncology : Official Journal of the American Society of Clinical Oncology, 1(11), 710-9.</p>
+<p>Anderson, J., Cain, K., &amp; Gelber, R. (1983). Analysis of survival
+by tumor response. Journal of Clinical Oncology : Official Journal of
+the American Society of Clinical Oncology, 1(11), 710-9.</p>
 </blockquote>
-</div>
-<div id="other-examples" class="section level2">
-<h2>Other examples</h2>
-<p>Some other possible covariates of interest in cancer research that may not be measured at baseline include:</p>
+<p>Some other possible covariates of interest in cancer research that
+may not be measured at baseline include:</p>
 <ul>
 <li>tranplant failure</li>
 <li>graft versus host disease</li>
@@ -1332,64 +2226,92 @@ names(f1)</code></pre>
 <li>compliance</li>
 <li>adverse events</li>
 </ul>
-</div>
-<div id="example-data---the-bmt-dataset-from-semicomprisks-package" class="section level2">
-<h2>Example data - the BMT dataset from SemiCompRisks package</h2>
-<p>Data on 137 bone marrow transplant patients. Variables of interest include:</p>
+<div id="the-bmt-dataset" class="section level2">
+<h2>The <code>BMT</code> dataset</h2>
+<p>Throughout this section we will use the <code>BMT</code> dataset from
+{SemiCompRisks} package as an example dataset. The data consist of 137
+bone marrow transplant patients. Variables of interest include:</p>
 <ul>
 <li><code>T1</code> time (in days) to death or last follow-up</li>
-<li><code>delta1</code> death indicator; 1-Dead, 0-Alive</li>
-<li><code>TA</code> time (in days) to acute graft-versus-host disease</li>
-<li><code>deltaA</code> acute graft-versus-host disease indicator; 1-Developed acute graft-versus-host disease, 0-Never developed acute graft-versus-host disease</li>
+<li><code>delta1</code> death indicator; 1=Dead, 0=Alive</li>
+<li><code>TA</code> time (in days) to acute graft-versus-host
+disease</li>
+<li><code>deltaA</code> acute graft-versus-host disease indicator;
+1-Developed acute graft-versus-host disease, 0-Never developed acute
+graft-versus-host disease</li>
 </ul>
-<p>Let’s load the data for use in examples throughout</p>
-<pre class="r"><code>data(BMT, package = &quot;SemiCompRisks&quot;)</code></pre>
+<p>First, load the data for use in examples throughout:</p>
+<pre class="r"><code># install.packages(&quot;SemiCompRisks)
+data(BMT, package = &quot;SemiCompRisks&quot;)</code></pre>
+<p>Here are the first 6 observations:</p>
+<pre class="r"><code>head(BMT[, c(&quot;T1&quot;, &quot;delta1&quot;, &quot;TA&quot;, &quot;deltaA&quot;)])</code></pre>
+<pre><code>##     T1 delta1   TA deltaA
+## 1 2081      0   67      1
+## 2 1602      0 1602      0
+## 3 1496      0 1496      0
+## 4 1462      0   70      1
+## 5 1433      0 1433      0
+## 6 1377      0 1377      0</code></pre>
 </div>
-<div id="landmark-method" class="section level2">
-<h2>Landmark method</h2>
+<div id="landmark-approach" class="section level2">
+<h2>Landmark approach</h2>
 <ol style="list-style-type: decimal">
-<li>Select a fixed time after baseline as your landmark time. <em>Note</em>: this should be done based on clinical information, prior to data inspection</li>
-<li>Subset population for those followed at least until landmark time. <em>Note</em>: always report the number excluded due to the event of interest or censoring prior to the landmark time.</li>
-<li>Calculate follow-up from landmark time and apply traditional log-rank tests or Cox regression</li>
+<li>Select a fixed time after baseline as your landmark time.
+<em>Note</em>: this should be done based on clinical information, prior
+to data inspection</li>
+<li>Subset population for those followed at least until landmark time.
+<em>Note</em>: always report the number excluded due to the event of
+interest or censoring prior to the landmark time.</li>
+<li>Calculate follow-up from landmark time and apply traditional
+log-rank tests or Cox regression.</li>
 </ol>
-<p>In the <code>BMT</code> data interest is in the association between acute graft versus host disease (aGVHD) and survival. But aGVHD is assessed after the transplant, which is our baseline, or start of follow-up, time.</p>
+<p>In the <code>BMT</code> data, interest is in the association between
+acute graft versus host disease (aGVHD) and survival. But aGVHD is
+assessed after the transplant, which is our baseline, or start of
+follow-up, time.</p>
 <p><strong>Step 1</strong> Select landmark time</p>
-<p>Typically aGVHD occurs within the first 90 days following transplant, so we use a 90-day landmark.</p>
-<p>Interest is in the association between acute graft versus host disease (aGVHD) and survival. But aGVHD is assessed after the transplant, which is our baseline, or start of follow-up, time.</p>
-<p><strong>Step 2</strong> Subset population for those followed at least until landmark time</p>
+<p>Typically aGVHD occurs within the first 90 days following transplant,
+so we use a 90-day landmark.</p>
+<p><strong>Step 2</strong> Subset population for those followed at least
+until landmark time</p>
 <pre class="r"><code>lm_dat &lt;- 
   BMT %&gt;% 
   filter(T1 &gt;= 90) </code></pre>
-<p>This reduces our sample size from 137 to 122.</p>
-<ul>
-<li>All 15 excluded patients died before the 90 day landmark</li>
-</ul>
-<p>Interest is in the association between acute graft versus host disease (aGVHD) and survival. But aGVHD is assessed after the transplant, which is our baseline, or start of follow-up, time.</p>
-<p><strong>Step 3</strong> Calculate follow-up time from landmark and apply traditional methods.</p>
+<p>We exclude 15 patients who were not followed until the landmark time
+of 90 days.</p>
+<p><em>Note:</em> All 15 excluded patients died before the 90 day
+landmark.</p>
+<p><strong>Step 3</strong> Calculate follow-up time from landmark and
+apply traditional methods.</p>
 <pre class="r"><code>lm_dat &lt;- 
   lm_dat %&gt;% 
   mutate(
     lm_T1 = T1 - 90
-    )
-
-lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-20-1.png" width="480" /></p>
-</div>
-<div id="cox-regression-landmark-example-using-bmt-data" class="section level2">
-<h2>Cox regression landmark example using BMT data</h2>
-<p>In Cox regression you can use the <code>subset</code> option in <code>coxph</code> to exclude those patients who were not followed through the landmark time</p>
+    )</code></pre>
+<pre class="r"><code>survfit2(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat) %&gt;% 
+  ggsurvfit() +
+  labs(
+    x = &quot;Days from 90-day landmark&quot;,
+    y = &quot;Overall survival probability&quot;
+  ) +
+  add_risktable()</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-22-1.png" width="480" /></p>
+<p>In Cox regression you can use the <code>subset</code> option in
+<code>coxph</code> to exclude those patients who were not followed
+through the landmark time, and we can view the results using the
+<code>tbl_regression()</code> function from the {gtsummary} package:</p>
 <pre class="r"><code>coxph(
   Surv(T1, delta1) ~ deltaA, 
   subset = T1 &gt;= 90, 
   data = BMT
   ) %&gt;% 
-  gtsummary::tbl_regression(exp = TRUE)</code></pre>
-<div id="dmpqwnvorn" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  tbl_regression(exp = TRUE)</code></pre>
+<div id="jxokapgnww" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#dmpqwnvorn .gt_table {
+#jxokapgnww .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -1414,7 +2336,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-left-color: #D3D3D3;
 }
 
-#dmpqwnvorn .gt_heading {
+#jxokapgnww .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1426,33 +2348,37 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#dmpqwnvorn .gt_title {
+#jxokapgnww .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
   padding-top: 4px;
   padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-bottom-color: #FFFFFF;
   border-bottom-width: 0;
 }
 
-#dmpqwnvorn .gt_subtitle {
+#jxokapgnww .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
   padding-top: 0;
   padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
 }
 
-#dmpqwnvorn .gt_bottom_border {
+#jxokapgnww .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#dmpqwnvorn .gt_col_headings {
+#jxokapgnww .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1467,7 +2393,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#dmpqwnvorn .gt_col_heading {
+#jxokapgnww .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1487,7 +2413,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   overflow-x: hidden;
 }
 
-#dmpqwnvorn .gt_column_spanner_outer {
+#jxokapgnww .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1499,15 +2425,15 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   padding-right: 4px;
 }
 
-#dmpqwnvorn .gt_column_spanner_outer:first-child {
+#jxokapgnww .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dmpqwnvorn .gt_column_spanner_outer:last-child {
+#jxokapgnww .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dmpqwnvorn .gt_column_spanner {
+#jxokapgnww .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1519,8 +2445,11 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   width: 100%;
 }
 
-#dmpqwnvorn .gt_group_heading {
-  padding: 8px;
+#jxokapgnww .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1541,7 +2470,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   vertical-align: middle;
 }
 
-#dmpqwnvorn .gt_empty_group_heading {
+#jxokapgnww .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1556,15 +2485,15 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   vertical-align: middle;
 }
 
-#dmpqwnvorn .gt_from_md > :first-child {
+#jxokapgnww .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dmpqwnvorn .gt_from_md > :last-child {
+#jxokapgnww .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dmpqwnvorn .gt_row {
+#jxokapgnww .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1583,7 +2512,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   overflow-x: hidden;
 }
 
-#dmpqwnvorn .gt_stub {
+#jxokapgnww .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1592,10 +2521,29 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-style: solid;
   border-right-width: 2px;
   border-right-color: #D3D3D3;
-  padding-left: 12px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#dmpqwnvorn .gt_summary_row {
+#jxokapgnww .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#jxokapgnww .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#jxokapgnww .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1605,17 +2553,26 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   padding-right: 5px;
 }
 
-#dmpqwnvorn .gt_first_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
+#jxokapgnww .gt_first_summary_row {
   border-top-style: solid;
-  border-top-width: 2px;
   border-top-color: #D3D3D3;
 }
 
-#dmpqwnvorn .gt_grand_summary_row {
+#jxokapgnww .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#jxokapgnww .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#jxokapgnww .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1625,7 +2582,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   padding-right: 5px;
 }
 
-#dmpqwnvorn .gt_first_grand_summary_row {
+#jxokapgnww .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1635,11 +2592,11 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-top-color: #D3D3D3;
 }
 
-#dmpqwnvorn .gt_striped {
+#jxokapgnww .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#dmpqwnvorn .gt_table_body {
+#jxokapgnww .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1648,7 +2605,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#dmpqwnvorn .gt_footnotes {
+#jxokapgnww .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1662,13 +2619,16 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#dmpqwnvorn .gt_footnote {
+#jxokapgnww .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#dmpqwnvorn .gt_sourcenotes {
+#jxokapgnww .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1682,54 +2642,83 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#dmpqwnvorn .gt_sourcenote {
+#jxokapgnww .gt_sourcenote {
   font-size: 90%;
-  padding: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#dmpqwnvorn .gt_left {
+#jxokapgnww .gt_left {
   text-align: left;
 }
 
-#dmpqwnvorn .gt_center {
+#jxokapgnww .gt_center {
   text-align: center;
 }
 
-#dmpqwnvorn .gt_right {
+#jxokapgnww .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dmpqwnvorn .gt_font_normal {
+#jxokapgnww .gt_font_normal {
   font-weight: normal;
 }
 
-#dmpqwnvorn .gt_font_bold {
+#jxokapgnww .gt_font_bold {
   font-weight: bold;
 }
 
-#dmpqwnvorn .gt_font_italic {
+#jxokapgnww .gt_font_italic {
   font-style: italic;
 }
 
-#dmpqwnvorn .gt_super {
+#jxokapgnww .gt_super {
   font-size: 65%;
 }
 
-#dmpqwnvorn .gt_footnote_marks {
+#jxokapgnww .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
-  font-size: 65%;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#jxokapgnww .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#jxokapgnww .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#jxokapgnww .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#jxokapgnww .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#jxokapgnww .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#jxokapgnww .gt_indent_5 {
+  text-indent: 25px;
 }
 </style>
 <table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>p-value</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
@@ -1739,63 +2728,63 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
 <td class="gt_row gt_center">0.8</td></tr>
   </tbody>
   
-  <tfoot>
-    <tr class="gt_footnotes">
-      <td colspan="4">
-        <p class="gt_footnote">
-          <sup class="gt_footnote_marks">
-            <em>1</em>
-          </sup>
-           
-          HR = Hazard Ratio, CI = Confidence Interval
-          <br />
-        </p>
-      </td>
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
     </tr>
   </tfoot>
 </table>
 </div>
+<p><br></p>
 </div>
-<div id="time-dependent-covariate" class="section level2">
-<h2>Time-dependent covariate</h2>
-<p>An alternative to a landmark analysis is incorporation of a time-dependent covariate. This may be more appropriate when</p>
+<div id="time-dependent-covariate-approach" class="section level2">
+<h2>Time-dependent covariate approach</h2>
+<p>An alternative to a landmark analysis is incorporation of a
+time-dependent covariate. This may be more appropriate than landmark
+analysis when:</p>
 <ul>
 <li>the value of a covariate is changing over time</li>
 <li>there is not an obvious landmark time</li>
 <li>use of a landmark would lead to many exclusions</li>
 </ul>
-</div>
-<div id="time-dependent-covariate-data-setup" class="section level2">
-<h2>Time-dependent covariate data setup</h2>
-<p>Analysis of time-dependent covariates in <code>R</code> requires setup of a special dataset. See the detailed paper on this by the author of the <code>survival</code> package <a href="https://cran.r-project.org/web/packages/survival/vignettes/timedep.pdf">Using Time Dependent Covariates and Time Dependent Coefficients in the Cox Model</a>.</p>
-<p>There was no ID variable in the <code>BMT</code> data, which is needed to create the special dataset, so create one called <code>my_id</code>.</p>
-<pre class="r"><code>bmt &lt;- rowid_to_column(BMT, &quot;my_id&quot;)</code></pre>
-<p>Use the <code>tmerge</code> function with the <code>event</code> and <code>tdc</code> function options to create the special dataset.</p>
+<p>Analysis of time-dependent covariates requires setup of a special
+dataset, in a format known as counting process format. See the detailed
+paper on this by the author of the {survival} package <a
+href="https://cran.r-project.org/web/packages/survival/vignettes/timedep.pdf">Using
+Time Dependent Covariates and Time Dependent Coefficients in the Cox
+Model</a>.</p>
+<p>There was no ID variable in the <code>BMT</code> data, which is
+needed to create the special dataset, so create an ID variable called
+<code>my_id</code>:</p>
+<pre class="r"><code>BMT &lt;- rowid_to_column(BMT, &quot;my_id&quot;)</code></pre>
+<p>Use the <code>tmerge</code> function with the <code>event</code> and
+<code>tdc</code> function options to create the special dataset.</p>
 <ul>
-<li><code>tmerge</code> creates a long dataset with multiple time intervals for the different covariate values for each patient</li>
-<li><code>event</code> creates the new event indicator to go with the newly created time intervals</li>
-<li><code>tdc</code> creates the time-dependent covariate indicator to go with the newly created time intervals</li>
+<li><code>tmerge()</code> creates a long dataset with multiple time
+intervals for the different covariate values for each patient</li>
+<li><code>event()</code> creates the new event indicator to go with the
+newly created time intervals</li>
+<li><code>tdc()</code> creates the time-dependent covariate indicator to
+go with the newly created time intervals</li>
 </ul>
 <pre class="r"><code>td_dat &lt;- 
   tmerge(
-    data1 = bmt %&gt;% select(my_id, T1, delta1), 
-    data2 = bmt %&gt;% select(my_id, T1, delta1, TA, deltaA), 
+    data1 = BMT %&gt;% select(my_id, T1, delta1), 
+    data2 = BMT %&gt;% select(my_id, T1, delta1, TA, deltaA), 
     id = my_id, 
     death = event(T1, delta1),
     agvhd = tdc(TA)
     )</code></pre>
-</div>
-<div id="time-dependent-covariate---single-patient-example" class="section level2">
-<h2>Time-dependent covariate - single patient example</h2>
-<p>To see what this does, let’s look at the data for the first 5 individual patients.</p>
-<p>The variables of interest in the original data looked like</p>
+<p>To see what this does, let’s look at the data for the first 5
+individual patients. The variables of interest in the original data
+looked like:</p>
 <pre><code>##   my_id   T1 delta1   TA deltaA
 ## 1     1 2081      0   67      1
 ## 2     2 1602      0 1602      0
 ## 3     3 1496      0 1496      0
 ## 4     4 1462      0   70      1
 ## 5     5 1433      0 1433      0</code></pre>
-<p>The new dataset for these same patients looks like</p>
+<p>The new dataset for these same patients looks like:</p>
 <pre><code>##   my_id   T1 delta1 tstart tstop death agvhd
 ## 1     1 2081      0      0    67     0     0
 ## 2     1 2081      0     67  2081     0     1
@@ -1804,21 +2793,23 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
 ## 5     4 1462      0      0    70     0     0
 ## 6     4 1462      0     70  1462     0     1
 ## 7     5 1433      0      0  1433     0     0</code></pre>
-</div>
-<div id="time-dependent-covariate---cox-regression" class="section level2">
-<h2>Time-dependent covariate - Cox regression</h2>
-<p>Now we can analyze this time-dependent covariate as usual using Cox regression with <code>coxph</code> and an alteration to our use of <code>Surv</code> to include arguments to both <code>time</code> and <code>time2</code></p>
+<p>We see that patients 1 and 4 now have multiple rows of data because
+they both developed aGVHD at some point in time after baseline.</p>
+<p>Now we can analyze this time-dependent covariate as usual using Cox
+regression with <code>coxph</code> and an alteration to our use of
+<code>Surv</code> to include arguments to both <code>time</code> and
+<code>time2</code>:</p>
 <pre class="r"><code>coxph(
   Surv(time = tstart, time2 = tstop, event = death) ~ agvhd, 
   data = td_dat
   ) %&gt;% 
-  gtsummary::tbl_regression(exp = TRUE)</code></pre>
-<div id="vcipwnwpuw" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+  tbl_regression(exp = TRUE)</code></pre>
+<div id="hmrahzjcks" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#vcipwnwpuw .gt_table {
+#hmrahzjcks .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -1843,7 +2834,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-left-color: #D3D3D3;
 }
 
-#vcipwnwpuw .gt_heading {
+#hmrahzjcks .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1855,33 +2846,37 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#vcipwnwpuw .gt_title {
+#hmrahzjcks .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
   padding-top: 4px;
   padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-bottom-color: #FFFFFF;
   border-bottom-width: 0;
 }
 
-#vcipwnwpuw .gt_subtitle {
+#hmrahzjcks .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
   padding-top: 0;
   padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
 }
 
-#vcipwnwpuw .gt_bottom_border {
+#hmrahzjcks .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#vcipwnwpuw .gt_col_headings {
+#hmrahzjcks .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1896,7 +2891,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#vcipwnwpuw .gt_col_heading {
+#hmrahzjcks .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1916,7 +2911,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   overflow-x: hidden;
 }
 
-#vcipwnwpuw .gt_column_spanner_outer {
+#hmrahzjcks .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1928,15 +2923,15 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   padding-right: 4px;
 }
 
-#vcipwnwpuw .gt_column_spanner_outer:first-child {
+#hmrahzjcks .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#vcipwnwpuw .gt_column_spanner_outer:last-child {
+#hmrahzjcks .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#vcipwnwpuw .gt_column_spanner {
+#hmrahzjcks .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1948,8 +2943,11 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   width: 100%;
 }
 
-#vcipwnwpuw .gt_group_heading {
-  padding: 8px;
+#hmrahzjcks .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1970,7 +2968,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   vertical-align: middle;
 }
 
-#vcipwnwpuw .gt_empty_group_heading {
+#hmrahzjcks .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1985,15 +2983,15 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   vertical-align: middle;
 }
 
-#vcipwnwpuw .gt_from_md > :first-child {
+#hmrahzjcks .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#vcipwnwpuw .gt_from_md > :last-child {
+#hmrahzjcks .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#vcipwnwpuw .gt_row {
+#hmrahzjcks .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2012,7 +3010,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   overflow-x: hidden;
 }
 
-#vcipwnwpuw .gt_stub {
+#hmrahzjcks .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2021,10 +3019,29 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-style: solid;
   border-right-width: 2px;
   border-right-color: #D3D3D3;
-  padding-left: 12px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#vcipwnwpuw .gt_summary_row {
+#hmrahzjcks .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#hmrahzjcks .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#hmrahzjcks .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2034,17 +3051,26 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   padding-right: 5px;
 }
 
-#vcipwnwpuw .gt_first_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
+#hmrahzjcks .gt_first_summary_row {
   border-top-style: solid;
-  border-top-width: 2px;
   border-top-color: #D3D3D3;
 }
 
-#vcipwnwpuw .gt_grand_summary_row {
+#hmrahzjcks .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#hmrahzjcks .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#hmrahzjcks .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2054,7 +3080,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   padding-right: 5px;
 }
 
-#vcipwnwpuw .gt_first_grand_summary_row {
+#hmrahzjcks .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2064,11 +3090,11 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-top-color: #D3D3D3;
 }
 
-#vcipwnwpuw .gt_striped {
+#hmrahzjcks .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#vcipwnwpuw .gt_table_body {
+#hmrahzjcks .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2077,7 +3103,7 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-bottom-color: #D3D3D3;
 }
 
-#vcipwnwpuw .gt_footnotes {
+#hmrahzjcks .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2091,13 +3117,16 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#vcipwnwpuw .gt_footnote {
+#hmrahzjcks .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#vcipwnwpuw .gt_sourcenotes {
+#hmrahzjcks .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2111,54 +3140,83 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
   border-right-color: #D3D3D3;
 }
 
-#vcipwnwpuw .gt_sourcenote {
+#hmrahzjcks .gt_sourcenote {
   font-size: 90%;
-  padding: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#vcipwnwpuw .gt_left {
+#hmrahzjcks .gt_left {
   text-align: left;
 }
 
-#vcipwnwpuw .gt_center {
+#hmrahzjcks .gt_center {
   text-align: center;
 }
 
-#vcipwnwpuw .gt_right {
+#hmrahzjcks .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#vcipwnwpuw .gt_font_normal {
+#hmrahzjcks .gt_font_normal {
   font-weight: normal;
 }
 
-#vcipwnwpuw .gt_font_bold {
+#hmrahzjcks .gt_font_bold {
   font-weight: bold;
 }
 
-#vcipwnwpuw .gt_font_italic {
+#hmrahzjcks .gt_font_italic {
   font-style: italic;
 }
 
-#vcipwnwpuw .gt_super {
+#hmrahzjcks .gt_super {
   font-size: 65%;
 }
 
-#vcipwnwpuw .gt_footnote_marks {
+#hmrahzjcks .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
-  font-size: 65%;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#hmrahzjcks .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#hmrahzjcks .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#hmrahzjcks .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#hmrahzjcks .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#hmrahzjcks .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#hmrahzjcks .gt_indent_5 {
+  text-indent: 25px;
 }
 </style>
 <table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>p-value</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
@@ -2168,42 +3226,26 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
 <td class="gt_row gt_center">0.2</td></tr>
   </tbody>
   
-  <tfoot>
-    <tr class="gt_footnotes">
-      <td colspan="4">
-        <p class="gt_footnote">
-          <sup class="gt_footnote_marks">
-            <em>1</em>
-          </sup>
-           
-          HR = Hazard Ratio, CI = Confidence Interval
-          <br />
-        </p>
-      </td>
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
     </tr>
   </tfoot>
 </table>
 </div>
-</div>
-<div id="summary" class="section level2">
-<h2>Summary</h2>
-<p>We find that acute graft versus host disease is not significantly associated with death using either landmark analysis or a time-dependent covariate.</p>
-<p>Often one will want to use landmark analysis for visualization of a single covariate, and Cox regression with a time-dependent covariate for univariable and multivariable modeling.</p>
+<p><br></p>
+<p>We find that acute graft versus host disease is not significantly
+associated with death using either landmark analysis or a time-dependent
+covariate.</p>
+<p>Often one will want to use landmark analysis for visualization of a
+single covariate, and Cox regression with a time-dependent covariate for
+univariable and multivariable modeling.</p>
 </div>
 </div>
 <div id="part-3-competing-risks" class="section level1">
 <h1>Part 3: Competing Risks</h1>
-<div id="packages-1" class="section level2">
-<h2>Packages</h2>
-<p>The primary package for use in competing risks analyses is</p>
-<ul>
-<li><code>cmprsk</code></li>
-</ul>
-<pre class="r"><code>library(cmprsk)</code></pre>
-</div>
-<div id="what-are-competing-risks" class="section level2">
-<h2>What are competing risks?</h2>
-<p>When subjects have multiple possible events in a time-to-event setting</p>
+<p>Competing risks analyses may be used when subjects have multiple
+possible events in a time-to-event setting.</p>
 <p>Examples:</p>
 <ul>
 <li>recurrence</li>
@@ -2211,411 +3253,177 @@ lm_fit &lt;- survfit(Surv(lm_T1, delta1) ~ deltaA, data = lm_dat)</code></pre>
 <li>death from other causes</li>
 <li>treatment response</li>
 </ul>
-<p>All or some of these (among others) may be possible events in any given study.</p>
-</div>
-<div id="so-whats-the-problem" class="section level2">
-<h2>So what’s the problem?</h2>
-<p>Unobserved dependence among event times is the fundamental problem that leads to the need for special consideration.</p>
-<p>For example, one can imagine that patients who recur are more likely to die, and therefore times to recurrence and times to death would not be independent events.</p>
-</div>
-<div id="background-on-competing-risks" class="section level2">
-<h2>Background on competing risks</h2>
-<p>Two approaches to analysis in the presence of multiple potential outcomes:</p>
+<p>All or some of these (among others) may be possible events in any
+given study.</p>
+<p>The fundamental problem that may lead to the need for specialized
+statistical methods is unobserved dependence among the various event
+times. For example, one can imagine that patients who recur are more
+likely to die, and therefore times to recurrence and times to death
+would not be independent events.</p>
+<p>There are two approaches to analysis in the presence of multiple
+potential outcomes:</p>
 <ol style="list-style-type: decimal">
-<li>Cause-specific hazard of a given event: this represents the rate per unit of time of the event among those not having failed from other events</li>
-<li>Cumulative incidence of given event: this represents the rate per unit of time of the event as well as the influence of competing events</li>
+<li>Cause-specific hazard of a given event: this represents the rate per
+unit of time of the event among those not having failed from other
+events</li>
+<li>Subdistribution hazard of a given event: this represents the rate
+per unit of time of the event as well as the influence of competing
+events</li>
 </ol>
-<p>Each of these approaches may only illuminate one important aspect of the data while possibly obscuring others, and the chosen approach should depend on the question of interest.</p>
-</div>
-<div id="a-bunch-of-additional-notes-and-references" class="section level2">
-<h2>A bunch of additional notes and references</h2>
-<ul>
-<li>When the events are independent (almost never true), cause-specific hazards is unbiased</li>
-<li>When the events are dependent, a variety of results can be obtained depending on the setting</li>
-<li>Cumulative incidence using Kaplan-Meier is always &gt;= cumulative incidence using competing risks methods, so can only lead to an overestimate of the cumulative incidence, the amount of overestimation depends on event rates and dependence among events</li>
-<li>To establish that a covariate is indeed acting on the event of interest, cause-specific hazards may be preferred for treatment or pronostic marker effect testing</li>
-<li>To establish overall benefit, subdistribution hazards may be preferred for building prognostic nomograms or considering health economic effects to get a better sense of the influence of treatment and other covariates on an absolute scale</li>
-</ul>
+<p>Each of these approaches may only illuminate one important aspect of
+the data while possibly obscuring others, and the chosen approach should
+depend on the question of interest.</p>
+<p>When the events are independent (almost never true), cause-specific
+hazards is unbiased. When the events are dependent, a variety of results
+can be obtained depending on the setting.</p>
+<p>Cumulative incidence using 1 minus the Kaplan-Meier estimate is
+always &gt;= cumulative incidence using competing risks methods, so can
+only lead to an overestimate of the cumulative incidence, though the
+amount of overestimation depends on event rates and dependence among
+events.</p>
+<p>To establish that a covariate is indeed acting on the event of
+interest, cause-specific hazards may be preferred for treatment or
+prognostic marker effect testing. To establish overall benefit,
+subdistribution hazards may be preferred for building prognostic
+nomograms or considering health economic effects to get a better sense
+of the influence of treatment and other covariates on an absolute
+scale.</p>
+<p>Some references:</p>
 <blockquote>
-<p>Dignam JJ, Zhang Q, Kocherginsky M. The use and interpretation of competing risks regression models. Clin Cancer Res. 2012;18(8):2301-8.</p>
+<p>Dignam JJ, Zhang Q, Kocherginsky M. The use and interpretation of
+competing risks regression models. Clin Cancer Res.
+2012;18(8):2301-8.</p>
 </blockquote>
 <blockquote>
-<p>Kim HT. Cumulative incidence in competing risks data and competing risks regression analysis. Clin Cancer Res. 2007 Jan 15;13(2 Pt 1):559-65.</p>
+<p>Kim HT. Cumulative incidence in competing risks data and competing
+risks regression analysis. Clin Cancer Res. 2007 Jan 15;13(2 Pt
+1):559-65.</p>
 </blockquote>
 <blockquote>
-<p>Satagopan JM, Ben-Porat L, Berwick M, Robson M, Kutler D, Auerbach AD. A note on competing risks in survival data analysis. Br J Cancer. 2004;91(7):1229-35.</p>
+<p>Satagopan JM, Ben-Porat L, Berwick M, Robson M, Kutler D, Auerbach
+AD. A note on competing risks in survival data analysis. Br J Cancer.
+2004;91(7):1229-35.</p>
 </blockquote>
 <blockquote>
-<p>Austin, P., &amp; Fine, J. (2017). Practical recommendations for reporting Fine‐Gray model analyses for competing risk data. Statistics in Medicine, 36(27), 4391-4400.</p>
+<p>Austin, P., &amp; Fine, J. (2017). Practical recommendations for
+reporting Fine‐Gray model analyses for competing risk data. Statistics
+in Medicine, 36(27), 4391-4400.</p>
 </blockquote>
-</div>
-<div id="cumulative-incidence-for-competing-risks" class="section level2">
-<h2>Cumulative incidence for competing risks</h2>
-<ul>
-<li>Non-parametric estimation of the cumulative incidence</li>
-<li>Estimates the cumulative incidence of the event of interest</li>
-<li>At any point in time the sum of the cumulative incidence of each event is equal to the total cumulative incidence of any event (not true in the cause-specific setting)</li>
-<li>Gray’s test is a modified Chi-squared test used to compare 2 or more groups</li>
-</ul>
-</div>
-<div id="example-melanoma-data-from-the-mass-package" class="section level2">
-<h2>Example Melanoma data from the MASS package</h2>
-<p>We use the <code>Melanoma</code> data from the <code>MASS</code> package to illustrate these concepts. It contains variables:</p>
+<p>We can obtain the cause-specific hazard of a given event using the
+methods introduced in the previous section, where the event of interest
+counts as an event and any competing events are censored at the date of
+the competing even.</p>
+<p>The rest of this section will focus on methods for subdistribtuion
+hazards.</p>
+<p>The primary package we will use for competing risks analysis is the
+{tidycmprsk} package.</p>
+<div id="the-melanoma-dataset" class="section level2">
+<h2>The <code>Melanoma</code> dataset</h2>
+<p>We will use the <code>Melanoma</code> data from the {MASS} package to
+illustrate these concepts. It contains variables:</p>
 <ul>
 <li><code>time</code> survival time in days, possibly censored.</li>
-<li><code>status</code> 1 died from melanoma, 2 alive, 3 dead from other causes.</li>
+<li><code>status</code> 1 died from melanoma, 2 alive, 3 dead from other
+causes.</li>
 <li><code>sex</code> 1 = male, 0 = female.</li>
 <li><code>age</code> age in years.</li>
 <li><code>year</code> of operation.</li>
 <li><code>thickness</code> tumor thickness in mm.</li>
 <li><code>ulcer</code> 1 = presence, 0 = absence.</li>
 </ul>
-<pre class="r"><code>data(Melanoma, package = &quot;MASS&quot;)</code></pre>
-</div>
-<div id="cumulative-incidence-in-melanoma-data" class="section level2">
-<h2>Cumulative incidence in Melanoma data</h2>
-<p>Estimate the cumulative incidence in the context of competing risks using the <code>cuminc</code> function.</p>
-<p><em>Note</em>: in the <code>Melanoma</code> data, censored patients are coded as <span class="math inline">\(2\)</span> for <code>status</code>, so we cannot use the <code>cencode</code> option default of <span class="math inline">\(0\)</span></p>
-<pre class="r"><code>cuminc(Melanoma$time, Melanoma$status, cencode = 2)</code></pre>
-<pre><code>## Estimates and Variances:
-## $est
-##           1000       2000       3000      4000      5000
-## 1 1 0.12745714 0.23013963 0.30962017 0.3387175 0.3387175
-## 1 3 0.03426709 0.05045644 0.05811143 0.1059471 0.1059471
-## 
-## $var
-##             1000         2000         3000        4000        5000
-## 1 1 0.0005481186 0.0009001172 0.0013789328 0.001690760 0.001690760
-## 1 3 0.0001628354 0.0002451319 0.0002998642 0.001040155 0.001040155</code></pre>
-</div>
-<div id="plot-the-cumulative-incidence---base-r" class="section level2">
-<h2>Plot the cumulative incidence - base R</h2>
-<p>Generate a base <code>R</code> plot with all the defaults.</p>
-<pre class="r"><code>ci_fit &lt;- 
-  cuminc(
-    ftime = Melanoma$time, 
-    fstatus = Melanoma$status, 
-    cencode = 2
-    )</code></pre>
-<pre class="r"><code>plot(ci_fit, xlab = &quot;Days&quot;)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-31-1.png" width="480" /></p>
-<p>In the legend:</p>
-<ul>
-<li>The first number indicates the group, in this case there is only an overall estimate so it is <span class="math inline">\(1\)</span> for both</li>
-<li>The second number indicates the event type, in this case the solid line is <span class="math inline">\(1\)</span> for death from melanoma and the dashed line is <span class="math inline">\(3\)</span> for death from other causes</li>
-</ul>
-</div>
-<div id="plot-the-cumulative-incidence---ggcompetingrisks" class="section level2">
-<h2>Plot the cumulative incidence - ggcompetingrisks</h2>
-<p>We can also plot the cumulative incidence using the <code>ggscompetingrisks</code> function from the <code>survminer</code> package.</p>
-<p>In this case we get a panel labeled according to the group, and a legend labeled event, indicating the type of event for each line.</p>
-<p><em>Notes</em></p>
-<ul>
-<li>you can use the option <code>multiple_panels = FALSE</code> to have all groups plotted on a single panel</li>
-<li>unlike base <code>R</code> the y-axis does not go to 1 by default, so you must change it manually</li>
-</ul>
-<pre class="r"><code>ggcompetingrisks(ci_fit, xlab = &quot;Days&quot;)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-32-1.png" width="480" /></p>
-</div>
-<div id="compare-cumulative-incidence-between-groups" class="section level2">
-<h2>Compare cumulative incidence between groups</h2>
-<p>In <code>cuminc</code> Gray’s test is used for between-group tests.</p>
-<p>As an example, compare the <code>Melanoma</code> outcomes according to <code>ulcer</code>, the presence or absence of ulceration. The results of the tests can be found in <code>Tests</code>.</p>
-<pre class="r"><code>ci_ulcer &lt;- 
-  cuminc(
-    ftime = Melanoma$time, 
-    fstatus = Melanoma$status, 
-    group = Melanoma$ulcer,
-    cencode = 2
-    )
-
-ci_ulcer[[&quot;Tests&quot;]]</code></pre>
-<pre><code>##        stat           pv df
-## 1 26.120719 3.207240e-07  1
-## 3  0.158662 6.903913e-01  1</code></pre>
-</div>
-<div id="plot-cumulative-incidence-according-to-group---ggcompetingrisks" class="section level2">
-<h2>Plot cumulative incidence according to group - ggcompetingrisks</h2>
-<pre class="r"><code>ggcompetingrisks(
-  fit = ci_ulcer, 
-  multiple_panels = FALSE,
-  xlab = &quot;Days&quot;,
-  ylab = &quot;Cumulative incidence of event&quot;,
-  title = &quot;Death by ulceration&quot;,
-  ylim = c(0, 1)
-)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-34-1.png" width="480" /></p>
-</div>
-<div id="plotting-cumulative-incidence-by-group---manually" class="section level2">
-<h2>Plotting cumulative incidence by group - manually</h2>
-<p><em>Note</em> I personally find the <code>ggcompetingrisks</code> function to be lacking in customization, especially compared to <code>ggsurvplot</code>. I typically do my own plotting, by first creating a tidy dataset of the <code>cuminc</code> fit results, and then plotting the results. See the source code for this presentation for details of the underlying code.</p>
-<pre class="r"><code>ciplotdat &lt;- 
-  ci_ulcer %&gt;% 
-  list_modify(&quot;Tests&quot; = NULL) %&gt;% 
-  map_df(`[`, c(&quot;time&quot;, &quot;est&quot;), .id = &quot;id&quot;) %&gt;% 
-  mutate(id = recode(
-    id, 
-    &quot;0 1&quot; = &quot;Not ulcerated:Death melanoma&quot;, 
-    &quot;0 3&quot; = &quot;Not ulcerated:Death other causes&quot;, 
-    &quot;1 1&quot; = &quot;Ulcerated:Death melanoma&quot;,
-    &quot;1 3&quot; = &quot;Ulcerated:Death other causes&quot;)
-    ) %&gt;% 
-  separate(id, c(&quot;Ulceration&quot;, &quot;Event&quot;), &quot;:&quot;) 
-
-ggplot(ciplotdat, aes(x = time, y = est, color = Ulceration)) +
-  geom_step(lwd = 1.2, aes(linetype = Event))  +
-  ylim(c(0, 1)) +
-  theme_classic() +
-  theme(plot.title = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.position = &quot;bottom&quot;) +
-  labs(x = &quot;Days&quot;, 
-       y = &quot;Cumulative incidence&quot;,
-       title = &quot;Death by ulceration status&quot;) +
-  annotate(&quot;text&quot;, x = 0, y = 1, hjust = 0,
-           label = paste0(
-             &quot;Death melanoma p = &quot;, 
-             ifelse(ci_ulcer$Tests[1, 2] &lt; .001, 
-                    &quot;&lt;.001&quot;, 
-                    round(ci_ulcer$Tests[1, 2], 3)))) + 
-  annotate(&quot;text&quot;, x = 0, y = 0.92, hjust = 0,
-           label = paste0(
-             &quot;Death other causes p = &quot;, 
-             ifelse(ci_ulcer$Tests[2, 2] &lt; .001, 
-                    &quot;&lt;.001&quot;, 
-                    round(ci_ulcer$Tests[2, 2], 3)))) </code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-35-1.png" width="480" /></p>
-</div>
-<div id="plotting-a-single-event-type---manually" class="section level2">
-<h2>Plotting a single event type - manually</h2>
-<p>Often only one of the event types will be of interest, though we still want to account for the competing event. In that case the event of interest can be plotted alone. Again, I do this manually by first creating a tidy dataset of the <code>cuminc</code> fit results, and then plotting the results. See the source code for this presentation for details of the underlying code.</p>
-<pre class="r"><code>ciplotdat1 &lt;- 
-  ci_ulcer %&gt;% 
-  list_modify(&quot;Tests&quot; = NULL) %&gt;% 
-  map_df(`[`, c(&quot;time&quot;, &quot;est&quot;), .id = &quot;id&quot;) %&gt;% 
-  filter(id %in% c(&quot;0 1&quot;, &quot;1 1&quot;)) %&gt;% 
-  mutate(Ulceration = recode(
-    id, 
-    &quot;0 1&quot; = &quot;Not ulcerated&quot;, 
-    &quot;1 1&quot; = &quot;Ulcerated&quot;)
-    )
-
-ggplot(ciplotdat1, aes(x = time, y = est, color = Ulceration)) +
-  geom_step(lwd = 1.2)  +
-  ylim(c(0, 1)) +
-  theme_classic() +
-  theme(plot.title = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.position = &quot;bottom&quot;) +
-  labs(x = &quot;Days&quot;, 
-       y = &quot;Cumulative incidence&quot;,
-       title = &quot;Melanoma death by ulceration status&quot;) +
-  annotate(&quot;text&quot;, x = 0, y = 1, hjust = 0,
-           label = paste0(
-             &quot;p-value = &quot;, 
-             ifelse(ci_ulcer$Tests[1, 2] &lt; .001, 
-                    &quot;&lt;.001&quot;, 
-                    round(ci_ulcer$Tests[1, 2], 3))))</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-36-1.png" width="480" /></p>
-</div>
-<div id="add-the-numbers-at-risk-table" class="section level2">
-<h2>Add the numbers at risk table</h2>
-<p>You may want to add the numbers of risk table to a cumulative incidence plot, and there is no easy way to do this that I know of. See the source code for this presentation for one example (by popular demand, source code now included directly below for one specific example)</p>
-<ol style="list-style-type: decimal">
-<li>Get a plot from base <code>R</code>, <code>ggcompetingrisks</code>, or <code>ggplot</code></li>
-</ol>
-<pre class="r"><code>mel_plot &lt;- 
-  ggplot(ciplotdat1, aes(x = time, y = est, color = Ulceration)) +
-  geom_step(lwd = 1.2)  +
-  ylim(c(0, 1)) +
-  coord_cartesian(xlim = c(0, 5000)) +
-  scale_x_continuous(breaks = seq(0, 5000, 1000)) +
-  theme_classic() +
-  theme(plot.title = element_text(size = 14),
-        legend.title = element_blank(),
-        legend.position = &quot;bottom&quot;) +
-  labs(x = &quot;Days&quot;, 
-       y = &quot;Cumulative incidence&quot;,
-       title = &quot;Melanoma death by ulceration status&quot;) +
-  annotate(&quot;text&quot;, x = 0, y = 1, hjust = 0,
-           label = paste0(
-             &quot;p-value = &quot;, 
-             ifelse(ci_ulcer$Tests[1, 2] &lt; .001, 
-                    &quot;&lt;.001&quot;, 
-                    round(ci_ulcer$Tests[1, 2], 3))))</code></pre>
-<ol start="2" style="list-style-type: decimal">
-<li>Get the number at risk table from a <code>ggsurvplot</code> using the <code>survfit</code> where all events count as a single composite endpoint
-<ul>
-<li>Force the axes to have the same limits and breaks and titles</li>
-<li>Make sure the colors/linetypes match for the group labels</li>
-<li>Try to get the fontsize to be the same</li>
-</ul></li>
-</ol>
-<pre class="r"><code>mel_fit &lt;- survfit(
-  Surv(time, ifelse(status != 2, 1, 0)) ~ ulcer, 
-  data = Melanoma
-)
-
-num &lt;- ggsurvplot(
-  fit = mel_fit, 
-  risk.table = TRUE, 
-  risk.table.y.text = FALSE,
-  ylab = &quot;Days&quot;,
-  risk.table.fontsize = 3.2,
-  tables.theme = theme_survminer(font.main = 10),
-  title = &quot;Test&quot;
-  )</code></pre>
-<ol start="3" style="list-style-type: decimal">
-<li>Then combine the plot and the risktable. I use the <code>plot_grid</code> function from the <code>cowplot</code> package for this
-<ul>
-<li>Thanks to several readers for emailing me with tips on how to change the size of the text that reads “Number at risk”! I used the one suggested by Charles Champeaux, implemented above in the line <code>tables.theme = theme_survminer(font.main = 10)</code>!</li>
-</ul></li>
-</ol>
-<pre class="r"><code>cowplot::plot_grid(
-  mel_plot, 
-  num$table + theme_cleantable(), 
-  nrow = 2, 
-  rel_heights = c(4, 1), 
-  align = &quot;v&quot;, 
-  axis = &quot;b&quot;
-  )</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-39-1.png" width="480" /></p>
-</div>
-<div id="competing-risks-regression" class="section level2">
-<h2>Competing risks regression</h2>
-<p>Two approaches:</p>
-<ol style="list-style-type: decimal">
-<li>Cause-specific hazards
-<ul>
-<li>instantaneous rate of occurrence of the given type of event in subjects who are currently event‐free</li>
-<li>estimated using Cox regression (<code>coxph</code> function)</li>
-</ul></li>
-<li>Subdistribution hazards
-<ul>
-<li>instantaneous rate of occurrence of the given type of event in subjects who have not yet experienced an event of that type</li>
-<li>estimated using Fine-Gray regression (<code>crr</code> function)</li>
-</ul></li>
-</ol>
-</div>
-<div id="competing-risks-regression-in-melanoma-data---subdistribution-hazard-approach" class="section level2">
-<h2>Competing risks regression in Melanoma data - subdistribution hazard approach</h2>
-<p>Let’s say we’re interested in looking at the effect of age and sex on death from melanoma, with death from other causes as a competing event.</p>
-<p>Notes:</p>
-<ul>
-<li><code>crr</code> requires specification of covariates as a matrix</li>
-<li>If more than one event is of interest, you can request results for a different event by using the <code>failcode</code> option, by default results are returned for <code>failcode = 1</code></li>
-</ul>
-<pre class="r"><code>shr_fit &lt;- 
-  crr(
-    ftime = Melanoma$time,
-    fstatus = Melanoma$status,
-    cov1 = Melanoma[, c(&quot;sex&quot;, &quot;age&quot;)],
-    cencode = 2
-    )
-
-shr_fit</code></pre>
-<pre><code>## convergence:  TRUE 
-## coefficients:
-##     sex     age 
-## 0.58840 0.01259 
-## standard errors:
-## [1] 0.271800 0.009301
-## two-sided p-values:
-##  sex  age 
-## 0.03 0.18</code></pre>
-<p>In the previous example, both <code>sex</code> and <code>age</code> were coded as numeric variables. The <code>crr</code> function can’t naturally handle character variables, and you will get an error, so if character variables are present we have to create dummy variables using <code>model.matrix</code></p>
-<pre class="r"><code># Create an example character variable
-chardat &lt;- 
+<pre class="r"><code># install.packages(&quot;MASS&quot;)
+data(Melanoma, package = &quot;MASS&quot;)</code></pre>
+<p>The <code>status</code> variable in these data are coded in a
+non-standard way. Let’s recode to avoid confusion:</p>
+<pre class="r"><code>Melanoma &lt;- 
   Melanoma %&gt;% 
   mutate(
-    sex_char = ifelse(sex == 0, &quot;Male&quot;, &quot;Female&quot;)
-  )
-
-# Create dummy variables with model.matrix
-# The [, -1] removes the intercept
-covs1 &lt;- model.matrix(~ sex_char + age, data = chardat)[, -1]
-
-# Now we can pass that to the cov1 argument, and it will work
-crr(
-  ftime = chardat$time,
-  fstatus = chardat$status,
-  cov1 = covs1,
-  cencode = 2
+    status = as.factor(recode(status, `2` = 0, `1` = 1, `3` = 2))
   )</code></pre>
+<p>Now we have:</p>
+<ul>
+<li><code>status</code> 0=alive, 1=died from melanoma, 2=dead from other
+causes.</li>
+</ul>
+<p>Here are the first 6 patients:</p>
+<pre class="r"><code>head(Melanoma)</code></pre>
+<pre><code>##   time status sex age year thickness ulcer
+## 1   10      2   1  76 1972      6.76     1
+## 2   30      2   1  56 1968      0.65     0
+## 3   35      0   1  41 1977      1.34     0
+## 4   99      2   0  71 1968      2.90     0
+## 5  185      1   1  52 1965     12.08     1
+## 6  204      1   1  28 1971      4.84     1</code></pre>
 </div>
-<div id="formatting-results-from-crr" class="section level2">
-<h2>Formatting results from crr</h2>
-<p>Output from <code>crr</code> is not supported by either <code>broom::tidy()</code> or <code>gtsummary::tbl_regression()</code> at this time. As an alternative, try the (not flexible, but better than nothing?) <code>mvcrrres</code> from my <code>ezfun</code> package</p>
-<pre class="r"><code>ezfun::mvcrrres(shr_fit) %&gt;% 
-  kable()</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left"></th>
-<th align="left">HR (95% CI)</th>
-<th align="left">p-value</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">sex</td>
-<td align="left">1.8 (1.06, 3.07)</td>
-<td align="left">0.03</td>
-</tr>
-<tr class="even">
-<td align="left">age</td>
-<td align="left">1.01 (0.99, 1.03)</td>
-<td align="left">0.18</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div id="competing-risks-regression-in-melanoma-data---cause-specific-hazard-approach" class="section level2">
-<h2>Competing risks regression in Melanoma data - cause-specific hazard approach</h2>
-<p>Censor all subjects who didn’t have the event of interest, in this case death from melanoma, and use <code>coxph</code> as before. So patients who died from other causes are now censored for the cause-specific hazard approach to competing risks.</p>
-<p>Results can be formatted with <code>broom::tidy()</code> or <code>gtsummary::tbl_regression()</code></p>
-<pre class="r"><code>chr_fit &lt;- 
-  coxph(
-    Surv(time, ifelse(status == 1, 1, 0)) ~ sex + age, 
-    data = Melanoma
-    )
-
-broom::tidy(chr_fit, exp = TRUE) %&gt;% 
-  kable()</code></pre>
-<table>
-<thead>
-<tr class="header">
-<th align="left">term</th>
-<th align="right">estimate</th>
-<th align="right">std.error</th>
-<th align="right">statistic</th>
-<th align="right">p.value</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">sex</td>
-<td align="right">1.818949</td>
-<td align="right">0.2676386</td>
-<td align="right">2.235323</td>
-<td align="right">0.0253961</td>
-</tr>
-<tr class="even">
-<td align="left">age</td>
-<td align="right">1.016679</td>
-<td align="right">0.0086628</td>
-<td align="right">1.909514</td>
-<td align="right">0.0561958</td>
-</tr>
-</tbody>
-</table>
-<pre class="r"><code>gtsummary::tbl_regression(chr_fit, exp = TRUE)</code></pre>
-<div id="tjxokapgnw" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="cumulative-incidence-for-competing-risks"
+class="section level2">
+<h2>Cumulative incidence for competing risks</h2>
+<p>A non-parametric estimate of the cumulative incidence of the event of
+interest. At any point in time, the sum of the cumulative incidence of
+each event is equal to the total cumulative incidence of any event (not
+true in the cause-specific setting). Gray’s test is a modified
+Chi-squared test used to compare 2 or more groups.</p>
+<p>Estimate the cumulative incidence in the context of competing risks
+using the <code>cuminc</code> function from the {tidycmprsk} package. By
+default this requires the status to be a factor variable with censored
+patients coded as 0.</p>
+<pre class="r"><code>cuminc(Surv(time, status) ~ 1, data = Melanoma)</code></pre>
+<pre><code>## 
+## time    n.risk   estimate   std.error   95% CI          
+## 1,000   171      0.127      0.023       0.086, 0.177    
+## 2,000   103      0.230      0.030       0.174, 0.291    
+## 3,000   54       0.310      0.037       0.239, 0.383    
+## 4,000   13       0.339      0.041       0.260, 0.419    
+## 5,000   1        0.339      0.041       0.260, 0.419    
+## 
+## time    n.risk   estimate   std.error   95% CI          
+## 1,000   171      0.034      0.013       0.015, 0.066    
+## 2,000   103      0.050      0.016       0.026, 0.087    
+## 3,000   54       0.058      0.017       0.030, 0.099    
+## 4,000   13       0.106      0.032       0.053, 0.179    
+## 5,000   1        0.106      0.032       0.053, 0.179</code></pre>
+<p>We can use the <code>ggcuminc()</code> function from the {ggsurvfit}
+package to plot the cumulative incidence. By default it plots the first
+event type only. So the following plot shows the cumulative incidence of
+death from melanoma:</p>
+<pre class="r"><code>cuminc(Surv(time, status) ~ 1, data = Melanoma) %&gt;% 
+  ggcuminc() + 
+  labs(
+    x = &quot;Days&quot;
+  ) + 
+  add_confidence_interval() +
+  add_risktable()</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-33-1.png" width="480" /></p>
+<p>If we want to include both event types, we can call the
+<code>autoplot()</code> function from the {tidycmprsk} package:</p>
+<pre class="r"><code>cuminc(Surv(time, status) ~ 1, data = Melanoma) %&gt;% 
+  autoplot(outcomes = c(&quot;1&quot;, &quot;2&quot;)) + 
+  labs(
+    x = &quot;Days&quot;,
+    y = &quot;Cumulative Incidence&quot;,
+    linetype = &quot;Event type&quot;
+  ) +
+  ylim(c(0, 1))</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-34-1.png" width="480" /></p>
+<p>Now let’s say we wanted to examine death from melanoma or other
+causes in the <code>Melanoma</code> data, according to
+<code>ulcer</code>, the presence or absence of ulceration. We can
+estimate the cumulative incidence at various times by group and display
+that in a table using the <code>tbl_cuminc()</code> function from the
+{tidycmprsk} package, and add Gray’s test to test for a difference
+between groups over the entire follow-up period using the
+<code>add_p()</code> function.</p>
+<pre class="r"><code>cuminc(Surv(time, status) ~ ulcer, data = Melanoma) %&gt;% 
+  tbl_cuminc(
+    times = 1826.25, 
+    label_header = &quot;**{time/365.25}-year cuminc**&quot;) %&gt;% 
+  add_p()</code></pre>
+<div id="yjczgeehrf" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#tjxokapgnw .gt_table {
+#yjczgeehrf .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -2640,7 +3448,7 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   border-left-color: #D3D3D3;
 }
 
-#tjxokapgnw .gt_heading {
+#yjczgeehrf .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2652,33 +3460,37 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#tjxokapgnw .gt_title {
+#yjczgeehrf .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
   padding-top: 4px;
   padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-bottom-color: #FFFFFF;
   border-bottom-width: 0;
 }
 
-#tjxokapgnw .gt_subtitle {
+#yjczgeehrf .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
   padding-top: 0;
   padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
 }
 
-#tjxokapgnw .gt_bottom_border {
+#yjczgeehrf .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#tjxokapgnw .gt_col_headings {
+#yjczgeehrf .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2693,7 +3505,7 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#tjxokapgnw .gt_col_heading {
+#yjczgeehrf .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2713,7 +3525,7 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   overflow-x: hidden;
 }
 
-#tjxokapgnw .gt_column_spanner_outer {
+#yjczgeehrf .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2725,15 +3537,15 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   padding-right: 4px;
 }
 
-#tjxokapgnw .gt_column_spanner_outer:first-child {
+#yjczgeehrf .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#tjxokapgnw .gt_column_spanner_outer:last-child {
+#yjczgeehrf .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#tjxokapgnw .gt_column_spanner {
+#yjczgeehrf .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2745,8 +3557,11 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   width: 100%;
 }
 
-#tjxokapgnw .gt_group_heading {
-  padding: 8px;
+#yjczgeehrf .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2767,7 +3582,7 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   vertical-align: middle;
 }
 
-#tjxokapgnw .gt_empty_group_heading {
+#yjczgeehrf .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2782,15 +3597,15 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   vertical-align: middle;
 }
 
-#tjxokapgnw .gt_from_md > :first-child {
+#yjczgeehrf .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#tjxokapgnw .gt_from_md > :last-child {
+#yjczgeehrf .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#tjxokapgnw .gt_row {
+#yjczgeehrf .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2809,7 +3624,7 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   overflow-x: hidden;
 }
 
-#tjxokapgnw .gt_stub {
+#yjczgeehrf .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2818,10 +3633,29 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   border-right-style: solid;
   border-right-width: 2px;
   border-right-color: #D3D3D3;
-  padding-left: 12px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#tjxokapgnw .gt_summary_row {
+#yjczgeehrf .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#yjczgeehrf .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#yjczgeehrf .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2831,17 +3665,26 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   padding-right: 5px;
 }
 
-#tjxokapgnw .gt_first_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
+#yjczgeehrf .gt_first_summary_row {
   border-top-style: solid;
-  border-top-width: 2px;
   border-top-color: #D3D3D3;
 }
 
-#tjxokapgnw .gt_grand_summary_row {
+#yjczgeehrf .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#yjczgeehrf .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#yjczgeehrf .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2851,7 +3694,7 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   padding-right: 5px;
 }
 
-#tjxokapgnw .gt_first_grand_summary_row {
+#yjczgeehrf .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2861,11 +3704,11 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   border-top-color: #D3D3D3;
 }
 
-#tjxokapgnw .gt_striped {
+#yjczgeehrf .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#tjxokapgnw .gt_table_body {
+#yjczgeehrf .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2874,7 +3717,7 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   border-bottom-color: #D3D3D3;
 }
 
-#tjxokapgnw .gt_footnotes {
+#yjczgeehrf .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2888,13 +3731,16 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#tjxokapgnw .gt_footnote {
+#yjczgeehrf .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding: 4px;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#tjxokapgnw .gt_sourcenotes {
+#yjczgeehrf .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2908,54 +3754,1013 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
   border-right-color: #D3D3D3;
 }
 
-#tjxokapgnw .gt_sourcenote {
+#yjczgeehrf .gt_sourcenote {
   font-size: 90%;
-  padding: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
-#tjxokapgnw .gt_left {
+#yjczgeehrf .gt_left {
   text-align: left;
 }
 
-#tjxokapgnw .gt_center {
+#yjczgeehrf .gt_center {
   text-align: center;
 }
 
-#tjxokapgnw .gt_right {
+#yjczgeehrf .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#tjxokapgnw .gt_font_normal {
+#yjczgeehrf .gt_font_normal {
   font-weight: normal;
 }
 
-#tjxokapgnw .gt_font_bold {
+#yjczgeehrf .gt_font_bold {
   font-weight: bold;
 }
 
-#tjxokapgnw .gt_font_italic {
+#yjczgeehrf .gt_font_italic {
   font-style: italic;
 }
 
-#tjxokapgnw .gt_super {
+#yjczgeehrf .gt_super {
   font-size: 65%;
 }
 
-#tjxokapgnw .gt_footnote_marks {
+#yjczgeehrf .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
-  font-size: 65%;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#yjczgeehrf .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#yjczgeehrf .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#yjczgeehrf .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#yjczgeehrf .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#yjczgeehrf .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#yjczgeehrf .gt_indent_5 {
+  text-indent: 25px;
 }
 </style>
 <table class="gt_table">
   
   <thead class="gt_col_headings">
     <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1"><strong>p-value</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>5-year cuminc</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong><sup class="gt_footnote_marks">1</sup></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">ulcer</td>
+<td class="gt_row gt_center"></td>
+<td class="gt_row gt_center"><0.001</td></tr>
+    <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">0</td>
+<td class="gt_row gt_center">9.1% (4.6%, 15%)</td>
+<td class="gt_row gt_center"></td></tr>
+    <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">1</td>
+<td class="gt_row gt_center">39% (29%, 49%)</td>
+<td class="gt_row gt_center"></td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="3"><sup class="gt_footnote_marks">1</sup> Gray's Test</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+<p><br></p>
+<p>Then we can see the plot of death due to melanoma, according to
+ulceration status, as before using <code>ggcuminc()</code> from the
+{ggsurvfit} package:</p>
+<pre class="r"><code>cuminc(Surv(time, status) ~ ulcer, data = Melanoma) %&gt;% 
+  ggcuminc() + 
+  labs(
+    x = &quot;Days&quot;
+  ) + 
+  add_confidence_interval() +
+  add_risktable()</code></pre>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-36-1.png" width="480" /></p>
+</div>
+<div id="competing-risks-regression" class="section level2">
+<h2>Competing risks regression</h2>
+<p>There are two approaches to competing risks regression:</p>
+<ol style="list-style-type: decimal">
+<li>Cause-specific hazards
+<ul>
+<li>instantaneous rate of occurrence of the given type of event in
+subjects who are currently event‐free</li>
+<li>estimated using Cox regression (<code>coxph</code> function)</li>
+</ul></li>
+<li>Subdistribution hazards
+<ul>
+<li>instantaneous rate of occurrence of the given type of event in
+subjects who have not yet experienced an event of that type</li>
+<li>estimated using Fine-Gray regression (<code>crr</code>
+function)</li>
+</ul></li>
+</ol>
+<p>Let’s say we’re interested in looking at the effect of age and sex on
+death from melanoma, with death from other causes as a competing
+event.</p>
+<p>The <code>crr()</code> function from the {tidycmprsk} package will
+estimate the subdistribution hazards.</p>
+<pre class="r"><code>crr(Surv(time, status) ~ sex + age, data = Melanoma)</code></pre>
+<pre><code>## 
+## Variable   Coef    SE      HR     95% CI       p-value    
+## sex        0.588   0.272   1.80   1.06, 3.07   0.030      
+## age        0.013   0.009   1.01   0.99, 1.03   0.18</code></pre>
+<p>And we can generate tables of formatted results using the
+<code>tbl_regression()</code> function from the {gtsummary} package,
+with the option <code>exp = TRUE</code> to obtain the hazard ratio
+estimates:</p>
+<pre class="r"><code>crr(Surv(time, status) ~ sex + age, data = Melanoma) %&gt;% 
+  tbl_regression(exp = TRUE)</code></pre>
+<div id="cwcziqpdhf" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#cwcziqpdhf .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#cwcziqpdhf .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#cwcziqpdhf .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#cwcziqpdhf .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#cwcziqpdhf .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#cwcziqpdhf .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#cwcziqpdhf .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#cwcziqpdhf .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#cwcziqpdhf .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#cwcziqpdhf .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#cwcziqpdhf .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#cwcziqpdhf .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#cwcziqpdhf .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cwcziqpdhf .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#cwcziqpdhf .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#cwcziqpdhf .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cwcziqpdhf .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#cwcziqpdhf .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cwcziqpdhf .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#cwcziqpdhf .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cwcziqpdhf .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#cwcziqpdhf .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#cwcziqpdhf .gt_left {
+  text-align: left;
+}
+
+#cwcziqpdhf .gt_center {
+  text-align: center;
+}
+
+#cwcziqpdhf .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#cwcziqpdhf .gt_font_normal {
+  font-weight: normal;
+}
+
+#cwcziqpdhf .gt_font_bold {
+  font-weight: bold;
+}
+
+#cwcziqpdhf .gt_font_italic {
+  font-style: italic;
+}
+
+#cwcziqpdhf .gt_super {
+  font-size: 65%;
+}
+
+#cwcziqpdhf .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#cwcziqpdhf .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#cwcziqpdhf .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#cwcziqpdhf .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#cwcziqpdhf .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#cwcziqpdhf .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#cwcziqpdhf .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">sex</td>
+<td class="gt_row gt_center">1.80</td>
+<td class="gt_row gt_center">1.06, 3.07</td>
+<td class="gt_row gt_center">0.030</td></tr>
+    <tr><td class="gt_row gt_left">age</td>
+<td class="gt_row gt_center">1.01</td>
+<td class="gt_row gt_center">0.99, 1.03</td>
+<td class="gt_row gt_center">0.2</td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+<p><br></p>
+<p>We see that male sex (recall that 1=male, 0=female in these data) is
+significantly associated with increased hazard of death due to melanoma,
+whereas age was not significantly associated with death due to
+melanoma.</p>
+<p>Alternatively, if we wanted to use the cause-specific hazards
+regression approach, we first need to censor all subjects who didn’t
+have the event of interest, in this case death from melanoma, and then
+use <code>coxph</code> as before. So patients who died from other causes
+are now censored for the cause-specific hazard approach to competing
+risks. Again we generate a table of formatted results using the
+<code>tbl_regression()</code> function from the {gtsummary} package:</p>
+<pre class="r"><code>coxph(
+  Surv(time, ifelse(status == 1, 1, 0)) ~ sex + age, 
+  data = Melanoma
+  ) %&gt;% 
+  tbl_regression(exp = TRUE)</code></pre>
+<div id="oqauirfaqw" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+#oqauirfaqw .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#oqauirfaqw .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#oqauirfaqw .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#oqauirfaqw .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#oqauirfaqw .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#oqauirfaqw .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#oqauirfaqw .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#oqauirfaqw .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#oqauirfaqw .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#oqauirfaqw .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#oqauirfaqw .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#oqauirfaqw .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#oqauirfaqw .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#oqauirfaqw .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#oqauirfaqw .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#oqauirfaqw .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#oqauirfaqw .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#oqauirfaqw .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#oqauirfaqw .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#oqauirfaqw .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#oqauirfaqw .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#oqauirfaqw .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#oqauirfaqw .gt_left {
+  text-align: left;
+}
+
+#oqauirfaqw .gt_center {
+  text-align: center;
+}
+
+#oqauirfaqw .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#oqauirfaqw .gt_font_normal {
+  font-weight: normal;
+}
+
+#oqauirfaqw .gt_font_bold {
+  font-weight: bold;
+}
+
+#oqauirfaqw .gt_font_italic {
+  font-style: italic;
+}
+
+#oqauirfaqw .gt_super {
+  font-size: 65%;
+}
+
+#oqauirfaqw .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+#oqauirfaqw .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#oqauirfaqw .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#oqauirfaqw .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#oqauirfaqw .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#oqauirfaqw .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#oqauirfaqw .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
@@ -2969,56 +4774,57 @@ broom::tidy(chr_fit, exp = TRUE) %&gt;%
 <td class="gt_row gt_center">0.056</td></tr>
   </tbody>
   
-  <tfoot>
-    <tr class="gt_footnotes">
-      <td colspan="4">
-        <p class="gt_footnote">
-          <sup class="gt_footnote_marks">
-            <em>1</em>
-          </sup>
-           
-          HR = Hazard Ratio, CI = Confidence Interval
-          <br />
-        </p>
-      </td>
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
     </tr>
   </tfoot>
 </table>
 </div>
+<p><br></p>
+<p>And in this case we obtain similar results using the two approaches
+to competing risks regression.</p>
 </div>
 </div>
 <div id="part-4-advanced-topics" class="section level1">
 <h1>Part 4: Advanced Topics</h1>
-<div id="what-weve-covered" class="section level2">
-<h2>What we’ve covered</h2>
+<p>So far we’ve covered:</p>
 <ul>
-<li>The basics of survival analysis including the Kaplan-Meier survival function and Cox regression</li>
+<li>The basics of survival analysis including the Kaplan-Meier survival
+function and Cox regression</li>
 <li>Landmark analysis and time-dependent covariates</li>
-<li>Cumulative incidence and regression for competing risks analyses</li>
+<li>Cumulative incidence and regression for competing risks
+analyses</li>
 </ul>
-</div>
-<div id="whats-left" class="section level2">
-<h2>What’s left?</h2>
-<p>A variety of bits and pieces of things that may come up and be handy to know:</p>
+<p>In this section I’ll include a variety of bits and pieces of things
+that may come up and be handy to know:</p>
 <ol style="list-style-type: decimal">
 <li>Assessing the proportional hazards assumption</li>
-<li>Making a smooth survival plot based on <span class="math inline">\(x\)</span>-year survival according to a continuous covariate</li>
+<li>Making a smooth survival plot based on <span
+class="math inline">\(x\)</span>-year survival according to a continuous
+covariate</li>
 <li>Conditional survival</li>
 </ol>
-</div>
 <div id="assessing-proportional-hazards" class="section level2">
 <h2>Assessing proportional hazards</h2>
-<p>One assumption of the Cox proportional hazards regression model is that the hazards are proportional at each point in time throughout follow-up. How can we check to see if our data meet this assumption?</p>
-<p>Use the <code>cox.zph</code> function from the survival package. It results in two main things:</p>
+<p>One assumption of the Cox proportional hazards regression model is
+that the hazards are proportional at each point in time throughout
+follow-up. The <code>cox.zph()</code> function from the {survival}
+package allows us to check this assumption. It results in two main
+things:</p>
 <ol style="list-style-type: decimal">
-<li>A hypothesis test of whether the effect of each covariate differs according to time, and a global test of all covariates at once.
+<li>A hypothesis test of whether the effect of each covariate differs
+according to time, and a global test of all covariates at once.
 <ul>
-<li>This is done by testiung for an interaction effect between the covariate and log(time)</li>
-<li>A significant p-value indicates that the proportional hazards assumption is violated</li>
+<li>This is done by testing for an interaction effect between the
+covariate and log(time)</li>
+<li>A significant p-value indicates that the proportional hazards
+assumption is violated</li>
 </ul></li>
 <li>Plots of the Schoenfeld residuals
 <ul>
-<li>Deviation from a zero-slope line is evidence that the proportional hazards assumption is violated</li>
+<li>Deviation from a zero-slope line is evidence that the proportional
+hazards assumption is violated</li>
 </ul></li>
 </ol>
 <pre class="r"><code>mv_fit &lt;- coxph(Surv(time, status) ~ sex + age, data = lung)
@@ -3029,17 +4835,25 @@ print(cz)</code></pre>
 ## age    0.209  1 0.65
 ## GLOBAL 2.771  2 0.25</code></pre>
 <pre class="r"><code>plot(cz)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-44-1.png" width="480" /><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-44-2.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-40-1.png" width="480" /><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-40-2.png" width="480" /></p>
+<p>Here we see that with p-values &gt;0.05, we do not reject the null
+hypothesis, and conclude that the proportional hazards assumption is
+satisfied for each individual covariate, and also for the model
+overall.</p>
 </div>
-<div id="smooth-survival-plot---quantile-of-survival" class="section level2">
-<h2>Smooth survival plot - quantile of survival</h2>
-<p>Sometimes you will want to visualize a survival estimate according to a continuous variable. The <code>sm.survival</code> function from the <code>sm</code> package allows you to do this for a quantile of the distribution of survival data. The default quantile is <code>p = 0.5</code> for median survival.</p>
+<div id="smooth-survival-plot" class="section level2">
+<h2>Smooth survival plot</h2>
+<p>Sometimes you will want to visualize a survival estimate according to
+a continuous variable. The <code>sm.survival</code> function from the
+<code>sm</code> package allows you to do this for a quantile of the
+distribution of survival data. The default quantile is
+<code>p = 0.5</code> for median survival.</p>
 <pre class="r"><code>library(sm)
 
 sm.options(
   list(
     xlab = &quot;Age (years)&quot;,
-    ylab = &quot;Time to death (years)&quot;)
+    ylab = &quot;Median time to death (years)&quot;)
   )
 
 sm.survival(
@@ -3048,7 +4862,7 @@ sm.survival(
   status = lung$status,
   h = sd(lung$age) / nrow(lung)^(-1/4)
   )</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-45-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-41-1.png" width="480" /></p>
 <ul>
 <li>The x’s represent events</li>
 <li>The o’s represent censoring</li>
@@ -3057,37 +4871,50 @@ sm.survival(
 <li>In this case, too smooth!</li>
 </ul></li>
 </ul>
-<p>The option <code>h</code> is the smoothing parameter. This should be related to the standard deviation of the continuous covariate, <span class="math inline">\(x\)</span>. Suggested to start with <span class="math inline">\(\frac{sd(x)}{n^{-1/4}}\)</span> then reduce by <span class="math inline">\(1/2\)</span>, <span class="math inline">\(1/4\)</span>, etc to get a good amount of smoothing. The previous plot was too smooth so let’s reduce it by <span class="math inline">\(1/4\)</span></p>
+<p>The option <code>h</code> is the smoothing parameter. This should be
+related to the standard deviation of the continuous covariate, <span
+class="math inline">\(x\)</span>. Suggested to start with <span
+class="math inline">\(\frac{sd(x)}{n^{-1/4}}\)</span> then reduce by
+<span class="math inline">\(1/2\)</span>, <span
+class="math inline">\(1/4\)</span>, etc to get a good amount of
+smoothing. The previous plot was too smooth so let’s reduce it by <span
+class="math inline">\(1/6\)</span>:</p>
 <pre class="r"><code>sm.survival(
   x = lung$age,
   y = lung$time,
   status = lung$status,
-  h = (1/4) * sd(lung$age) / nrow(lung)^(-1/4)
+  h = (1/6) * sd(lung$age) / nrow(lung)^(-1/4)
   )</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-46-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-42-1.png" width="480" /></p>
+<p>Now we can see that median time to death decreases slightly as age
+increases.</p>
 </div>
 <div id="conditional-survival" class="section level2">
 <h2>Conditional survival</h2>
-<p>Sometimes it is of interest to generate survival estimates among a group of patients who have already survived for some length of time.</p>
-<p><span class="math display">\[S(y|x) = \frac{S(x + y)}{S(x)}\]</span></p>
+<p>Sometimes it is of interest to generate survival estimates among a
+group of patients who have already survived for some length of time.</p>
+<p><span class="math display">\[S(y|x) = \frac{S(x +
+y)}{S(x)}\]</span></p>
 <ul>
-<li><span class="math inline">\(y\)</span>: number of additional survival years of interest</li>
-<li><span class="math inline">\(x\)</span>: number of years a patient has already survived</li>
+<li><span class="math inline">\(y\)</span>: number of additional
+survival years of interest</li>
+<li><span class="math inline">\(x\)</span>: number of years a patient
+has already survived</li>
 </ul>
 <blockquote>
-<p>Zabor, E., Gonen, M., Chapman, P., &amp; Panageas, K. (2013). Dynamic prognostication using conditional survival estimates. Cancer, 119(20), 3589-3592.</p>
+<p>Zabor, E., Gonen, M., Chapman, P., &amp; Panageas, K. (2013). Dynamic
+prognostication using conditional survival estimates. Cancer, 119(20),
+3589-3592.</p>
 </blockquote>
-</div>
-<div id="conditional-survival-estimates" class="section level2">
-<h2>Conditional survival estimates</h2>
-<p>The estimates are easy to generate with basic math on your own.</p>
-<p>Alternatively, I have simple package in development called <code>condsurv</code> to generate estimates and plots related to conditional survival. We can use the <code>conditional_surv_est</code> function to get estimates and 95% confidence intervals. Let’s condition on survival to 6-months</p>
-<pre class="r"><code>remotes::install_github(&quot;zabore/condsurv&quot;)</code></pre>
-<pre class="r"><code>library(condsurv)
+<p>The estimates are easy to generate with basic math on your own, and
+are also implemented in the {condsurv} package available from <a
+href="https://github.com/zabore/condsurv">https://github.com/zabore/condsurv</a>.</p>
+<p>We can use the <code>conditional_surv_est()</code> function from the
+{condsurv} package to get estimates and 95% confidence intervals. Let’s
+condition on survival to 6-months</p>
+<pre class="r"><code>fit1 &lt;- survfit(Surv(time, status) ~ 1, data = lung)
 
-fit1 &lt;- survfit(Surv(time, status) ~ 1, data = lung)
-
-prob_times &lt;- seq(365.25, 182.625 * 5, 182.625)
+prob_times &lt;- seq(365.25, 182.625 * 4, 182.625)
 
 purrr::map_df(
   prob_times, 
@@ -3127,30 +4954,25 @@ purrr::map_df(
 <td align="right">0.10</td>
 <td align="right">0.25</td>
 </tr>
-<tr class="even">
-<td align="right">30</td>
-<td align="right">0.07</td>
-<td align="right">0.02</td>
-<td align="right">0.15</td>
-</tr>
 </tbody>
 </table>
-<p>Recall that our initial <span class="math inline">\(1\)</span>-year survival estimate was 0.41. We see that for patients who have already survived 6-months this increases to 0.58.</p>
-</div>
-<div id="conditional-survival-plots" class="section level2">
-<h2>Conditional survival plots</h2>
-<p>We can also visualize conditional survival data based on different lengths of time survived. The <code>condsurv::condKMggplot</code> function can help with this.</p>
-<pre class="r"><code>cond_times &lt;- seq(0, 182.625 * 4, 182.625)
-
-gg_conditional_surv(
+<p>Recall that our initial <span class="math inline">\(1\)</span>-year
+survival estimate was 0.41. We see that for patients who have already
+survived 12 months this increases to 0.58.</p>
+<p>We can also visualize conditional survival data based on different
+lengths of time survived using the <code>condKMggplot()</code> function
+from the {condsurv} package:</p>
+<pre class="r"><code>gg_conditional_surv(
   basekm = fit1, 
-  at = cond_times,
+  at = prob_times,
   main = &quot;Conditional survival in lung data&quot;,
   xlab = &quot;Days&quot;
   ) +
   labs(color = &quot;Conditional time&quot;)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-49-1.png" width="672" /></p>
-<p>The resulting plot has one survival curve for each time on which we condition. In this case the first line is the overall survival curve since it is conditioning on time 0.</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-44-1.png" width="672" /></p>
+<p>The resulting plot has one survival curve for each time on which we
+condition. In this case the first line is the overall survival curve
+since it is conditioning on time 0.</p>
 </div>
 </div>
 
@@ -3212,7 +5034,7 @@ $(document).ready(function ()  {
       ignoreSelector: ".toc-ignore",
       scrollTo: 0
     };
-    options.showAndHide = true;
+    options.showAndHide = false;
     options.smoothScroll = true;
 
     // tocify

@@ -7,8 +7,6 @@ navbar:
       href: http://www.emilyzabor.com
       
   right:
-    - icon: fa-envelope fa-lg
-      href: http://www.emilyzabor.com/contact.html
     - icon: ai-google-scholar ai-lg
       href: https://scholar.google.com/citations?user=tLbQTZMAAAAJ&hl=en
     - icon: ai-cv ai-lg
@@ -21,5 +19,10 @@ navbar:
       href: https://www.linkedin.com/in/emily-zabor-59b902b7/
 output:
   html_document:
-    theme: paper
-    css: 'styles.css'
+    version: 5
+    bootswatch: flatly
+    theme:
+      bg: "#ffffff"
+      fg: "#4b4b45"
+      primary: "#0078bf"
+      success: "#f08122"

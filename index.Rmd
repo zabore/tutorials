@@ -3,11 +3,11 @@ title: ""
 pagetitle: "Tutorials"
 ---
 
-<link rel="stylesheet" href="styles.css" type="text/css">
 <link rel="stylesheet" href="academicicons/css/academicons.min.css"/>
+
+<br>
 
 ## Tutorials
 
-[**Survival analysis in R**](survival_analysis_in_r_tutorial.html): a detailed tutorial on conducting survival analyses in R, including an introduction to the basics of survival analysis, landmark analyses and time-dependent covariates, competing risks, and a selection of advanced topics.
+[**Survival analysis in R**](survival_analysis_in_r_tutorial.html): A detailed tutorial on conducting survival analyses in R, including an introduction to the basics of survival analysis, landmark analyses and time-dependent covariates, competing risks, and a selection of advanced topics.
 
-[**Creating websites in R**](rmarkdown_websites_tutorial.html): a basic introduction to creating simple websites in RMarkdown, using a website for my cats as an example.
