@@ -12,7 +12,7 @@ navbar:
     - icon: ai-cv ai-lg
       href: http://www.emilyzabor.com/files/Zabor_Emily_CV.pdf
     - icon: fab fa-github fa-lg
-      href: http://github.com/zabore
+      href: http://github.com/zabore/tutorials
     - icon: fab fa-twitter fa-lg
       href: https://twitter.com/zabormetrics
     - icon: fab fa-linkedin fa-lg

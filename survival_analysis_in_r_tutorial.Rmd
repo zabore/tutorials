@@ -4,7 +4,7 @@ output:
   html_document:
     toc: TRUE
     toc_float:
-      collapsed: FALSE
+      collapsed: TRUE
 ---
 
 <link rel="stylesheet" href="academicicons/css/academicons.min.css"/>
