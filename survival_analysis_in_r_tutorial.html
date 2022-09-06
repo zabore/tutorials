@@ -520,6 +520,7 @@ class="math inline">\(S(t_0) = 1\)</span>.</p>
 <p>In this section, we will use the following packages:</p>
 <pre class="r"><code># install.packages(c(&quot;survival&quot;, &quot;lubridate&quot;, &quot;ggsurvfit&quot;, &quot;gtsummary&quot;, &quot;tidycmprsk&quot;))
 # remotes::install_github(&quot;zabore/condsurv&quot;)
+# remotes::install_github(&quot;zabore/ezfun&quot;)
 library(survival)
 library(lubridate)
 library(ggsurvfit)
@@ -698,14 +699,17 @@ for details.</p>
 base R or the {survminer} package.</p>
 <p>The {ggsurvfit} package works best if you create the
 <code>survfit</code> object using the included
-<code>ggsurvfit::survfit2()</code> function, which uses similar syntax
-to what we saw previously with <code>survival::survfit()</code>.</p>
+<code>ggsurvfit::survfit2()</code> function, which uses the same syntax
+to what we saw previously with <code>survival::survfit()</code>. The
+<code>ggsurvfit::survfit2()</code> tracks the environment from the
+function call, which allows the plot to have better default values for
+labeling and p-value reporting.</p>
 <pre class="r"><code>survfit2(Surv(time, status) ~ 1, data = lung) %&gt;% 
   ggsurvfit() +
   labs(
     x = &quot;Days&quot;,
     y = &quot;Overall survival probability&quot;
-    )</code></pre>
+  )</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-4-1.png" width="480" /></p>
 <p>The default plot in <code>ggsurvfit()</code> shows the step function
 only. We can add the confidence interval using
@@ -715,12 +719,12 @@ only. We can add the confidence interval using
   labs(
     x = &quot;Days&quot;,
     y = &quot;Overall survival probability&quot;
-    ) + 
+  ) + 
   add_confidence_interval()</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-5-1.png" width="480" /></p>
 <p>Typically we will also want to see the numbers at risk in a table
 below the x-axis. We can add this using
-<code>add_risk_table()</code>:</p>
+<code>add_risktable()</code>:</p>
 <pre class="r"><code>survfit2(Surv(time, status) ~ 1, data = lung) %&gt;% 
   ggsurvfit() +
   labs(
@@ -785,7 +789,7 @@ package:</p>
 <pre class="r"><code>survfit(Surv(time, status) ~ 1, data = lung) %&gt;% 
   tbl_survfit(
     times = 365.25,
-    label_header = &quot;1-year survival (95% CI)&quot;
+    label_header = &quot;**1-year survival (95% CI)**&quot;
   )</code></pre>
 <div id="thodvqsjjd" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
@@ -1197,7 +1201,7 @@ package:</p>
   <thead class="gt_col_headings">
     <tr>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col">1-year survival (95% CI)</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>1-year survival (95% CI)</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
@@ -1253,7 +1257,7 @@ package:</p>
 <pre class="r"><code>survfit(Surv(time, status) ~ 1, data = lung) %&gt;% 
   tbl_survfit(
     probs = 0.5,
-    label_header = &quot;Median survival (95% CI)&quot;
+    label_header = &quot;**Median survival (95% CI)**&quot;
   )</code></pre>
 <div id="mpqwnvornv" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
@@ -1665,7 +1669,7 @@ package:</p>
   <thead class="gt_col_headings">
     <tr>
       <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col">Median survival (95% CI)</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>Median survival (95% CI)</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
@@ -3388,16 +3392,14 @@ death from melanoma:</p>
   add_confidence_interval() +
   add_risktable()</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-33-1.png" width="480" /></p>
-<p>If we want to include both event types, we can call the
-<code>autoplot()</code> function from the {tidycmprsk} package:</p>
+<p>If we want to include both event types, specify the outcomes in the
+<code>ggcuminc(outcome=)</code> argument:</p>
 <pre class="r"><code>cuminc(Surv(time, status) ~ 1, data = Melanoma) %&gt;% 
-  autoplot(outcomes = c(&quot;1&quot;, &quot;2&quot;)) + 
+  ggcuminc(outcome = c(&quot;1&quot;, &quot;2&quot;)) +
+  ylim(c(0, 1)) + 
   labs(
-    x = &quot;Days&quot;,
-    y = &quot;Cumulative Incidence&quot;,
-    linetype = &quot;Event type&quot;
-  ) +
-  ylim(c(0, 1))</code></pre>
+    x = &quot;Days&quot;
+  )</code></pre>
 <p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-34-1.png" width="480" /></p>
 <p>Now let’s say we wanted to examine death from melanoma or other
 causes in the <code>Melanoma</code> data, according to
@@ -4842,7 +4844,8 @@ a continuous variable. The <code>sm.survival</code> function from the
 <code>sm</code> package allows you to do this for a quantile of the
 distribution of survival data. The default quantile is
 <code>p = 0.5</code> for median survival.</p>
-<pre class="r"><code>library(sm)
+<pre class="r"><code># install.packages(&quot;sm&quot;)
+library(sm)
 
 sm.options(
   list(
