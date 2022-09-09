@@ -375,7 +375,7 @@ You get an **incorrect** estimate of the $1$-year probability of survival when y
 
 Recall the **correct** estimate of the $1$-year probability of survival, accounting for censoring using the Kaplan-Meier method, was `r round(summary(s1, times = 365.25)$surv * 100)`%.
 
-Ignoring censoring leads to an **overestimate** of the overall survival probability. Imagine two studies, each with 228 subjects. There are 165 deaths in each study. Censoring is ignored in one (pink line), censoring is accounted for in the other (blue line). The censored subjects only contribute information for a portion of the follow-up time, and then fall out of the risk set, thus pulling down the cumulative probability of survival. Ignoring censoring erroneously treats patients who are censored as part of the risk set for the entire follow-up period.
+Ignoring censoring leads to an **overestimate** of the overall survival probability. Imagine two studies, each with 228 subjects. There are 165 deaths in each study. Censoring is ignored in one (blue line), censoring is accounted for in the other (yellow line). The censored subjects only contribute information for a portion of the follow-up time, and then fall out of the risk set, thus pulling down the cumulative probability of survival. Ignoring censoring erroneously treats patients who are censored as part of the risk set for the entire follow-up period.
 
 ```{r echo = FALSE, message = FALSE, warning = FALSE, fig.height = 6}
 fakedata2 <- 
@@ -448,7 +448,7 @@ You get an **incorrect** estimate of median survival time of `r round(median(lun
 
 Recall the **correct** estimate of median survival time is `r round(summary(s1)$table["median"], 1)` days.
 
-Ignoring censoring will lead to an **underestimate** of median survival time because the follow-up time that censored patients contribute is excluded (pink line). The true survival curve accounting for censoring in the `lung` data is shown in blue for comparison.
+Ignoring censoring will lead to an **underestimate** of median survival time because the follow-up time that censored patients contribute is excluded (blue line). The true survival curve accounting for censoring in the `lung` data is shown in yellow for comparison.
 
 ```{r echo = FALSE, fig.height = 6, message = FALSE, warning = FALSE}
 fakedata <- 
