@@ -207,7 +207,7 @@ And inside the file you will simply have your domain name:
 
 ## Package websites
 
-An example from the [website](http://www.emilyzabor.net/ezfun/) for my package `ezfun`:
+An example from the [website](http://www.emilyzabor.me/ezfun/) for my package `ezfun`:
 
 <img src="img/package.png" style="border: #A9A9A9 1px solid; width:75%">
 
@@ -242,7 +242,7 @@ And you're done, it's that easy.
 
 ## Project websites
 
-You can create a website for a non-package repository as well. For example, I have [a page](http://www.emilyzabor.net/tutorials/) on my website linking to the repository in which this tutorial is stored.
+You can create a website for a non-package repository as well. For example, I have [a page](http://www.emilyzabor.me/tutorials/) on my website linking to the repository in which this tutorial is stored.
 
 <img src="img/project.png" style="border: #A9A9A9 1px solid; width:75%">
   

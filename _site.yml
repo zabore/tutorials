@@ -4,13 +4,13 @@ navbar:
   title: "Emily C. Zabor"
   left:
     - icon: fa-home fa-lg
-      href: http://www.emilyzabor.net
+      href: http://www.emilyzabor.me
       
   right:
     - icon: ai-google-scholar ai-lg
       href: https://scholar.google.com/citations?user=tLbQTZMAAAAJ&hl=en
     - icon: ai-cv ai-lg
-      href: http://www.emilyzabor.net/files/Zabor_Emily_CV.pdf
+      href: http://www.emilyzabor.me/files/Zabor_Emily_CV.pdf
     - icon: fab fa-github fa-lg
       href: http://github.com/zabore/tutorials
     - icon: fab fa-twitter fa-lg
