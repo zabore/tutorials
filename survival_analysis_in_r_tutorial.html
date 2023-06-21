@@ -13,22 +13,22 @@
 
 <title>Survival Analysis in R</title>
 
-<script src="site_libs/header-attrs-2.16/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.21/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-<link href="site_libs/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet" />
-<script src="site_libs/bootstrap-5.1.3/bootstrap.bundle.min.js"></script>
-<script src="site_libs/bs3compat-0.4.0/transition.js"></script>
-<script src="site_libs/bs3compat-0.4.0/tabs.js"></script>
-<script src="site_libs/bs3compat-0.4.0/bs3compat.js"></script>
+<link href="site_libs/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-5.2.2/bootstrap.bundle.min.js"></script>
+<script src="site_libs/bs3compat-0.4.2/transition.js"></script>
+<script src="site_libs/bs3compat-0.4.2/tabs.js"></script>
+<script src="site_libs/bs3compat-0.4.2/bs3compat.js"></script>
 <script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
-<link href="site_libs/font-awesome-5.1.0/css/all.css" rel="stylesheet" />
-<link href="site_libs/font-awesome-5.1.0/css/v4-shims.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/all.min.css" rel="stylesheet" />
+<link href="site_libs/font-awesome-6.4.0/css/v4-shims.min.css" rel="stylesheet" />
 
 <style type="text/css">
   code{white-space: pre-wrap;}
@@ -175,8 +175,8 @@ $(document).ready(function () {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -184,16 +184,9 @@ $(document).ready(function () {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "&#xe258;";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -380,7 +373,19 @@ training at Memorial Sloan Kettering Cancer Center in March, 2019.
 Updates, sometimes significant, are made when new functionality becomes
 available in R. This tutorial reflects my own opinions about the best
 functionality available in R for survival analysis.</p>
-<p><strong>Last updated: 2022-10-19</strong></p>
+<p><strong>Last updated: 2023-06-21</strong></p>
+<p>First, install and load some packages that will be used
+throughout.</p>
+<pre class="r"><code># Install packages if needed
+# install.packages(c(&quot;knitr&quot;, &quot;dplyr&quot;, &quot;survival&quot;, &quot;ggplot2&quot;, &quot;here&quot;, &quot;tibble&quot;))
+library(knitr)
+library(dplyr)
+library(survival)
+library(ggplot2)
+library(tibble)
+
+# devtools::install_github(&quot;zabore/ezfun&quot;)
+ezfun::set_ccf_palette(&quot;contrast&quot;)</code></pre>
 <div id="part-1-introduction-to-survival-analysis"
 class="section level1">
 <h1>Part 1: Introduction to Survival Analysis</h1>
@@ -435,7 +440,7 @@ names besides survival analysis including:</p>
 <li>Time-to-event analysis</li>
 </ul>
 <p>A key feature of survival data is <strong>censoring</strong>.</p>
-<p><img src="img/trial_anatomy.png" width="522" /></p>
+<p><img src="img/trial_anatomy.png" /><!-- --></p>
 <blockquote>
 <p>RICH JT, NEELY JG, PANIELLO RC, VOELKER CCJ, NUSSENBAUM B, WANG EW. A
 PRACTICAL GUIDE TO UNDERSTANDING KAPLAN-MEIER CURVES. Otolaryngology
@@ -518,14 +523,13 @@ class="math inline">\(S(t_0) = 1\)</span>.</p>
 <div id="packages" class="section level2">
 <h2>Packages</h2>
 <p>In this section, we will use the following packages:</p>
-<pre class="r"><code># install.packages(c(&quot;survival&quot;, &quot;lubridate&quot;, &quot;ggsurvfit&quot;, &quot;gtsummary&quot;, &quot;tidycmprsk&quot;))
-# remotes::install_github(&quot;zabore/condsurv&quot;)
-# remotes::install_github(&quot;zabore/ezfun&quot;)
-library(survival)
+<pre class="r"><code># install.packages(c(&quot;lubridate&quot;, &quot;ggsurvfit&quot;, &quot;gtsummary&quot;, &quot;tidycmprsk&quot;))
 library(lubridate)
 library(ggsurvfit)
 library(gtsummary)
 library(tidycmprsk)
+
+# devtools::install_github(&quot;zabore/condsurv&quot;)
 library(condsurv)</code></pre>
 </div>
 <div id="the-lung-dataset" class="section level2">
@@ -710,7 +714,7 @@ labeling and p-value reporting.</p>
     x = &quot;Days&quot;,
     y = &quot;Overall survival probability&quot;
   )</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-4-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-3-1.png" width="480" /></p>
 <p>The default plot in <code>ggsurvfit()</code> shows the step function
 only. We can add the confidence interval using
 <code>add_confidence_interval()</code>:</p>
@@ -721,7 +725,7 @@ only. We can add the confidence interval using
     y = &quot;Overall survival probability&quot;
   ) + 
   add_confidence_interval()</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-5-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-4-1.png" width="480" /></p>
 <p>Typically we will also want to see the numbers at risk in a table
 below the x-axis. We can add this using
 <code>add_risktable()</code>:</p>
@@ -733,7 +737,7 @@ below the x-axis. We can add this using
     ) + 
   add_confidence_interval() +
   add_risktable()</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-6-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-5-1.png" width="480" /></p>
 <p>Plots can be customized using many standard {ggplot2} options.</p>
 </div>
 <div id="estimating-x-year-survival" class="section level2">
@@ -759,8 +763,10 @@ are also displayed.</p>
 is the point on the y-axis that corresponds to <span
 class="math inline">\(1\)</span> year on the x-axis for the survival
 curve.</p>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-7-1.png" width="480" /></p>
-<p>What happens if you use a “naive” estimate?</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-6-1.png" width="480" /></p>
+<p>What happens if you use a “naive” estimate? Here “naive” means that
+the patients who were censored prior to 1-year are considered event-free
+and included in the denominator.</p>
 <p>121 of the 228 patients in the <code>lung</code> data died by <span
 class="math inline">\(1\)</span> year so the “naive” estimate is
 calculated as:</p>
@@ -775,13 +781,13 @@ accounting for censoring using the Kaplan-Meier method, was 41%.</p>
 <p>Ignoring censoring leads to an <strong>overestimate</strong> of the
 overall survival probability. Imagine two studies, each with 228
 subjects. There are 165 deaths in each study. Censoring is ignored in
-one (pink line), censoring is accounted for in the other (blue line).
+one (blue line), censoring is accounted for in the other (yellow line).
 The censored subjects only contribute information for a portion of the
 follow-up time, and then fall out of the risk set, thus pulling down the
 cumulative probability of survival. Ignoring censoring erroneously
 treats patients who are censored as part of the risk set for the entire
 follow-up period.</p>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-8-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-7-1.png" width="480" /></p>
 <p>We can produce nice tables of <span
 class="math inline">\(x\)</span>-time survival probability estimates
 using the <code>tbl_survfit()</code> function from the {gtsummary}
@@ -791,14 +797,26 @@ package:</p>
     times = 365.25,
     label_header = &quot;**1-year survival (95% CI)**&quot;
   )</code></pre>
-<div id="thodvqsjjd" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+<div id="thodvqsjjd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#thodvqsjjd table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#thodvqsjjd thead, #thodvqsjjd tbody, #thodvqsjjd tfoot, #thodvqsjjd tr, #thodvqsjjd td, #thodvqsjjd th {
+  border-style: none;
+}
+
+#thodvqsjjd p {
+  margin: 0;
+  padding: 0;
 }
 
 #thodvqsjjd .gt_table {
   display: table;
   border-collapse: collapse;
+  line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
@@ -821,16 +839,9 @@ package:</p>
   border-left-color: #D3D3D3;
 }
 
-#thodvqsjjd .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
+#thodvqsjjd .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 #thodvqsjjd .gt_title {
@@ -849,12 +860,24 @@ package:</p>
   color: #333333;
   font-size: 85%;
   font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 6px;
+  padding-top: 3px;
+  padding-bottom: 5px;
   padding-left: 5px;
   padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
+}
+
+#thodvqsjjd .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
 }
 
 #thodvqsjjd .gt_bottom_border {
@@ -930,6 +953,10 @@ package:</p>
   width: 100%;
 }
 
+#thodvqsjjd .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
 #thodvqsjjd .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
@@ -953,6 +980,7 @@ package:</p>
   border-right-width: 1px;
   border-right-color: #D3D3D3;
   vertical-align: middle;
+  text-align: left;
 }
 
 #thodvqsjjd .gt_empty_group_heading {
@@ -1028,6 +1056,10 @@ package:</p>
   border-top-width: 2px;
 }
 
+#thodvqsjjd .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
 #thodvqsjjd .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
@@ -1077,6 +1109,16 @@ package:</p>
   border-top-color: #D3D3D3;
 }
 
+#thodvqsjjd .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
 #thodvqsjjd .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
@@ -1107,8 +1149,8 @@ package:</p>
 #thodvqsjjd .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -1165,10 +1207,9 @@ package:</p>
 }
 
 #thodvqsjjd .gt_footnote_marks {
-  font-style: italic;
-  font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
+  position: initial;
 }
 
 #thodvqsjjd .gt_asterisk {
@@ -1196,17 +1237,17 @@ package:</p>
   text-indent: 25px;
 }
 </style>
-<table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>1-year survival (95% CI)</strong></th>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;1-year survival (95% CI)&lt;/strong&gt;"><strong>1-year survival (95% CI)</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td class="gt_row gt_left">Overall</td>
-<td class="gt_row gt_center">41% (34%, 49%)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">Overall</td>
+<td headers="stat_1" class="gt_row gt_center">41% (34%, 49%)</td></tr>
   </tbody>
   
   
@@ -1231,8 +1272,11 @@ appropriate summary.</p>
 bounds of the 95% confidence interval are also displayed.</p>
 <p>Median survival is the time corresponding to a survival probability
 of <span class="math inline">\(0.5\)</span>:</p>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-11-1.png" width="480" /></p>
-<p>What happens if you use a “naive” estimate?</p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-10-1.png" width="480" /></p>
+<p>What happens if you use a “naive” estimate? Here “naive” means that
+you exclude the censored patients from the calculation entirely to
+estimate median survival time among the patients who have had the
+event.</p>
 <p>Summarize the median survival time among the 165 patients who
 died:</p>
 <pre class="r"><code>lung %&gt;% 
@@ -1247,10 +1291,10 @@ contribute follow-up time.</p>
 is 310 days.</p>
 <p>Ignoring censoring will lead to an <strong>underestimate</strong> of
 median survival time because the follow-up time that censored patients
-contribute is excluded (pink line). The true survival curve accounting
-for censoring in the <code>lung</code> data is shown in blue for
+contribute is excluded (blue line). The true survival curve accounting
+for censoring in the <code>lung</code> data is shown in yellow for
 comparison.</p>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-13-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-12-1.png" width="480" /></p>
 <p>We can produce nice tables of median survival time estimates using
 the <code>tbl_survfit()</code> function from the {gtsummary}
 package:</p>
@@ -1259,14 +1303,26 @@ package:</p>
     probs = 0.5,
     label_header = &quot;**Median survival (95% CI)**&quot;
   )</code></pre>
-<div id="mpqwnvornv" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+<div id="mpqwnvornv" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#mpqwnvornv table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#mpqwnvornv thead, #mpqwnvornv tbody, #mpqwnvornv tfoot, #mpqwnvornv tr, #mpqwnvornv td, #mpqwnvornv th {
+  border-style: none;
+}
+
+#mpqwnvornv p {
+  margin: 0;
+  padding: 0;
 }
 
 #mpqwnvornv .gt_table {
   display: table;
   border-collapse: collapse;
+  line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
@@ -1289,16 +1345,9 @@ package:</p>
   border-left-color: #D3D3D3;
 }
 
-#mpqwnvornv .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
+#mpqwnvornv .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 #mpqwnvornv .gt_title {
@@ -1317,12 +1366,24 @@ package:</p>
   color: #333333;
   font-size: 85%;
   font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 6px;
+  padding-top: 3px;
+  padding-bottom: 5px;
   padding-left: 5px;
   padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
+}
+
+#mpqwnvornv .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
 }
 
 #mpqwnvornv .gt_bottom_border {
@@ -1398,6 +1459,10 @@ package:</p>
   width: 100%;
 }
 
+#mpqwnvornv .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
 #mpqwnvornv .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
@@ -1421,6 +1486,7 @@ package:</p>
   border-right-width: 1px;
   border-right-color: #D3D3D3;
   vertical-align: middle;
+  text-align: left;
 }
 
 #mpqwnvornv .gt_empty_group_heading {
@@ -1496,6 +1562,10 @@ package:</p>
   border-top-width: 2px;
 }
 
+#mpqwnvornv .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
 #mpqwnvornv .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
@@ -1545,6 +1615,16 @@ package:</p>
   border-top-color: #D3D3D3;
 }
 
+#mpqwnvornv .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
 #mpqwnvornv .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
@@ -1575,8 +1655,8 @@ package:</p>
 #mpqwnvornv .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -1633,10 +1713,9 @@ package:</p>
 }
 
 #mpqwnvornv .gt_footnote_marks {
-  font-style: italic;
-  font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
+  position: initial;
 }
 
 #mpqwnvornv .gt_asterisk {
@@ -1664,17 +1743,17 @@ package:</p>
   text-indent: 25px;
 }
 </style>
-<table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>Median survival (95% CI)</strong></th>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Median survival (95% CI)&lt;/strong&gt;"><strong>Median survival (95% CI)</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td class="gt_row gt_left">Overall</td>
-<td class="gt_row gt_center">310 (285, 363)</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">Overall</td>
+<td headers="stat_1" class="gt_row gt_center">310 (285, 363)</td></tr>
   </tbody>
   
   
@@ -1746,14 +1825,26 @@ with the option to exponentiate set to TRUE to return the hazard ratio
 rather than the log hazard ratio:</p>
 <pre class="r"><code>coxph(Surv(time, status) ~ sex, data = lung) %&gt;% 
   tbl_regression(exp = TRUE) </code></pre>
-<div id="cipwnwpuwt" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+<div id="cipwnwpuwt" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#cipwnwpuwt table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#cipwnwpuwt thead, #cipwnwpuwt tbody, #cipwnwpuwt tfoot, #cipwnwpuwt tr, #cipwnwpuwt td, #cipwnwpuwt th {
+  border-style: none;
+}
+
+#cipwnwpuwt p {
+  margin: 0;
+  padding: 0;
 }
 
 #cipwnwpuwt .gt_table {
   display: table;
   border-collapse: collapse;
+  line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
@@ -1776,16 +1867,9 @@ rather than the log hazard ratio:</p>
   border-left-color: #D3D3D3;
 }
 
-#cipwnwpuwt .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
+#cipwnwpuwt .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 #cipwnwpuwt .gt_title {
@@ -1804,12 +1888,24 @@ rather than the log hazard ratio:</p>
   color: #333333;
   font-size: 85%;
   font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 6px;
+  padding-top: 3px;
+  padding-bottom: 5px;
   padding-left: 5px;
   padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
+}
+
+#cipwnwpuwt .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
 }
 
 #cipwnwpuwt .gt_bottom_border {
@@ -1885,6 +1981,10 @@ rather than the log hazard ratio:</p>
   width: 100%;
 }
 
+#cipwnwpuwt .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
 #cipwnwpuwt .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
@@ -1908,6 +2008,7 @@ rather than the log hazard ratio:</p>
   border-right-width: 1px;
   border-right-color: #D3D3D3;
   vertical-align: middle;
+  text-align: left;
 }
 
 #cipwnwpuwt .gt_empty_group_heading {
@@ -1983,6 +2084,10 @@ rather than the log hazard ratio:</p>
   border-top-width: 2px;
 }
 
+#cipwnwpuwt .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
 #cipwnwpuwt .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
@@ -2032,6 +2137,16 @@ rather than the log hazard ratio:</p>
   border-top-color: #D3D3D3;
 }
 
+#cipwnwpuwt .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
 #cipwnwpuwt .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
@@ -2062,8 +2177,8 @@ rather than the log hazard ratio:</p>
 #cipwnwpuwt .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -2120,10 +2235,9 @@ rather than the log hazard ratio:</p>
 }
 
 #cipwnwpuwt .gt_footnote_marks {
-  font-style: italic;
-  font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
+  position: initial;
 }
 
 #cipwnwpuwt .gt_asterisk {
@@ -2151,26 +2265,26 @@ rather than the log hazard ratio:</p>
   text-indent: 25px;
 }
 </style>
-<table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;HR&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>HR</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;95% CI&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>95% CI</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;p-value&lt;/strong&gt;"><strong>p-value</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td class="gt_row gt_left">sex</td>
-<td class="gt_row gt_center">0.59</td>
-<td class="gt_row gt_center">0.42, 0.82</td>
-<td class="gt_row gt_center">0.001</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">sex</td>
+<td headers="estimate" class="gt_row gt_center">0.59</td>
+<td headers="ci" class="gt_row gt_center">0.42, 0.82</td>
+<td headers="p.value" class="gt_row gt_center">0.001</td></tr>
   </tbody>
   
   <tfoot class="gt_footnotes">
     <tr>
-      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
+      <td class="gt_footnote" colspan="4"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> HR = Hazard Ratio, CI = Confidence Interval</td>
     </tr>
   </tfoot>
 </table>
@@ -2217,7 +2331,7 @@ the American Society of Clinical Oncology, 1(11), 710-9.</p>
 <p>Some other possible covariates of interest in cancer research that
 may not be measured at baseline include:</p>
 <ul>
-<li>tranplant failure</li>
+<li>transplant failure</li>
 <li>graft versus host disease</li>
 <li>second resection</li>
 <li>adjuvant therapy</li>
@@ -2239,7 +2353,7 @@ disease</li>
 graft-versus-host disease</li>
 </ul>
 <p>First, load the data for use in examples throughout:</p>
-<pre class="r"><code># install.packages(&quot;SemiCompRisks)
+<pre class="r"><code># install.packages(&quot;SemiCompRisks&quot;)
 data(BMT, package = &quot;SemiCompRisks&quot;)</code></pre>
 <p>Here are the first 6 observations:</p>
 <pre class="r"><code>head(BMT[, c(&quot;T1&quot;, &quot;delta1&quot;, &quot;TA&quot;, &quot;deltaA&quot;)])</code></pre>
@@ -2293,7 +2407,7 @@ apply traditional methods.</p>
     y = &quot;Overall survival probability&quot;
   ) +
   add_risktable()</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-22-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-21-1.png" width="480" /></p>
 <p>In Cox regression you can use the <code>subset</code> option in
 <code>coxph</code> to exclude those patients who were not followed
 through the landmark time, and we can view the results using the
@@ -2304,14 +2418,26 @@ through the landmark time, and we can view the results using the
   data = BMT
   ) %&gt;% 
   tbl_regression(exp = TRUE)</code></pre>
-<div id="jxokapgnww" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+<div id="jxokapgnww" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jxokapgnww table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#jxokapgnww thead, #jxokapgnww tbody, #jxokapgnww tfoot, #jxokapgnww tr, #jxokapgnww td, #jxokapgnww th {
+  border-style: none;
+}
+
+#jxokapgnww p {
+  margin: 0;
+  padding: 0;
 }
 
 #jxokapgnww .gt_table {
   display: table;
   border-collapse: collapse;
+  line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
@@ -2334,16 +2460,9 @@ through the landmark time, and we can view the results using the
   border-left-color: #D3D3D3;
 }
 
-#jxokapgnww .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
+#jxokapgnww .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 #jxokapgnww .gt_title {
@@ -2362,12 +2481,24 @@ through the landmark time, and we can view the results using the
   color: #333333;
   font-size: 85%;
   font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 6px;
+  padding-top: 3px;
+  padding-bottom: 5px;
   padding-left: 5px;
   padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
+}
+
+#jxokapgnww .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
 }
 
 #jxokapgnww .gt_bottom_border {
@@ -2443,6 +2574,10 @@ through the landmark time, and we can view the results using the
   width: 100%;
 }
 
+#jxokapgnww .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
 #jxokapgnww .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
@@ -2466,6 +2601,7 @@ through the landmark time, and we can view the results using the
   border-right-width: 1px;
   border-right-color: #D3D3D3;
   vertical-align: middle;
+  text-align: left;
 }
 
 #jxokapgnww .gt_empty_group_heading {
@@ -2541,6 +2677,10 @@ through the landmark time, and we can view the results using the
   border-top-width: 2px;
 }
 
+#jxokapgnww .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
 #jxokapgnww .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
@@ -2590,6 +2730,16 @@ through the landmark time, and we can view the results using the
   border-top-color: #D3D3D3;
 }
 
+#jxokapgnww .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
 #jxokapgnww .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
@@ -2620,8 +2770,8 @@ through the landmark time, and we can view the results using the
 #jxokapgnww .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -2678,10 +2828,9 @@ through the landmark time, and we can view the results using the
 }
 
 #jxokapgnww .gt_footnote_marks {
-  font-style: italic;
-  font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
+  position: initial;
 }
 
 #jxokapgnww .gt_asterisk {
@@ -2709,26 +2858,26 @@ through the landmark time, and we can view the results using the
   text-indent: 25px;
 }
 </style>
-<table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;HR&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>HR</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;95% CI&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>95% CI</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;p-value&lt;/strong&gt;"><strong>p-value</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td class="gt_row gt_left">deltaA</td>
-<td class="gt_row gt_center">1.08</td>
-<td class="gt_row gt_center">0.57, 2.07</td>
-<td class="gt_row gt_center">0.8</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">deltaA</td>
+<td headers="estimate" class="gt_row gt_center">1.08</td>
+<td headers="ci" class="gt_row gt_center">0.57, 2.07</td>
+<td headers="p.value" class="gt_row gt_center">0.8</td></tr>
   </tbody>
   
   <tfoot class="gt_footnotes">
     <tr>
-      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
+      <td class="gt_footnote" colspan="4"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> HR = Hazard Ratio, CI = Confidence Interval</td>
     </tr>
   </tfoot>
 </table>
@@ -2802,14 +2951,26 @@ regression with <code>coxph</code> and an alteration to our use of
   data = td_dat
   ) %&gt;% 
   tbl_regression(exp = TRUE)</code></pre>
-<div id="hmrahzjcks" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+<div id="hmrahzjcks" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#hmrahzjcks table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#hmrahzjcks thead, #hmrahzjcks tbody, #hmrahzjcks tfoot, #hmrahzjcks tr, #hmrahzjcks td, #hmrahzjcks th {
+  border-style: none;
+}
+
+#hmrahzjcks p {
+  margin: 0;
+  padding: 0;
 }
 
 #hmrahzjcks .gt_table {
   display: table;
   border-collapse: collapse;
+  line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
@@ -2832,16 +2993,9 @@ regression with <code>coxph</code> and an alteration to our use of
   border-left-color: #D3D3D3;
 }
 
-#hmrahzjcks .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
+#hmrahzjcks .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 #hmrahzjcks .gt_title {
@@ -2860,12 +3014,24 @@ regression with <code>coxph</code> and an alteration to our use of
   color: #333333;
   font-size: 85%;
   font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 6px;
+  padding-top: 3px;
+  padding-bottom: 5px;
   padding-left: 5px;
   padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
+}
+
+#hmrahzjcks .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
 }
 
 #hmrahzjcks .gt_bottom_border {
@@ -2941,6 +3107,10 @@ regression with <code>coxph</code> and an alteration to our use of
   width: 100%;
 }
 
+#hmrahzjcks .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
 #hmrahzjcks .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
@@ -2964,6 +3134,7 @@ regression with <code>coxph</code> and an alteration to our use of
   border-right-width: 1px;
   border-right-color: #D3D3D3;
   vertical-align: middle;
+  text-align: left;
 }
 
 #hmrahzjcks .gt_empty_group_heading {
@@ -3039,6 +3210,10 @@ regression with <code>coxph</code> and an alteration to our use of
   border-top-width: 2px;
 }
 
+#hmrahzjcks .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
 #hmrahzjcks .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
@@ -3088,6 +3263,16 @@ regression with <code>coxph</code> and an alteration to our use of
   border-top-color: #D3D3D3;
 }
 
+#hmrahzjcks .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
 #hmrahzjcks .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
@@ -3118,8 +3303,8 @@ regression with <code>coxph</code> and an alteration to our use of
 #hmrahzjcks .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -3176,10 +3361,9 @@ regression with <code>coxph</code> and an alteration to our use of
 }
 
 #hmrahzjcks .gt_footnote_marks {
-  font-style: italic;
-  font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
+  position: initial;
 }
 
 #hmrahzjcks .gt_asterisk {
@@ -3207,26 +3391,26 @@ regression with <code>coxph</code> and an alteration to our use of
   text-indent: 25px;
 }
 </style>
-<table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;HR&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>HR</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;95% CI&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>95% CI</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;p-value&lt;/strong&gt;"><strong>p-value</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td class="gt_row gt_left">agvhd</td>
-<td class="gt_row gt_center">1.40</td>
-<td class="gt_row gt_center">0.81, 2.43</td>
-<td class="gt_row gt_center">0.2</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">agvhd</td>
+<td headers="estimate" class="gt_row gt_center">1.40</td>
+<td headers="ci" class="gt_row gt_center">0.81, 2.43</td>
+<td headers="p.value" class="gt_row gt_center">0.2</td></tr>
   </tbody>
   
   <tfoot class="gt_footnotes">
     <tr>
-      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
+      <td class="gt_footnote" colspan="4"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> HR = Hazard Ratio, CI = Confidence Interval</td>
     </tr>
   </tfoot>
 </table>
@@ -3391,7 +3575,7 @@ death from melanoma:</p>
   ) + 
   add_confidence_interval() +
   add_risktable()</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-33-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-32-1.png" width="480" /></p>
 <p>If we want to include both event types, specify the outcomes in the
 <code>ggcuminc(outcome=)</code> argument:</p>
 <pre class="r"><code>cuminc(Surv(time, status) ~ 1, data = Melanoma) %&gt;% 
@@ -3400,7 +3584,7 @@ death from melanoma:</p>
   labs(
     x = &quot;Days&quot;
   )</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-34-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-33-1.png" width="480" /></p>
 <p>Now let’s say we wanted to examine death from melanoma or other
 causes in the <code>Melanoma</code> data, according to
 <code>ulcer</code>, the presence or absence of ulceration. We can
@@ -3414,14 +3598,26 @@ between groups over the entire follow-up period using the
     times = 1826.25, 
     label_header = &quot;**{time/365.25}-year cuminc**&quot;) %&gt;% 
   add_p()</code></pre>
-<div id="yjczgeehrf" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+<div id="yjczgeehrf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#yjczgeehrf table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#yjczgeehrf thead, #yjczgeehrf tbody, #yjczgeehrf tfoot, #yjczgeehrf tr, #yjczgeehrf td, #yjczgeehrf th {
+  border-style: none;
+}
+
+#yjczgeehrf p {
+  margin: 0;
+  padding: 0;
 }
 
 #yjczgeehrf .gt_table {
   display: table;
   border-collapse: collapse;
+  line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
@@ -3444,16 +3640,9 @@ between groups over the entire follow-up period using the
   border-left-color: #D3D3D3;
 }
 
-#yjczgeehrf .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
+#yjczgeehrf .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 #yjczgeehrf .gt_title {
@@ -3472,12 +3661,24 @@ between groups over the entire follow-up period using the
   color: #333333;
   font-size: 85%;
   font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 6px;
+  padding-top: 3px;
+  padding-bottom: 5px;
   padding-left: 5px;
   padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
+}
+
+#yjczgeehrf .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
 }
 
 #yjczgeehrf .gt_bottom_border {
@@ -3553,6 +3754,10 @@ between groups over the entire follow-up period using the
   width: 100%;
 }
 
+#yjczgeehrf .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
 #yjczgeehrf .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
@@ -3576,6 +3781,7 @@ between groups over the entire follow-up period using the
   border-right-width: 1px;
   border-right-color: #D3D3D3;
   vertical-align: middle;
+  text-align: left;
 }
 
 #yjczgeehrf .gt_empty_group_heading {
@@ -3651,6 +3857,10 @@ between groups over the entire follow-up period using the
   border-top-width: 2px;
 }
 
+#yjczgeehrf .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
 #yjczgeehrf .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
@@ -3700,6 +3910,16 @@ between groups over the entire follow-up period using the
   border-top-color: #D3D3D3;
 }
 
+#yjczgeehrf .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
 #yjczgeehrf .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
@@ -3730,8 +3950,8 @@ between groups over the entire follow-up period using the
 #yjczgeehrf .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -3788,10 +4008,9 @@ between groups over the entire follow-up period using the
 }
 
 #yjczgeehrf .gt_footnote_marks {
-  font-style: italic;
-  font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
+  position: initial;
 }
 
 #yjczgeehrf .gt_asterisk {
@@ -3819,30 +4038,30 @@ between groups over the entire follow-up period using the
   text-indent: 25px;
 }
 </style>
-<table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>5-year cuminc</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong><sup class="gt_footnote_marks">1</sup></th>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;5-year cuminc&lt;/strong&gt;"><strong>5-year cuminc</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;p-value&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>p-value</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td class="gt_row gt_left">ulcer</td>
-<td class="gt_row gt_center"></td>
-<td class="gt_row gt_center"><0.001</td></tr>
-    <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">0</td>
-<td class="gt_row gt_center">9.1% (4.6%, 15%)</td>
-<td class="gt_row gt_center"></td></tr>
-    <tr><td class="gt_row gt_left" style="text-align: left; text-indent: 10px;">1</td>
-<td class="gt_row gt_center">39% (29%, 49%)</td>
-<td class="gt_row gt_center"></td></tr>
+    <tr><td headers="label" class="gt_row gt_left">ulcer</td>
+<td headers="stat_1" class="gt_row gt_center"></td>
+<td headers="p.value" class="gt_row gt_center"><0.001</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">    0</td>
+<td headers="stat_1" class="gt_row gt_center">9.1% (4.6%, 15%)</td>
+<td headers="p.value" class="gt_row gt_center"></td></tr>
+    <tr><td headers="label" class="gt_row gt_left">    1</td>
+<td headers="stat_1" class="gt_row gt_center">39% (29%, 49%)</td>
+<td headers="p.value" class="gt_row gt_center"></td></tr>
   </tbody>
   
   <tfoot class="gt_footnotes">
     <tr>
-      <td class="gt_footnote" colspan="3"><sup class="gt_footnote_marks">1</sup> Gray's Test</td>
+      <td class="gt_footnote" colspan="3"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Gray’s Test</td>
     </tr>
   </tfoot>
 </table>
@@ -3858,7 +4077,7 @@ ulceration status, as before using <code>ggcuminc()</code> from the
   ) + 
   add_confidence_interval() +
   add_risktable()</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-36-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-35-1.png" width="480" /></p>
 </div>
 <div id="competing-risks-regression" class="section level2">
 <h2>Competing risks regression</h2>
@@ -3894,14 +4113,26 @@ with the option <code>exp = TRUE</code> to obtain the hazard ratio
 estimates:</p>
 <pre class="r"><code>crr(Surv(time, status) ~ sex + age, data = Melanoma) %&gt;% 
   tbl_regression(exp = TRUE)</code></pre>
-<div id="cwcziqpdhf" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+<div id="cwcziqpdhf" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#cwcziqpdhf table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#cwcziqpdhf thead, #cwcziqpdhf tbody, #cwcziqpdhf tfoot, #cwcziqpdhf tr, #cwcziqpdhf td, #cwcziqpdhf th {
+  border-style: none;
+}
+
+#cwcziqpdhf p {
+  margin: 0;
+  padding: 0;
 }
 
 #cwcziqpdhf .gt_table {
   display: table;
   border-collapse: collapse;
+  line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
@@ -3924,16 +4155,9 @@ estimates:</p>
   border-left-color: #D3D3D3;
 }
 
-#cwcziqpdhf .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
+#cwcziqpdhf .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 #cwcziqpdhf .gt_title {
@@ -3952,12 +4176,24 @@ estimates:</p>
   color: #333333;
   font-size: 85%;
   font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 6px;
+  padding-top: 3px;
+  padding-bottom: 5px;
   padding-left: 5px;
   padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
+}
+
+#cwcziqpdhf .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
 }
 
 #cwcziqpdhf .gt_bottom_border {
@@ -4033,6 +4269,10 @@ estimates:</p>
   width: 100%;
 }
 
+#cwcziqpdhf .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
 #cwcziqpdhf .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
@@ -4056,6 +4296,7 @@ estimates:</p>
   border-right-width: 1px;
   border-right-color: #D3D3D3;
   vertical-align: middle;
+  text-align: left;
 }
 
 #cwcziqpdhf .gt_empty_group_heading {
@@ -4131,6 +4372,10 @@ estimates:</p>
   border-top-width: 2px;
 }
 
+#cwcziqpdhf .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
 #cwcziqpdhf .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
@@ -4180,6 +4425,16 @@ estimates:</p>
   border-top-color: #D3D3D3;
 }
 
+#cwcziqpdhf .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
 #cwcziqpdhf .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
@@ -4210,8 +4465,8 @@ estimates:</p>
 #cwcziqpdhf .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -4268,10 +4523,9 @@ estimates:</p>
 }
 
 #cwcziqpdhf .gt_footnote_marks {
-  font-style: italic;
-  font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
+  position: initial;
 }
 
 #cwcziqpdhf .gt_asterisk {
@@ -4299,30 +4553,30 @@ estimates:</p>
   text-indent: 25px;
 }
 </style>
-<table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;HR&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>HR</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;95% CI&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>95% CI</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;p-value&lt;/strong&gt;"><strong>p-value</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td class="gt_row gt_left">sex</td>
-<td class="gt_row gt_center">1.80</td>
-<td class="gt_row gt_center">1.06, 3.07</td>
-<td class="gt_row gt_center">0.030</td></tr>
-    <tr><td class="gt_row gt_left">age</td>
-<td class="gt_row gt_center">1.01</td>
-<td class="gt_row gt_center">0.99, 1.03</td>
-<td class="gt_row gt_center">0.2</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">sex</td>
+<td headers="estimate" class="gt_row gt_center">1.80</td>
+<td headers="ci" class="gt_row gt_center">1.06, 3.07</td>
+<td headers="p.value" class="gt_row gt_center">0.030</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">age</td>
+<td headers="estimate" class="gt_row gt_center">1.01</td>
+<td headers="ci" class="gt_row gt_center">0.99, 1.03</td>
+<td headers="p.value" class="gt_row gt_center">0.2</td></tr>
   </tbody>
   
   <tfoot class="gt_footnotes">
     <tr>
-      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
+      <td class="gt_footnote" colspan="4"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> HR = Hazard Ratio, CI = Confidence Interval</td>
     </tr>
   </tfoot>
 </table>
@@ -4344,14 +4598,26 @@ risks. Again we generate a table of formatted results using the
   data = Melanoma
   ) %&gt;% 
   tbl_regression(exp = TRUE)</code></pre>
-<div id="oqauirfaqw" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>html {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+<div id="oqauirfaqw" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#oqauirfaqw table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#oqauirfaqw thead, #oqauirfaqw tbody, #oqauirfaqw tfoot, #oqauirfaqw tr, #oqauirfaqw td, #oqauirfaqw th {
+  border-style: none;
+}
+
+#oqauirfaqw p {
+  margin: 0;
+  padding: 0;
 }
 
 #oqauirfaqw .gt_table {
   display: table;
   border-collapse: collapse;
+  line-height: normal;
   margin-left: auto;
   margin-right: auto;
   color: #333333;
@@ -4374,16 +4640,9 @@ risks. Again we generate a table of formatted results using the
   border-left-color: #D3D3D3;
 }
 
-#oqauirfaqw .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
+#oqauirfaqw .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
 }
 
 #oqauirfaqw .gt_title {
@@ -4402,12 +4661,24 @@ risks. Again we generate a table of formatted results using the
   color: #333333;
   font-size: 85%;
   font-weight: initial;
-  padding-top: 0;
-  padding-bottom: 6px;
+  padding-top: 3px;
+  padding-bottom: 5px;
   padding-left: 5px;
   padding-right: 5px;
   border-top-color: #FFFFFF;
   border-top-width: 0;
+}
+
+#oqauirfaqw .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
 }
 
 #oqauirfaqw .gt_bottom_border {
@@ -4483,6 +4754,10 @@ risks. Again we generate a table of formatted results using the
   width: 100%;
 }
 
+#oqauirfaqw .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
 #oqauirfaqw .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
@@ -4506,6 +4781,7 @@ risks. Again we generate a table of formatted results using the
   border-right-width: 1px;
   border-right-color: #D3D3D3;
   vertical-align: middle;
+  text-align: left;
 }
 
 #oqauirfaqw .gt_empty_group_heading {
@@ -4581,6 +4857,10 @@ risks. Again we generate a table of formatted results using the
   border-top-width: 2px;
 }
 
+#oqauirfaqw .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
 #oqauirfaqw .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
@@ -4630,6 +4910,16 @@ risks. Again we generate a table of formatted results using the
   border-top-color: #D3D3D3;
 }
 
+#oqauirfaqw .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
 #oqauirfaqw .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
@@ -4660,8 +4950,8 @@ risks. Again we generate a table of formatted results using the
 #oqauirfaqw .gt_footnote {
   margin: 0px;
   font-size: 90%;
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-top: 4px;
+  padding-bottom: 4px;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -4718,10 +5008,9 @@ risks. Again we generate a table of formatted results using the
 }
 
 #oqauirfaqw .gt_footnote_marks {
-  font-style: italic;
-  font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
+  position: initial;
 }
 
 #oqauirfaqw .gt_asterisk {
@@ -4749,30 +5038,30 @@ risks. Again we generate a table of formatted results using the
   text-indent: 25px;
 }
 </style>
-<table class="gt_table">
-  
-  <thead class="gt_col_headings">
-    <tr>
-      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col"><strong>Characteristic</strong></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>HR</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>95% CI</strong><sup class="gt_footnote_marks">1</sup></th>
-      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col"><strong>p-value</strong></th>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;Characteristic&lt;/strong&gt;"><strong>Characteristic</strong></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;HR&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>HR</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;95% CI&lt;/strong&gt;&lt;span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;&gt;&lt;sup&gt;1&lt;/sup&gt;&lt;/span&gt;"><strong>95% CI</strong><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="&lt;strong&gt;p-value&lt;/strong&gt;"><strong>p-value</strong></th>
     </tr>
   </thead>
   <tbody class="gt_table_body">
-    <tr><td class="gt_row gt_left">sex</td>
-<td class="gt_row gt_center">1.82</td>
-<td class="gt_row gt_center">1.08, 3.07</td>
-<td class="gt_row gt_center">0.025</td></tr>
-    <tr><td class="gt_row gt_left">age</td>
-<td class="gt_row gt_center">1.02</td>
-<td class="gt_row gt_center">1.00, 1.03</td>
-<td class="gt_row gt_center">0.056</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">sex</td>
+<td headers="estimate" class="gt_row gt_center">1.82</td>
+<td headers="ci" class="gt_row gt_center">1.08, 3.07</td>
+<td headers="p.value" class="gt_row gt_center">0.025</td></tr>
+    <tr><td headers="label" class="gt_row gt_left">age</td>
+<td headers="estimate" class="gt_row gt_center">1.02</td>
+<td headers="ci" class="gt_row gt_center">1.00, 1.03</td>
+<td headers="p.value" class="gt_row gt_center">0.056</td></tr>
   </tbody>
   
   <tfoot class="gt_footnotes">
     <tr>
-      <td class="gt_footnote" colspan="4"><sup class="gt_footnote_marks">1</sup> HR = Hazard Ratio, CI = Confidence Interval</td>
+      <td class="gt_footnote" colspan="4"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> HR = Hazard Ratio, CI = Confidence Interval</td>
     </tr>
   </tfoot>
 </table>
@@ -4831,7 +5120,7 @@ print(cz)</code></pre>
 ## age    0.209  1 0.65
 ## GLOBAL 2.771  2 0.25</code></pre>
 <pre class="r"><code>plot(cz)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-40-1.png" width="480" /><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-40-2.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-39-1.png" width="480" /><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-39-2.png" width="480" /></p>
 <p>Here we see that with p-values &gt;0.05, we do not reject the null
 hypothesis, and conclude that the proportional hazards assumption is
 satisfied for each individual covariate, and also for the model
@@ -4859,7 +5148,7 @@ sm.survival(
   status = lung$status,
   h = sd(lung$age) / nrow(lung)^(-1/4)
   )</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-41-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-40-1.png" width="480" /></p>
 <ul>
 <li>The x’s represent events</li>
 <li>The o’s represent censoring</li>
@@ -4882,7 +5171,7 @@ class="math inline">\(1/6\)</span>:</p>
   status = lung$status,
   h = (1/6) * sd(lung$age) / nrow(lung)^(-1/4)
   )</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-42-1.png" width="480" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-41-1.png" width="480" /></p>
 <p>Now we can see that median time to death decreases slightly as age
 increases.</p>
 </div>
@@ -4966,7 +5255,7 @@ from the {condsurv} package:</p>
   xlab = &quot;Days&quot;
   ) +
   labs(color = &quot;Conditional time&quot;)</code></pre>
-<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-44-1.png" width="672" /></p>
+<p><img src="survival_analysis_in_r_tutorial_files/figure-html/unnamed-chunk-43-1.png" width="672" /></p>
 <p>The resulting plot has one survival curve for each time on which we
 condition. In this case the first line is the overall survival curve
 since it is conditioning on time 0.</p>

@@ -13,12 +13,22 @@ This tutorial provides an introduction to survival analysis, and to conducting a
 
 **Last updated: `r Sys.Date()`**
 
-```{r setup, include=FALSE}
-# load packages
-library(knitr)
-library(tidyverse)
-library(survival)
+First, install and load some packages that will be used throughout.
 
+```{r pkgs, message = FALSE, warning = FALSE, error = FALSE, results = "hide"}
+# Install packages if needed
+# install.packages(c("knitr", "dplyr", "survival", "ggplot2", "here", "tibble"))
+library(knitr)
+library(dplyr)
+library(survival)
+library(ggplot2)
+library(tibble)
+
+# devtools::install_github("zabore/ezfun")
+ezfun::set_ccf_palette("contrast")
+```
+
+```{r setup, include=FALSE}
 # set output options
 opts_chunk$set(
   fig.width = 5,
@@ -26,8 +36,6 @@ opts_chunk$set(
   warning = FALSE,
   message = FALSE
   )
-
-ezfun::set_ccf_palette("contrast")
 ```
 
 
@@ -157,19 +165,14 @@ At time 0, the survival probability is 1, i.e. $S(t_0) = 1$.
 
 In this section, we will use the following packages:
 
-```{r echo = FALSE}
-# remotes::install_github("ddsjoberg/ggsurvfit")
-```
-
 ```{r message = FALSE, warning = FALSE}
-# install.packages(c("survival", "lubridate", "ggsurvfit", "gtsummary", "tidycmprsk"))
-# remotes::install_github("zabore/condsurv")
-# remotes::install_github("zabore/ezfun")
-library(survival)
+# install.packages(c("lubridate", "ggsurvfit", "gtsummary", "tidycmprsk"))
 library(lubridate)
 library(ggsurvfit)
 library(gtsummary)
 library(tidycmprsk)
+
+# devtools::install_github("zabore/condsurv")
 library(condsurv)
 ```
 
@@ -358,15 +361,15 @@ plot_main <-
 plot1 <- 
   plot_main + 
   geom_segment(x = 365.25, xend = 365.25, y = -0.05, yend = 0.4092416, 
-               size = 1.5) +
+               linewidth = 1.5) +
   geom_segment(x = 365.25, xend = -40, y = 0.4092416, yend = 0.4092416,
-               size = 1.5, 
+               linewidth = 1.5, 
                arrow = arrow(length = unit(0.2, "inches"))) 
 
 plot1
 ```
 
-What happens if you use a "naive" estimate? 
+What happens if you use a "naive" estimate? Here "naive" means that the patients who were censored prior to 1-year are considered event-free and included in the denominator.
 
 `r table(lung$status[lung$time <= 365.25])[2]` of the `r nrow(lung)` patients in the `lung` data died by $1$ year so the "naive" estimate is calculated as:
 
@@ -434,7 +437,7 @@ plot2 <-
 plot2
 ```
 
-What happens if you use a "naive" estimate? 
+What happens if you use a "naive" estimate? Here "naive" means that you exclude the censored patients from the calculation entirely to estimate median survival time among the patients who have had the event.
 
 Summarize the median survival time among the `r table(lung$status)[2]` patients who died:
 
@@ -545,7 +548,7 @@ Anderson et al (JCO, 1983) described why traditional methods such as log-rank te
 
 Some other possible covariates of interest in cancer research that may not be measured at baseline include: 
 
-- tranplant failure
+- transplant failure
 - graft versus host disease
 - second resection
 - adjuvant therapy
@@ -565,7 +568,7 @@ Throughout this section we will use the `BMT` dataset from {SemiCompRisks} packa
 First, load the data for use in examples throughout:
 
 ```{r}
-# install.packages("SemiCompRisks)
+# install.packages("SemiCompRisks")
 data(BMT, package = "SemiCompRisks")
 ```
 
